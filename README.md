@@ -1,19 +1,40 @@
-# ADSORFIT model fitting
+# ADSORFIT: Automated Adsorption Model Fitting
 
 ## Project Overview
-This software is specifically tailored for researchers specializing in adsorption studies. Its primary function is to automate the process of modeling by utilizing theoretical adsorption models, which are usually fitted to empirical adsorption isotherm data, enabling the extraction of significant adsorption constants and other parameters (adsorption constants, uptake at saturation, etc.)
-
-The fitting of models is typically achieved by optimizing the Least Squares (LS) difference between the observed uptake and the uptake predicted by the model given the input pressure. As the LS value reaches its minimum, the fit’s quality improves, indicating that the model’s constants accurately represent the adsorption phenomenon for the specific guest-host pair and experimental temperature. Different models are available depending on the type of adsorption isotherm (see the figure below for more information).
+ADSORFIT is designed to streamline the process of adsorption modeling for researchers in the field. By automating the fitting of theoretical adsorption models to empirical isotherm data, this tool helps in accurately extracting crucial adsorption parameters such as adsorption constants and saturation uptakes. The core functionality revolves around minimizing the Least Squares (LS) discrepancy between observed and model-predicted uptakes, thereby refining the fit and ensuring the model constants reflect true adsorption behavior under given experimental conditions.
 
 ### Objectives
 ...
 
+## Getting started
+
+## Installation 
+**Prerequisite:** Ensure Python 3.10.12 is installed on your system.
+**Dependencies:** Install all necessary Python packages with:
+
+`pip install -r requirements.txt`
+
 ## How to use
-Execute the ADSORFIT.py file to initiate the script. The source data file, `data/adsorption_data.csv`, serves as the reference for the adsorption isotherm data that will be fitted. It’s crucial to maintain the file header as is; any alterations to the template could lead to errors during script execution. The .csv file comprises the following columns:
+
+**Prepare Your Data**: ensure your adsorption isotherm data is in the `data/adsorption_data.csv` file, keeping the header intact to avoid processing errors. The CSV should include columns for experiment, temperature, pressure [Pa], and uptake [mol/g]. Here is a brief summary of the dataset columns:
 
 - `experiment:` This represents the ID or name of the experiment and is utilized to group data based on individual experiments
 - `temperature:` This denotes the temperature of the adsorption isotherm, measured in Kelvin
 - `pressure [Pa]:` These are the pressure points of the adsorption isotherm, measured in Pascal
 - `uptake [mol/g]` This column contains the uptake measurements of the adsorption isotherm, expressed in mol/g
+
+**Initiate the Script**: Run ADSORFIT.py to start the modeling process.
+
+**Components**
+The components directory contains essential scripts and modules for the software's operation. Modifying these could affect the script's functionality.
+
+### Configurations
+The configurations.py file allows to change the script configuration. The following parameters are available:
+
+[to continue]
+
+## License
+This project is licensed under the terms of the MIT license. See the LICENSE file for details.
+
 
 

@@ -6,7 +6,6 @@ import numpy as np
 import pickle 
 from tqdm import tqdm
 
-
 # set warnings
 #------------------------------------------------------------------------------
 import warnings
@@ -14,8 +13,8 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from modules.components.data_assets import AdsorptionModels
-import modules.global_variables as GlobVar
+from components.data_assets import AdsorptionModels
+import components.global_paths as globpt
 import configurations as cnf
 
 # welcome message
@@ -25,12 +24,11 @@ print(ascii_art)
 
 # [LOAD AND TRANSFORM DATA]
 #==============================================================================
-# module for the selection of different operations
 #==============================================================================
 
 # load data from csv
 #------------------------------------------------------------------------------
-file_loc = os.path.join(GlobVar.data_path, 'adsorption_data.csv') 
+file_loc = os.path.join(globpt.data_path, 'adsorption_data.csv') 
 df_adsorption = pd.read_csv(file_loc, sep =';', encoding='utf-8')
 df_adsorption = df_adsorption.dropna().reset_index()
 
@@ -55,7 +53,6 @@ num_experiments = dataset_grouped.shape[0]
 
 # [ANALYZE DATA]
 #==============================================================================
-# module for the selection of different operations
 #==============================================================================
 
 print(f'''
@@ -75,7 +72,6 @@ dataset_grouped['max uptake [mol/g]'] = dataset_grouped['uptake [mol/g]'].apply(
 
 # [PERFORM CURVE FITTING]
 #==============================================================================
-# module for the selection of different operations
 #==============================================================================
 
 # convert pressure and uptake series to arrays
@@ -118,7 +114,7 @@ dataset_grouped['sips LSS'] = [x['LSS'] for x in sips_data]
 
 # save fitting results as .csv file
 #------------------------------------------------------------------------------ 
-file_loc = os.path.join(GlobVar.data_path, 'adsorption_fitting.csv') 
+file_loc = os.path.join(globpt.data_path, 'fitting_results.csv') 
 dataset_grouped.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
       
         

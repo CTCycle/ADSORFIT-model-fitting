@@ -8,56 +8,8 @@ from scipy.optimize import curve_fit
 from tqdm import tqdm
 tqdm.pandas()
 
-# [USER OPERATIONS]
-#==============================================================================
-# ...
-#==============================================================================
-class UserOperations:
-    
-    
-    
-    # print custom menu on console and allows selecting an option
-    #--------------------------------------------------------------------------
-    def menu_selection(self, menu):        
-        
-        """        
-        menu_selection(menu)
-        
-        Presents a custom menu to the user and returns the selected option.
-        
-        Keyword arguments:                      
-            menu (dict): A dictionary containing the options to be presented to the user. 
-                         The keys are integers representing the option numbers, and the 
-                         values are strings representing the option descriptions.
-        
-        Returns:            
-            op_sel (int): The selected option number.
-        
-        """        
-        indexes = [idx + 1 for idx, val in enumerate(menu)]
-        for key, value in menu.items():
-            print('{0} - {1}'.format(key, value))            
-        
-        print()
-        while True:
-            try:
-                op_sel = int(input('Select the desired operation: '))
-            except:
-                continue            
-            
-            while op_sel not in indexes:
-                try:
-                    op_sel = int(input('Input is not valid, please select a valid option: '))
-                except:
-                    continue
-            break
-        
-        return op_sel        
-    
-
 # [ADSORPTION MODELS]
 #==============================================================================
-# Collection of models
 #==============================================================================
 class AdsorptionModels:
 
