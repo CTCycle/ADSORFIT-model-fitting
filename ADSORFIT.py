@@ -1,9 +1,6 @@
 import os
-import sys
-import art
 import pandas as pd
 import numpy as np
-import pickle 
 from tqdm import tqdm
 
 # set warnings
@@ -13,14 +10,10 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from components.data_assets import AdsorptionModels
-import components.global_paths as globpt
+from utils.data_assets import AdsorptionModels
+import utils.global_paths as globpt
 import configurations as cnf
 
-# welcome message
-#------------------------------------------------------------------------------
-ascii_art = art.text2art('ADSCON')
-print(ascii_art)
 
 # [LOAD AND TRANSFORM DATA]
 #==============================================================================

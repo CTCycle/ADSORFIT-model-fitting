@@ -3,18 +3,13 @@
 ## Project Overview
 ADSORFIT is designed to streamline the process of adsorption modeling for researchers in the field. By automating the fitting of theoretical adsorption models to empirical isotherm data, this tool helps in accurately extracting crucial adsorption parameters such as adsorption constants and saturation uptakes. The core functionality revolves around minimizing the Least Squares (LS) discrepancy between observed and model-predicted uptakes, thereby refining the fit and ensuring the model constants reflect true adsorption behavior under given experimental conditions.
 
-### Objectives
-...
+## Installation
+First, ensure that you have Python 3.10.12 installed on your system. Then, you can easily install the required Python packages using the provided requirements.txt file:
 
-## Getting started
-
-## Installation 
-**Prerequisite:** Ensure Python 3.10.12 is installed on your system.
-**Dependencies:** Install all necessary Python packages with:
-
-`pip install -r requirements.txt`
+`pip install -r requirements.txt` 
 
 ## How to use
+The project is organized into subfolders, each dedicated to specific tasks. The `utils/` folder houses crucial components utilized by various scripts. It's critical to avoid modifying these files, as doing so could compromise the overall integrity and functionality of the program.
 
 **Prepare Your Data**: ensure your adsorption isotherm data is in the `data/adsorption_data.csv` file, keeping the header intact to avoid processing errors. The CSV should include columns for experiment, temperature, pressure [Pa], and uptake [mol/g]. Here is a brief summary of the dataset columns:
 
