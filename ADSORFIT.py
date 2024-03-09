@@ -14,6 +14,10 @@ from utils.data_assets import AdsorptionModels, AdaptDataSet
 import utils.global_paths as globpt
 import configurations as cnf
 
+# specify relative paths from global paths and create subfolders
+#------------------------------------------------------------------------------
+best_path = os.path.join(globpt.data_path, 'best fit')
+os.mkdir(best_path) if not os.path.exists(best_path) else None
 
 # [LOAD AND CLEAN DATA]
 #==============================================================================
@@ -79,9 +83,10 @@ for x, y in zip(tqdm(pressures), uptakes):
 adapter = AdaptDataSet(fitting_results)
 fitting_dataset = adapter.expand_fitting_data(dataset_grouped)
 
-# check best fitting model
+# check best fitting model and split datasets on best fitting
 #------------------------------------------------------------------------------
-LSS_columns = [x for x in dataset_grouped.columns if 'LSS' in x]
+fitting_dataset = adapter.find_best_model(fitting_dataset)
+adapter.save_best_fitting(fitter.model_names, fitting_dataset, best_path)
 
 # save fitting results as .csv file
 #------------------------------------------------------------------------------ 

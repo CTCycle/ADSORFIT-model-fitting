@@ -15,15 +15,14 @@ tqdm.pandas()
 class AdsorptionModels:
 
     def __init__(self, parameters):
-        Langmuir_param = parameters['Langmuir']
-        Sips_param = parameters['Sips']
-
-        Langmuir_param[0]
-        self.ads_models = {'Langmuir' : {'initial_guess' : [Langmuir_param[0][0], Langmuir_param[0][1]], 
+        self.model_names = ['langmuir', 'sips']
+        Langmuir_param = parameters['langmuir']
+        Sips_param = parameters['sips']        
+        self.ads_models = {'langmuir' : {'initial_guess' : [Langmuir_param[0][0], Langmuir_param[0][1]], 
                                          'low_boundary' : [0, 0], 
                                          'high_boundary' : [Langmuir_param[1][0], Langmuir_param[1][1]],
                                          'model_func': self.Langmuir_model},
-                           'Sips' :     {'initial_guess' : [Sips_param[0][0], Sips_param[0][1], Sips_param[0][2]], 
+                           'sips' :     {'initial_guess' : [Sips_param[0][0], Sips_param[0][1], Sips_param[0][2]], 
                                          'low_boundary' : [0, 0, 0], 
                                          'high_boundary' : [Sips_param[1][0], Sips_param[1][1], Sips_param[1][2]],
                                          'model_func': self.Sips_model}} 
@@ -82,8 +81,8 @@ class AdaptDataSet:
 
     def expand_fitting_data(self, dataset):
 
-        langmuir_data = [d['Langmuir'] for d in self.results]
-        sips_data = [d['Sips'] for d in self.results]
+        langmuir_data = [d['langmuir'] for d in self.results]
+        sips_data = [d['sips'] for d in self.results]
 
         # Langmuir adsorption model
         dataset['langmuir K'] = [x['optimal_params'][0] for x in langmuir_data]
@@ -102,7 +101,25 @@ class AdaptDataSet:
         dataset['sips LSS'] = [x['LSS'] for x in sips_data]
 
         return dataset
-              
+    
+    def find_best_model(self, dataset):
+        LSS_columns = [x for x in dataset.columns if 'LSS' in x]
+        dataset['best model'] = dataset[LSS_columns].apply(lambda x : x.idxmin(), axis=1)
+        dataset['best model'] = dataset['best model'].apply(lambda x : x.replace(' LSS', ''))
+        dataset['worst model'] = dataset[LSS_columns].apply(lambda x : x.idxmax(), axis=1)
+        dataset['worst model'] = dataset['worst model'].apply(lambda x : x.replace(' LSS', ''))
+
+        return dataset
+    
+    def save_best_fitting(self, models, dataset, path):
+        for mod in models:
+            df = dataset[dataset['best model'] == mod]
+            model_cols = [x for x in df.columns if mod in x]
+            target_cols = [x for x in df.columns[:8]] + model_cols
+            df_model = df[target_cols]
+            file_loc = os.path.join(path, f'{mod}_best_fit.csv') 
+            df_model.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+                    
 
 
    
