@@ -10,12 +10,12 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from utils.data_assets import AdsorptionModels
+from utils.data_assets import AdsorptionModels, AdaptDataSet
 import utils.global_paths as globpt
 import configurations as cnf
 
 
-# [LOAD AND TRANSFORM DATA]
+# [LOAD AND CLEAN DATA]
 #==============================================================================
 #==============================================================================
 
@@ -41,20 +41,10 @@ aggregate_dict = {'temperature' : 'first',
 # perform grouping based on aggregated dictionary
 #------------------------------------------------------------------------------          
 dataset_grouped = dataset.groupby('experiment', as_index=False).agg(aggregate_dict)
-dataset_grouped.drop(columns='experiment', axis=1, inplace=True)
 num_experiments = dataset_grouped.shape[0]
-
-# [ANALYZE DATA]
-#==============================================================================
-#==============================================================================
-
-print(f'''
--------------------------------------------------------------------------------
-DATA REPORT
--------------------------------------------------------------------------------    
-Num of experiments: {num_experiments}
-  
-''')
+print(f'\nNumber of total experiments:  {num_experiments}')
+print(f'Number of total measurements:   {dataset.shape[0]}')
+print(f'Average of measurements:        {dataset.shape[0]//num_experiments}\n')
 
 # create columns holding information about min-max of pressure and uptake measurements
 #------------------------------------------------------------------------------ 
@@ -74,41 +64,29 @@ uptakes = [np.array(x) for x in dataset_grouped['uptake [mol/g]'].to_list()]
 
 # initialize fitter and extract base model parameters
 #------------------------------------------------------------------------------ 
-fitter = AdsorptionModels()
+fitter = AdsorptionModels(cnf.parameters)
 model_params = fitter.ads_models
 
 # fitting adsorption isotherm data with theoretical models
 #------------------------------------------------------------------------------ 
 fitting_results = []
 for x, y in zip(tqdm(pressures), uptakes):
-    results = fitter.adsorption_fitter(x, y)
+    results = fitter.adsorption_fitter(x, y, cnf.max_iterations)
     fitting_results.append(results)
 
 # extract data programmatically from the dictionaries and populate grouped dataframe
 #------------------------------------------------------------------------------  
-langmuir_data = [d['Langmuir'] for d in fitting_results]
-sips_data = [d['Sips'] for d in fitting_results]
+adapter = AdaptDataSet(fitting_results)
+fitting_dataset = adapter.expand_fitting_data(dataset_grouped)
 
-# Langmuir adsorption model
-dataset_grouped['langmuir K'] = [x['optimal_params'][0] for x in langmuir_data]
-dataset_grouped['langmuir qsat'] = [x['optimal_params'][1] for x in langmuir_data]
-dataset_grouped['langmuir K error'] =[x['errors'][0] for x in langmuir_data]
-dataset_grouped['langmuir qsat error'] = [x['errors'][1] for x in langmuir_data]
-dataset_grouped['langmuir LSS'] = [x['LSS'] for x in langmuir_data]
-
-# Sips adsorption model
-dataset_grouped['sips K'] = [x['optimal_params'][0] for x in sips_data]
-dataset_grouped['sips qsat'] = [x['optimal_params'][1] for x in sips_data]
-dataset_grouped['sips N'] = [x['optimal_params'][2] for x in sips_data]
-dataset_grouped['sips K error'] =[x['errors'][0] for x in sips_data]
-dataset_grouped['sips qsat error'] = [x['errors'][1] for x in sips_data]
-dataset_grouped['sips N error'] = [x['errors'][2] for x in sips_data]
-dataset_grouped['sips LSS'] = [x['LSS'] for x in sips_data]
+# check best fitting model
+#------------------------------------------------------------------------------
+LSS_columns = [x for x in dataset_grouped.columns if 'LSS' in x]
 
 # save fitting results as .csv file
 #------------------------------------------------------------------------------ 
 file_loc = os.path.join(globpt.data_path, 'fitting_results.csv') 
-dataset_grouped.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+fitting_dataset.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
       
         
 
