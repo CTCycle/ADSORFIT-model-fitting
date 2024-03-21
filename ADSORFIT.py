@@ -81,6 +81,7 @@ for x, y in zip(tqdm(pressures), uptakes):
 # extract data programmatically from the dictionaries and populate grouped dataframe
 #------------------------------------------------------------------------------  
 adapter = AdaptDataSet(fitting_results)
+print('\nGenerating dataset with fitting results\n')
 fitting_dataset = adapter.expand_fitting_data(dataset_grouped)
 
 # check best fitting model and split datasets on best fitting

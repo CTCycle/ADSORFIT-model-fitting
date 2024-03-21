@@ -28,9 +28,10 @@ The configurations.py file allows to change the script configuration. The follow
 |                    | langmuir_max     | Max value of Langmuir adsorption model parameters         |
 |                    | sips_guess       | Initial guess values for Sips adsorption model parameters |
 |                    | sips_max         | Max value of Sips adsorption model parameters             |
+|                    | freundlich_guess | Initial guess values for Freundlich adsorption model parameters |
+|                    | freundlich_max   | Max value of Freundlich adsorption model parameters       |
 | **Fitter settings** | seed            | Global random seed                                        |
 |                    | max_iterations   | Max number of fitting iterations                          |
-
  
 
 ## License
