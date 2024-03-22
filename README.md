@@ -18,21 +18,19 @@ Run ADSORFIT.py to start the modeling process. The `utils/` folder houses crucia
 - `pressure [Pa]:` These are the pressure points of the adsorption isotherm, measured in Pascal
 - `uptake [mol/g]` This column contains the uptake measurements of the adsorption isotherm, expressed in mol/g
 
-
 ### Configurations
-The configurations.py file allows to change the script configuration. The following parameters are available:
+The configurations.py file allows to change the script configuration. 
 
-| Category           | Setting          | Description                                               |
-|--------------------|------------------|-----------------------------------------------------------|
-| **Model settings** | langmuir_guess   | Initial guess values for Langmuir adsorption model parameters |
-|                    | langmuir_max     | Max value of Langmuir adsorption model parameters         |
-|                    | sips_guess       | Initial guess values for Sips adsorption model parameters |
-|                    | sips_max         | Max value of Sips adsorption model parameters             |
-|                    | freundlich_guess | Initial guess values for Freundlich adsorption model parameters |
-|                    | freundlich_max   | Max value of Freundlich adsorption model parameters       |
-| **Fitter settings** | seed            | Global random seed                                        |
-|                    | max_iterations   | Max number of fitting iterations                          |
- 
+| Category            | Setting          | Description                                                     |
+|-------------------- |------------------|-----------------------------------------------------------------|
+| **Model settings**  | langmuir_guess   | Initial guess values for Langmuir adsorption model parameters   |
+|                     | langmuir_max     | Max value of Langmuir adsorption model parameters               |
+|                     | sips_guess       | Initial guess values for Sips adsorption model parameters       |
+|                     | sips_max         | Max value of Sips adsorption model parameters                   |
+|                     | freundlich_guess | Initial guess values for Freundlich adsorption model parameters |
+|                     | freundlich_max   | Max value of Freundlich adsorption model parameters             |
+| **Fitter settings** | seed             | Global random seed                                              |
+|                     | max_iterations   | Max number of fitting iterations                                | 
 
 ## License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.
