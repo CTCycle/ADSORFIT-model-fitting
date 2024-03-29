@@ -10,7 +10,8 @@ warnings.simplefilter(action='ignore', category = Warning)
 
 # import modules and classes
 #------------------------------------------------------------------------------
-from utils.data_assets import AdsorptionModels, AdaptDataSet
+from utils.models import AdsorptionModels
+from utils.datasets import AdaptDataSet
 import utils.global_paths as globpt
 import configurations as cnf
 
