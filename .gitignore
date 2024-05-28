@@ -1,3 +1,5 @@
 __pycache__
-data/fitting_results.csv
-data/best fit/*
+ADSORFIT/data/fitting_results.csv
+ADSORFIT/data/best fit/*
+
+!.gitkeep
