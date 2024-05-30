@@ -51,7 +51,6 @@ if __name__ == '__main__':
     dataset_grouped['max pressure [Pa]'] = dataset_grouped['pressure [Pa]'].apply(lambda x : max(x))
     dataset_grouped['min uptake [mol/g]'] = dataset_grouped['uptake [mol/g]'].apply(lambda x : min(x))
     dataset_grouped['max uptake [mol/g]'] = dataset_grouped['uptake [mol/g]'].apply(lambda x : max(x))
-
    
     # 2. [PERFORM CURVE FITTING]
     #--------------------------------------------------------------------------
@@ -60,13 +59,13 @@ if __name__ == '__main__':
     uptakes = [np.array(x) for x in dataset_grouped['uptake [mol/g]'].to_list()]
 
     # initialize fitter and extract base model parameters  
-    fitter = AdsorptionModels(cnf.parameters)
+    fitter = AdsorptionModels(cnf.PARAMETERS)
     model_params = fitter.ads_models
 
     # fitting adsorption isotherm data with theoretical models    
     fitting_results = []
     for x, y in zip(tqdm(pressures), uptakes):
-        results = fitter.adsorption_fitter(x, y, cnf.max_iterations)
+        results = fitter.adsorption_fitter(x, y, cnf.MAX_ITERATIONS)
         fitting_results.append(results)
 
     # extract data programmatically from the dictionaries and populate grouped dataframe     

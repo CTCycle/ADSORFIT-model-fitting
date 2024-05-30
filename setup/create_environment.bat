@@ -13,7 +13,7 @@ call conda activate ADSORFIT
 
 rem Install additional packages with pip
 echo STEP 2: Install python libraries and packages
-call pip install tqdm numpy pandas seaborn scipy matplotlib
+call pip install tqdm numpy pandas scipy
 if errorlevel 1 (
     echo Failed to install Python libraries.
     goto :eof
