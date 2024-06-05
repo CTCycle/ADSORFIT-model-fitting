@@ -8,10 +8,6 @@ from tqdm import tqdm
 import warnings
 warnings.simplefilter(action='ignore', category = Warning)
 
-# [DEFINE PROJECT FOLDER PATH]
-project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_dir) 
-
 # [IMPORT CUSTOM MODULES]
 from utils.datasets import AdaptDataSet
 from utils.models import AdsorptionModels

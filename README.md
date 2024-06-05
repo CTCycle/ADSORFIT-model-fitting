@@ -6,7 +6,9 @@ ADSORFIT is designed to streamline the process of adsorption modeling for resear
 ## 2. Installation 
 The installation process is designed for simplicity, using .bat scripts to automatically create a virtual environment with all necessary dependencies. Please ensure that Anaconda or Miniconda is installed on your system before proceeding.
 
-- The `setup/create_environment.bat` file offers a convenient one-click solution to set up your virtual environment.
+- The `scripts/create_environment.bat` file offers a convenient one-click solution to set up your virtual environment.
+- Once the environment has been created, run `scripts/package_setup.bat` to install the app package locally.
+- **IMPORTANT:** run `scripts/package_setup.bat` if you move the project folder somewhere else after installation, or the app won't work! 
 
 ## 3. How to use
 The project is organized into subfolders, each dedicated to specific tasks. The `ADSORFIT/utils` folder houses crucial components utilized by various scripts. It's critical to avoid modifying these files, as doing so could compromise the overall integrity and functionality of the program.
