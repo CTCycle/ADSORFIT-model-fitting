@@ -11,7 +11,6 @@ The installation process is designed for simplicity, using .bat scripts to autom
 - **IMPORTANT:** run `scripts/package_setup.bat` if you move the project folder somewhere else after installation, or the app won't work! 
 
 ## 3. How to use
-The project is organized into subfolders, each dedicated to specific tasks. The `ADSORFIT/utils` folder houses crucial components utilized by various scripts. It's critical to avoid modifying these files, as doing so could compromise the overall integrity and functionality of the program.
 
 **Prepare Your Data**: ensure your adsorption isotherm data is in the `ADSORFIT/data/adsorption_data.csv` file, keeping the header intact to avoid processing errors. The CSV should include columns for experiment, temperature, pressure [Pa], and uptake [mol/g]. Here is a brief summary of the dataset columns:
 
@@ -21,7 +20,7 @@ The project is organized into subfolders, each dedicated to specific tasks. The 
 - `uptake [mol/g]` This column contains the uptake measurements of the adsorption isotherm, expressed in mol/g
 
 ### Configurations
-The configurations.py file allows to change the script configuration. 
+For customization, you can modify the main script parameters via the `ADSORFIT/commons/configurations.py` file. 
 
 | Category            | Setting          | Description                                                     |
 |-------------------- |------------------|-----------------------------------------------------------------|

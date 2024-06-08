@@ -9,10 +9,10 @@ import warnings
 warnings.simplefilter(action='ignore', category = Warning)
 
 # [IMPORT CUSTOM MODULES]
-from utils.datasets import AdaptDataSet
-from utils.models import AdsorptionModels
-from config.pathfinder import DATA_PATH, BEST_FIT_PATH
-import config.configurations as cnf
+from commons.utils.datasets import AdaptDataSet
+from commons.utils.models import AdsorptionModels
+from commons.pathfinder import DATA_PATH, BEST_FIT_PATH
+import commons.configurations as cnf
 
 # [RUN MAIN]
 if __name__ == '__main__':
