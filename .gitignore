@@ -1,6 +1,6 @@
 __pycache__
-ADSORFIT/data/fitting_results.csv
-ADSORFIT/data/best fit/*
+ADSORFIT/resources/fitting_results.csv
+ADSORFIT/resources/best fit/*
 
 *.egg-info
 !.gitkeep
