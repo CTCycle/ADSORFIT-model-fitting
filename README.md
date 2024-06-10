@@ -12,7 +12,7 @@ The installation process is designed for simplicity, using .bat scripts to autom
 
 ## 3. How to use
 
-**Prepare Your Data**: ensure your adsorption isotherm data is in the `ADSORFIT/data/adsorption_data.csv` file, keeping the header intact to avoid processing errors. The CSV should include columns for experiment, temperature, pressure [Pa], and uptake [mol/g]. Here is a brief summary of the dataset columns:
+**Prepare Your Data**: ensure your adsorption isotherm data is in the `ADSORFIT/resources/adsorption_data.csv` file, keeping the header intact to avoid processing errors. The CSV should include columns for experiment, temperature, pressure [Pa], and uptake [mol/g]. Here is a brief summary of the dataset columns:
 
 - `experiment:` ID or name of the experiment used to group data based on individual experiments
 - `temperature:` This denotes the temperature of the adsorption isotherm, measured in Kelvin
