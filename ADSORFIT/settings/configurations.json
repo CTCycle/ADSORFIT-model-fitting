@@ -1,0 +1,22 @@
+{   
+
+    "SEED": 42,
+    "MAX_ITERATIONS": 10000,
+
+    "MODELS": {
+            
+        "LANGMUIR": {"initial": {"K": 0.000001, "qsat": 10.0},
+                      "min": {"K": 0.0, "qsat": 0.0},
+                      "max": {"K": 100.0, "qsat": 100.0}},
+
+        "SIPS": {"initial": {"K": 0.000001, "qsat": 10.0, "N": 1.0},
+                 "min": {"K": 0.0, "qsat": 0.0, "N": 0.0},
+                 "max": {"K": 0.000001, "qsat": 10.0, "N": 1.0}},
+                  
+        "FREUNDLICH": {"initial": {"K": 0.000001, "qsat": 10.0},
+                       "min": {"K": 0.0, "qsat": 0.0},
+                       "max": {"K": 0.000001, "qsat": 10.0}}
+
+        }
+
+  }

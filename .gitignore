@@ -1,6 +1,7 @@
 __pycache__
-ADSORFIT/resources/fitting_results.csv
-ADSORFIT/resources/best fit/*
 
+
+*.log
+*.csv
 *.egg-info
 !.gitkeep

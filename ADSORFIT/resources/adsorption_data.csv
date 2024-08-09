@@ -1,4 +1,4 @@
-experiment;temperature;pressure [Pa];uptake [mol/g]
+experiment;temperature [K];pressure [Pa];uptake [mol/g]
 "10.100215214125200211052511<1060aidceat1060>3.0.co;27.Isotherm3";303;7.70E+00;0.000771
 "10.100215214125200211052511<1060aidceat1060>3.0.co;27.Isotherm3";303;9.60E+00;0.00105
 "10.100215214125200211052511<1060aidceat1060>3.0.co;27.Isotherm3";303;18.3;0.0013
