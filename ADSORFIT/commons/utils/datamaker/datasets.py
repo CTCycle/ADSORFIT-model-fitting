@@ -67,41 +67,73 @@ class DataPreProcess:
 ###############################################################################
 class DataSetAdapter:
 
-    def __init__(self, dataset : pd.DataFrame):
-        
-        self.dataset = dataset      
+    def __init__(self, fitting_results : list):
 
-    
+        self.selected_models = CONFIG["SELECTED_MODELS"]
+        self.results = self.flatten_fit_results(fitting_results)
+        self.parameters_list = ['K', 'qsat', 'N']
+        self.results_type = ['optimal_params', 'errors', 'LSS']
+       
 
     #--------------------------------------------------------------------------
-    def expand_fitting_data(self):
+    def flatten_fit_results(self, results):
 
-        langmuir_data = [d['langmuir'] for d in self.results]
-        sips_data = [d['sips'] for d in self.results]
-        freundlich_data = [d['freundlich'] for d in self.results]
+        flatten = {k : [] for k in self.selected_models}
+        for res in results:
+            for mod in self.selected_models:
+                flatten[mod].append(res[mod])
 
-        # Langmuir adsorption model
-        dataset['langmuir K'] = [x['optimal_params'][0] for x in langmuir_data]
-        dataset['langmuir qsat'] = [x['optimal_params'][1] for x in langmuir_data]
-        dataset['langmuir K error'] =[x['errors'][0] for x in langmuir_data]
-        dataset['langmuir qsat error'] = [x['errors'][1] for x in langmuir_data]
-        dataset['langmuir LSS'] = [x['LSS'] for x in langmuir_data]
+        return flatten 
 
-        # Sips adsorption model
-        dataset['sips K'] = [x['optimal_params'][0] for x in sips_data]
-        dataset['sips qsat'] = [x['optimal_params'][1] for x in sips_data]
-        dataset['sips N'] = [x['optimal_params'][2] for x in sips_data]
-        dataset['sips K error'] =[x['errors'][0] for x in sips_data]
-        dataset['sips qsat error'] = [x['errors'][1] for x in sips_data]
-        dataset['sips N error'] = [x['errors'][2] for x in sips_data]
-        dataset['sips LSS'] = [x['LSS'] for x in sips_data]
 
-        # Freundlich adsorption model
-        dataset['freundlich K'] = [x['optimal_params'][0] for x in freundlich_data]        
-        dataset['freundlich N'] = [x['optimal_params'][1] for x in freundlich_data]
-        dataset['freundlich K error'] =[x['errors'][0] for x in freundlich_data]        
-        dataset['freundlich N error'] = [x['errors'][1] for x in freundlich_data]   
-        dataset['freundlich LSS'] = [x['LSS'] for x in freundlich_data]     
+    #--------------------------------------------------------------------------
+    def adapt_results_to_dataset(self, dataset):  
+
+        for model in self.selected_models:
+            model_results = self.results[model]
+            num_parameters = len(model_results[0][self.results_type[0]])
+            
+            for res_type in self.results_type:
+                for i in range(num_parameters):
+                    dataset[f'{model} {self.parameters_list[i]}'] = [x[res_type][i] for x in model_results]
+
+        return dataset
+
+
+    #--------------------------------------------------------------------------
+    def LANGMUIR_results_adapter(self, dataset, results): 
+
+        dataset['langmuir K'] = [x['optimal_params'][0] for x in results]
+        dataset['langmuir qsat'] = [x['optimal_params'][1] for x in results]
+        dataset['langmuir K error'] =[x['errors'][0] for x in results]
+        dataset['langmuir qsat error'] = [x['errors'][1] for x in results]
+        dataset['langmuir LSS'] = [x['LSS'] for x in results]
+
+    #--------------------------------------------------------------------------
+    def SIPS_results_adapter(self, dataset, results): 
+
+        dataset['sips K'] = [x['optimal_params'][0] for x in results]
+        dataset['sips qsat'] = [x['optimal_params'][1] for x in results]
+        dataset['sips N'] = [x['optimal_params'][2] for x in results]
+        dataset['sips K error'] =[x['errors'][0] for x in results]
+        dataset['sips qsat error'] = [x['errors'][1] for x in results]
+        dataset['sips N error'] = [x['errors'][2] for x in results]
+        dataset['sips LSS'] = [x['LSS'] for x in results]
+
+    #--------------------------------------------------------------------------
+    def FREUNDLICH_results_adapter(self, dataset, results): 
+
+        dataset['freundlich K'] = [x['optimal_params'][0] for x in results]        
+        dataset['freundlich N'] = [x['optimal_params'][1] for x in results]
+        dataset['freundlich K error'] =[x['errors'][0] for x in results]       
+        dataset['freundlich N error'] = [x['errors'][1] for x in results]  
+        dataset['freundlich LSS'] = [x['LSS'] for x in results]    
+   
+
+    #--------------------------------------------------------------------------
+    def expand_fitting_data(self, dataset : pd.DataFrame):
+
+        
 
         return dataset
     

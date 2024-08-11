@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 # [SETTING WARNINGS]
 import warnings
-warnings.simplefilter(action='ignore', category = Warning)
+warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
 from ADSORFIT.commons.utils.datamaker.datasets import DataPreProcess, DataSetAdapter
@@ -24,21 +24,18 @@ if __name__ == '__main__':
     dataset = processor.preprocess_dataset()    
     logger.info(f'Number of experiments:   {processor.num_experiments}')
     logger.info(f'Number of measurements:  {processor.num_measurements}')
-    logger.info(f'Average measurements by experiment: {processor.num_measurements/processor.num_experiments}')
-
-    
+    logger.info(f'Average measurements by experiment: {processor.num_measurements/processor.num_experiments:.1f}')   
    
     # 2. [PERFORM CURVE FITTING]
     #-------------------------------------------------------------------------- 
     # fitting adsorption isotherm data with theoretical models       
     fitter = DataFit()   
-    fitting_results = fitter.fit_all_data(dataset)
-    
+    fitting_results = fitter.fit_all_data(dataset)    
 
     # extract data programmatically from the dictionaries and populate grouped dataframe     
     adapter = DataSetAdapter(fitting_results)
-    print('\nGenerating dataset with fitting results\n')
-    fitting_dataset = adapter.expand_fitting_data(dataset_grouped)
+    logger.info('Generating dataset with fitting results')
+    fitting_dataset = adapter.adapt_results_to_dataset(dataset)
 
     # check best fitting model and split datasets on best fitting  
     fitting_dataset = adapter.find_best_model(fitting_dataset)

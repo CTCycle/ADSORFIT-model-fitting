@@ -3,7 +3,7 @@ import logging
 import logging.config
 from datetime import datetime
 
-from NISTCOLLECT.commons.constants import LOGS_PATH
+from ADSORFIT.commons.constants import LOGS_PATH
 
 
 # Generate timestamp for the log filename
@@ -40,11 +40,19 @@ LOG_CONFIG =  {
             'mode': 'a'  
         },
     },
+    'loggers': {
+        'matplotlib': {
+            'level': 'WARNING',
+            'handlers': ['console', 'file'],
+            'propagate': False
+        },
+    },
     'root': {
         'level': 'DEBUG',
         'handlers': ['console', 'file'],
-    },
+    },    
 }
+
 
 # override logger configuration and load root logger
 ###############################################################################

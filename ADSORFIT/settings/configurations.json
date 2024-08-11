@@ -2,6 +2,7 @@
 
     "SEED": 42,
     "MAX_ITERATIONS": 10000,
+    "SELECTED_MODELS": ["LANGMUIR", "SIPS", "FREUNDLICH"],
 
     "MODELS": {
             

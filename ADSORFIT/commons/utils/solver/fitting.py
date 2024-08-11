@@ -39,11 +39,12 @@ class DataFit:
         
         '''
         self.collection = AdsorptionModels()
-        model_parameters = CONFIG["MODELS"] 
+        all_parameters = CONFIG["MODELS"]
+        selected_models = CONFIG["SELECTED_MODELS"]
+        model_parameters = {k : v for k, v in all_parameters.items() if k in selected_models}
         max_iterations = CONFIG["MAX_ITERATIONS"] 
+
         results = {}        
-
-
         for name, conf in model_parameters.items():            
             model = self.collection.get_model(name) 
 
