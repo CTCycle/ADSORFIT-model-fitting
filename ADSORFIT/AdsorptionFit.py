@@ -39,11 +39,8 @@ if __name__ == '__main__':
 
     # check best fitting model and split datasets on best fitting  
     fitting_dataset = adapter.find_best_model(fitting_dataset)
-    adapter.save_best_fitting(fitter.model_names, fitting_dataset, BEST_FIT_PATH)
-
-    # save fitting results as .csv file    
-    file_loc = os.path.join(DATA_PATH, 'fitting_results.csv') 
-    fitting_dataset.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+    adapter.save_data_to_csv(fitting_dataset)
+   
         
             
 
