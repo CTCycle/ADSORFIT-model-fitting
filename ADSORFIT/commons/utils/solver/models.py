@@ -1,10 +1,9 @@
-import numpy as np
-from scipy.optimize import curve_fit
 from tqdm import tqdm
 tqdm.pandas()
 
 from ADSORFIT.commons.constants import CONFIG, DATA_PATH
 from ADSORFIT.commons.logger import logger
+
 
 # [ADSORPTION MODELS]
 ###############################################################################

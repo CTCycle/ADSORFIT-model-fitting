@@ -1,3 +1,4 @@
+import inspect
 import pandas as pd
 import numpy as np
 from scipy.optimize import curve_fit
@@ -15,7 +16,8 @@ class DataFit:
 
 
     def __init__(self):
-        self.collection = AdsorptionModels()
+        self.collection = AdsorptionModels()        
+        self.selected_models = CONFIG["SELECTED_MODELS"]        
 
     #--------------------------------------------------------------------------
     def single_experiment_fit(self, X, Y):
@@ -39,20 +41,23 @@ class DataFit:
         
         '''
         self.collection = AdsorptionModels()
-        all_parameters = CONFIG["MODELS"]
-        selected_models = CONFIG["SELECTED_MODELS"]
-        model_parameters = {k : v for k, v in all_parameters.items() if k in selected_models}
+        all_parameters = CONFIG["MODELS"]        
+        model_parameters = {k : v for k, v in all_parameters.items() if k in CONFIG["SELECTED_MODELS"]}
         max_iterations = CONFIG["MAX_ITERATIONS"] 
 
         results = {}        
-        for name, conf in model_parameters.items():            
+        for name, conf in model_parameters.items():
+            # get the model based on name indexing            
             model = self.collection.get_model(name) 
+            # get the model function signature to retrieve its arguments
+            signature = inspect.signature(model)            
+            fn_parameters = [name for name in signature.parameters.keys()][1:]
 
             p0_values = [v for v in conf['initial'].values()]
             num_params = len(p0_values)
 
             boundaries = ([v for v in conf['min'].values()], 
-                        [v for v in conf['max'].values()])
+                          [v for v in conf['max'].values()])
             
             try:
                 optimal_params, covariance = curve_fit(model, X, Y, p0=p0_values, bounds=boundaries,
@@ -66,18 +71,20 @@ class DataFit:
                 # Calculate errors from covariance                 
                 errors = np.sqrt(np.diag(covariance))
                 results[name] = {'optimal_params': optimal_params, 
-                                'covariance': covariance, 
-                                'errors': errors,
-                                'LSS' : lss}
+                                 'covariance': covariance, 
+                                 'errors': errors,
+                                 'LSS' : lss,
+                                 'arguments' : fn_parameters}
                                 
             except Exception as e: 
                 logger.error(f'Could not fit data using {name} - Error: {e}')               
                 nan_list = [np.nan for x in range(num_params)]
                 results[name] = {'optimal_params': nan_list, 
-                                'covariance': nan_list, 
-                                'errors': nan_list,
-                                'LSS' : np.nan,
-                                'exception' : e}                
+                                 'covariance': nan_list, 
+                                 'errors': nan_list,
+                                 'LSS' : np.nan,
+                                 'arguments' : fn_parameters,
+                                 'exception' : e}                
 
         return results 
     
@@ -87,12 +94,13 @@ class DataFit:
         pressures = [np.array(x) for x in dataset['pressure [Pa]'].to_list()]
         uptakes = [np.array(x) for x in dataset['uptake [mol/g]'].to_list()]       
 
-        # fitting adsorption isotherm data with theoretical models    
-        fitting_results = []
+        # fitting adsorption isotherm data with theoretical models  
+        results_dictionary = {k : [] for k in self.selected_models}
         for x, y in zip(tqdm(pressures), uptakes):
             results = self.single_experiment_fit(x, y)
-            fitting_results.append(results)
-
-        return fitting_results
+            for model in self.selected_models:
+                results_dictionary[model].append(results[model])
+        
+        return results_dictionary
 
             

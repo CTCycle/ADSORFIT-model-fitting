@@ -67,67 +67,26 @@ class DataPreProcess:
 ###############################################################################
 class DataSetAdapter:
 
-    def __init__(self, fitting_results : list):
+    def __init__(self, fitting_results : dict):
 
-        self.selected_models = CONFIG["SELECTED_MODELS"]
-        self.results = self.flatten_fit_results(fitting_results)
-        self.parameters_list = ['K', 'qsat', 'N']
-        self.results_type = ['optimal_params', 'errors', 'LSS']
-       
-
-    #--------------------------------------------------------------------------
-    def flatten_fit_results(self, results):
-
-        flatten = {k : [] for k in self.selected_models}
-        for res in results:
-            for mod in self.selected_models:
-                flatten[mod].append(res[mod])
-
-        return flatten 
-
+        self.selected_models = CONFIG["SELECTED_MODELS"]        
+        self.fitting_results = fitting_results
 
     #--------------------------------------------------------------------------
     def adapt_results_to_dataset(self, dataset):  
 
-        for model in self.selected_models:
-            model_results = self.results[model]
-            num_parameters = len(model_results[0][self.results_type[0]])
+        for k, v in self.fitting_results.items():
             
-            for res_type in self.results_type:
-                for i in range(num_parameters):
-                    dataset[f'{model} {self.parameters_list[i]}'] = [x[res_type][i] for x in model_results]
-
-        return dataset
-
-
-    #--------------------------------------------------------------------------
-    def LANGMUIR_results_adapter(self, dataset, results): 
-
-        dataset['langmuir K'] = [x['optimal_params'][0] for x in results]
-        dataset['langmuir qsat'] = [x['optimal_params'][1] for x in results]
-        dataset['langmuir K error'] =[x['errors'][0] for x in results]
-        dataset['langmuir qsat error'] = [x['errors'][1] for x in results]
-        dataset['langmuir LSS'] = [x['LSS'] for x in results]
-
-    #--------------------------------------------------------------------------
-    def SIPS_results_adapter(self, dataset, results): 
-
-        dataset['sips K'] = [x['optimal_params'][0] for x in results]
-        dataset['sips qsat'] = [x['optimal_params'][1] for x in results]
-        dataset['sips N'] = [x['optimal_params'][2] for x in results]
-        dataset['sips K error'] =[x['errors'][0] for x in results]
-        dataset['sips qsat error'] = [x['errors'][1] for x in results]
-        dataset['sips N error'] = [x['errors'][2] for x in results]
-        dataset['sips LSS'] = [x['LSS'] for x in results]
-
-    #--------------------------------------------------------------------------
-    def FREUNDLICH_results_adapter(self, dataset, results): 
-
-        dataset['freundlich K'] = [x['optimal_params'][0] for x in results]        
-        dataset['freundlich N'] = [x['optimal_params'][1] for x in results]
-        dataset['freundlich K error'] =[x['errors'][0] for x in results]       
-        dataset['freundlich N error'] = [x['errors'][1] for x in results]  
-        dataset['freundlich LSS'] = [x['LSS'] for x in results]    
+            arguments = v[0]['arguments'] 
+            optimals = [item['optimal_params'] for item in v]
+            errors =  [item['errors'] for item in v]
+            LSS = [item['LSS'] for item in v]
+            for i, arg in enumerate(arguments):
+                dataset[f'{k} {arg}'] = [x[i] for x in optimals]
+                dataset[f'{k} {arg} error'] = [x[i] for x in errors]
+            dataset[f'{k} LSS'] = LSS
+          
+        return dataset   
    
 
     #--------------------------------------------------------------------------
