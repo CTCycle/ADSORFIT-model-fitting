@@ -12,7 +12,8 @@ The installation process is designed for simplicity, using .bat scripts to autom
 
 ## 3. How to use
 
-**Prepare Your Data**: ensure your adsorption isotherm data is in the `ADSORFIT/resources/adsorption_data.csv` file, keeping the header intact to avoid processing errors. The CSV should include columns for experiment, temperature, pressure [Pa], and uptake [mol/g]. Here is a brief summary of the dataset columns:
+### Prepare Your Data
+Ensure your adsorption isotherm data is in the `resources/adsorption_data.csv` file, keeping the header intact to avoid processing errors. The CSV should include columns for experiment, temperature, pressure [Pa], and uptake [mol/g]. Here is a brief summary of the dataset columns:
 
 - `experiment:` ID or name of the experiment used to group data based on individual experiments
 - `temperature:` This denotes the temperature of the adsorption isotherm, measured in Kelvin
@@ -22,16 +23,20 @@ The installation process is designed for simplicity, using .bat scripts to autom
 ### Configurations
 For customization, you can modify the main script parameters via the `ADSORFIT/commons/configurations.py` file. 
 
-| Category            | Setting          | Description                                                     |
-|-------------------- |------------------|-----------------------------------------------------------------|
-| **Model settings**  | LANGMUIR_GUESS   | Initial guess values for Langmuir adsorption model parameters   |
-|                     | LANGMUIR_MAX     | Max value of Langmuir adsorption model parameters               |
-|                     | SIPS_GUESS       | Initial guess values for Sips adsorption model parameters       |
-|                     | SIPS_MAX         | Max value of Sips adsorption model parameters                   |
-|                     | FREUNDLICH_GUESS | Initial guess values for Freundlich adsorption model parameters |
-|                     | FREUNDLICH_MAX   | Max value of Freundlich adsorption model parameters             |
-| **Fitter settings** | SEED             | Global random seed                                              |
-|                     | MAX_ITERATIONS   | Max number of fitting iterations                                | 
+#### Model settings  
+Each model can be configured using the following settings, where you can set a value for all model parameters.
+
+| Setting          | Description                                                     |
+|------------------|-----------------------------------------------------------------|
+| MODEL_INITIAL    | Initial guess values for Langmuir adsorption model parameters   |
+| MODEL_MIN        | Minimun value of Langmuir adsorption model parameters           |
+| MODEL_MAX        | Initial guess values for Sips adsorption model parameters       |
+
+#### Fit settings
+
+| SEED             | Global random seed                                              |
+| MAX_ITERATIONS   | Max number of fitting iterations                                |
+| SELECTED_MODELS  | Currently selected model for fitting                            |
 
 ## License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.
