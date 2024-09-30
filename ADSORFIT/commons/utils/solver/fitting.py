@@ -61,8 +61,8 @@ class DataFit:
             
             try:
                 optimal_params, covariance = curve_fit(model, X, Y, p0=p0_values, bounds=boundaries,
-                                                    full_output=False, maxfev=max_iterations, 
-                                                    check_finite=True, absolute_sigma=False)
+                                                       full_output=False, maxfev=max_iterations, 
+                                                       check_finite=True, absolute_sigma=False)
                 
                 # Calculate LSS comparing predicted vs true value 
                 predicted_Y = model(X, *optimal_params)                
