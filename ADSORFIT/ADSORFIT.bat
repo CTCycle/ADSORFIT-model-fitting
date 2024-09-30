@@ -141,7 +141,7 @@ pause
 goto :setup_menu
 
 :eggs
-call conda activate ADSORFIT && cd .. && pip install -e . --use-pep517
+call conda activate %env_name% && cd .. && pip install -e . --use-pep517
 goto :setup_menu
 
 :logs
