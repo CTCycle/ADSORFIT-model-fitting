@@ -39,7 +39,7 @@ This folder is where the data is stored. Ensure your adsorption isotherm data is
 ### 4. Configurations
 For customization, you can modify the main configuration parameters using `settings/app_configurations.json` 
 
-#### Model settings  
+#### Model configuration  
 Each model can be configured using the following settings, where you can set a value for all model parameters.
 
 | Setting          | Description                                                     |
@@ -48,11 +48,13 @@ Each model can be configured using the following settings, where you can set a v
 | MODEL_MIN        | Minimun value of Langmuir adsorption model parameters           |
 | MODEL_MAX        | Maximum value of Langmuir adsorption model parameters           |
 
-#### Fit settings
+#### Solver configuration
 
-| SEED             | Global random seed                                              |
-| MAX_ITERATIONS   | Max number of fitting iterations                                |
-| SELECTED_MODELS  | Currently selected model for fitting                            |
+| Parameter          | Description                                              |
+|--------------------|----------------------------------------------------------|
+| SEED               | Global random seed                                       |
+| MAX_ITERATIONS     | Max number of fitting iterations                         |
+| SELECTED_MODELS    | Currently selected model for fitting                     |
 
 ## 5. License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.
