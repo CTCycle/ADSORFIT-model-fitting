@@ -10,8 +10,7 @@ set settings_file=settings/launcher_configurations.ini
 for /f "tokens=1,2 delims==" %%a in (%settings_file%) do (
     set key=%%a
     set value=%%b
-    if not "!key:~0,1!"=="[" (        
-        if "!key!"=="skip_CUDA_check" set skip_CUDA_check=!value!
+    if not "!key:~0,1!"=="[" (                
         if "!key!"=="use_custom_environment" set use_custom_environment=!value!
         if "!key!"=="custom_env_name" set custom_env_name=!value!
     )
