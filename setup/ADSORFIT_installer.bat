@@ -2,7 +2,7 @@
 
 :: [CHECK CUSTOM ENVIRONMENTS] 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Check if FEXT environment is available or use custom environment
+:: Check if ADSORFIT environment is available or use custom environment
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 call conda config --add channels conda-forge
 call conda info --envs | findstr "ADSORFIT"
@@ -53,5 +53,5 @@ echo List of installed dependencies:
 call conda list
 
 echo.
-echo Installation complete. You can now run FEXT on this system!
+echo Installation complete. You can now run ADSORFIT on this system!
 pause
