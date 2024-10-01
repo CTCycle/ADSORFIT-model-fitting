@@ -1,8 +1,8 @@
 @echo off
 
-:: [INSTALL DEPENDENCIES] 
+:: [CHECK CUSTOM ENVIRONMENTS] 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Check if NVIDIA GPU is available using nvidia-smi
+:: Check if FEXT environment is available or use custom environment
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 call conda config --add channels conda-forge
 call conda info --envs | findstr "ADSORFIT"
@@ -20,7 +20,7 @@ if %ERRORLEVEL%==0 (
 
 :: [INSTALL DEPENDENCIES] 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Check if NVIDIA GPU is available using nvidia-smi
+:: Install dependencies to python environment
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :dependencies
 echo.
@@ -30,14 +30,14 @@ call pip install scikit-learn==1.5.1
 
 :: [INSTALL PROJECT IN EDITABLE MODE] 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Check if NVIDIA GPU is available using nvidia-smi
+:: Install project in developer mode
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 echo Install utils packages in editable mode
-call cd .. && pip install -e . --use-pep517
+call cd .. && pip install -e . --use-pep517 && cd ADSORFIT
 
 :: [CLEAN CACHE] 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Check if NVIDIA GPU is available using nvidia-smi
+:: Clean packages cache
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 echo.
 echo Cleaning conda and pip cache 
@@ -46,12 +46,12 @@ call pip cache purge
 
 :: [SHOW LIST OF INSTALLED DEPENDENCIES]
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Check if NVIDIA GPU is available using nvidia-smi
+:: Show installed dependencies
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: 
 echo.
 echo List of installed dependencies:
 call conda list
 
 echo.
-echo Installation complete. You can now run ADSORFIT on this system!
+echo Installation complete. You can now run FEXT on this system!
 pause

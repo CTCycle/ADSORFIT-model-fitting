@@ -56,13 +56,13 @@ for /f "skip=2 tokens=1*" %%a in ('conda env list') do (
 :env_found
 if "%env_exists%"=="true" (
     echo Python environment '%env_name%' detected.
-    goto :cudacheck
+    goto :main_menu
 ) else (
     if /i "%env_name%"=="ADSORFIT" (
         echo Running first-time installation for ADSORFIT. Please wait until completion and do not close the console!
         call "%~dp0\..\setup\ADSORFIT_installer.bat"
         set "custom_env_name=ADSORFIT"
-        goto :cudacheck
+        goto :main_menu
     ) else (
         echo Selected custom environment '%custom_env_name%' does not exist.
         echo Please select a valid environment or set use_custom_environment=false.
@@ -72,30 +72,12 @@ if "%env_exists%"=="true" (
 )
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Check if NVIDIA GPU is available using nvidia-smi
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:cudacheck
-if /i "%skip_CUDA_check%"=="true" (
-    goto :main_menu
-) else (
-    nvidia-smi >nul 2>&1
-    if %ERRORLEVEL%==0 (
-        echo NVIDIA GPU detected. Checking CUDA version...
-        nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
-        goto :main_menu
-    ) else (
-        echo No NVIDIA GPU detected or NVIDIA drivers are not installed.
-        goto :main_menu
-    )
-)
-
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :: Show main menu
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :main_menu
 echo.
 echo =======================================
-echo           ADSORFIT 
+echo                ADSORFIT 
 echo =======================================
 echo 1. Run ADSORFIT
 echo 2. ADSORFIT setup
@@ -111,7 +93,7 @@ pause
 goto :main_menu
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Run data analysis
+:: Run main application
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :main
 cls
@@ -141,10 +123,11 @@ pause
 goto :setup_menu
 
 :eggs
-call conda activate %env_name% && cd .. && pip install -e . --use-pep517
+call conda activate %env_name% && cd .. && pip install -e . --use-pep517 && cd ADSORFIT
 goto :setup_menu
 
 :logs
 cd /d "%~dp0..\ADSORFIT\resources\logs"
 del *.log /q
+cd ADSORFIT
 goto :setup_menu
