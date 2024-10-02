@@ -106,7 +106,7 @@ goto :main_menu
 :setup_menu
 cls
 echo =======================================
-echo           ADSORFIT setup
+echo            ADSORFIT setup
 echo =======================================
 echo 1. Install project dependencies
 echo 2. Remove logs
@@ -123,10 +123,12 @@ goto :setup_menu
 
 :eggs
 call conda activate %env_name% && cd .. && pip install -e . --use-pep517 && cd ADSORFIT
+pause
 goto :setup_menu
 
 :logs
 cd /d "%~dp0..\ADSORFIT\resources\logs"
 del *.log /q
-cd ADSORFIT
+cd ..\..
+pause
 goto :setup_menu
