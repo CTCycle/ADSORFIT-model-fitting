@@ -36,6 +36,10 @@ This folder is where the data is stored. Ensure your adsorption isotherm data is
 - `pressure [Pa]:` These are the pressure points of the adsorption isotherm, measured in Pascal
 - `uptake [mol/g]` This column contains the uptake measurements of the adsorption isotherm, expressed in mol/g
 
+- **best fit:** collects the best fitting results of with different models
+
+- **logs:** the application logs are saved within this folder
+
 ### 4. Configurations
 For customization, you can modify the main configuration parameters using `settings/app_configurations.json` 
 
