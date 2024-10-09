@@ -3,7 +3,6 @@ import gradio as gr
 from tqdm import tqdm
 tqdm.pandas()
 
-from ADSORFIT.commons.utils.app.backend import process_source_file
 from ADSORFIT.commons.constants import CONFIG, DATA_PATH
 from ADSORFIT.commons.logger import logger
 
@@ -15,28 +14,40 @@ class SourceFileWidgets:
         pass
 
     #--------------------------------------------------------------------------
-    def columns_selection(self):
+    def update_process_data_button_state(self, X_value, Y_value, T_value, exp_value):
+        
+        if X_value and Y_value and T_value and exp_value:
+            return gr.update(interactive=True) 
+        else:
+            return gr.update(interactive=False)
+
+    #--------------------------------------------------------------------------
+    def columns_selection_dropdown(self):
 
         with gr.Row():
-            with gr.Column():
-                X_col_dropdown = gr.Dropdown(label="Select X Column", choices=[], interactive=True)
-            with gr.Column():
-                Y_col_dropdown = gr.Dropdown(label="Select Y Column", choices=[], interactive=True)
-            with gr.Column():
-                exp_col_dropdown = gr.Dropdown(label="Select Experiment Column", choices=[], interactive=True)
+            with gr.Column(scale=1, min_width=50):  
+                process_button = gr.Button("Process data", interactive=False)
+            with gr.Column(scale=1, min_width=100):  
+                P_col_select = gr.Dropdown(label="Pressure data", choices=[], interactive=True)
+            with gr.Column(scale=1, min_width=100):  
+                Q_col_select = gr.Dropdown(label="Uptake data", choices=[], interactive=True)
+            with gr.Column(scale=1, min_width=100):  
+                temp_col_dd = gr.Dropdown(label="Temperature", choices=[], interactive=True)
+            with gr.Column(scale=1, min_width=100):  
+                exp_col_select = gr.Dropdown(label="Experiments", choices=[], interactive=True)
 
-        return X_col_dropdown, Y_col_dropdown, exp_col_dropdown
+        return process_button, P_col_select, Q_col_select, temp_col_dd, exp_col_select
 
     #--------------------------------------------------------------------------
     def file_browser(self):
 
         with gr.Row():
             with gr.Column():
-                file_browser = gr.File(label="Select source CSV File", type="filepath", file_types=[".csv"])
-                print(file_browser)
+                file_browser = gr.File(label="Select source CSV File", type="filepath", file_types=[".csv"])                
             with gr.Column():
                 text_display = gr.Textbox(label="File Content", placeholder="File statistics will appear here", 
-                                        lines=10, interactive=False) 
+                                          lines=10, interactive=False)           
+        
         
         return file_browser, text_display
 
