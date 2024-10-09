@@ -9,9 +9,9 @@ from ADSORFIT.commons.logger import logger
 ###############################################################################
 class AdsorptionModels:
 
-    def __init__(self):
-        self.model_names = ['LANGMUIR', 'SIPS', 'FREUNDLICH'] 
-        logger.debug(f'Currently selected models: {CONFIG["SELECTED_MODELS"]}')        
+    def __init__(self, selected_models):
+
+        self.selected_models = selected_models
             
     #--------------------------------------------------------------------------
     def Langmuir_model(self, P, k, qsat):        

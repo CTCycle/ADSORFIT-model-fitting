@@ -13,7 +13,7 @@ class DatasetAdapter:
 
     def __init__(self, fitting_results : dict):
 
-        self.selected_models = CONFIG["SELECTED_MODELS"]        
+        self.selected_models = CONFIG['SELECTED_MODELS']        
         self.fitting_results = fitting_results
 
     #--------------------------------------------------------------------------

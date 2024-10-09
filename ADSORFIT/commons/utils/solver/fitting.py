@@ -17,7 +17,7 @@ class DataFit:
 
     def __init__(self):
         self.collection = AdsorptionModels()        
-        self.selected_models = CONFIG["SELECTED_MODELS"]        
+        self.selected_models = CONFIG['SELECTED_MODELS']        
 
     #--------------------------------------------------------------------------
     def single_experiment_fit(self, X, Y):
@@ -41,9 +41,9 @@ class DataFit:
         
         '''
         self.collection = AdsorptionModels()
-        all_parameters = CONFIG["MODELS"]        
-        model_parameters = {k : v for k, v in all_parameters.items() if k in CONFIG["SELECTED_MODELS"]}
-        max_iterations = CONFIG["MAX_ITERATIONS"] 
+        all_parameters = CONFIG['MODELS']        
+        model_parameters = {k : v for k, v in all_parameters.items() if k in CONFIG['SELECTED_MODELS']}
+        max_iterations = CONFIG['MAX_ITERATIONS'] 
 
         results = {}        
         for name, conf in model_parameters.items():

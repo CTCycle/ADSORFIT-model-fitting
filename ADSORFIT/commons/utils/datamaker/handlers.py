@@ -45,15 +45,22 @@ class SourceFileHandling:
         
     
     #--------------------------------------------------------------------------
-    def process_source_file(self, P_col, Q_col, T_col, exp_col, dataset):
+    def process_source_file(self, P_col, Q_col, T_col, exp_col, dataset):      
+
+        processed_data = drop_negative_values(P_col, Q_col, T_col, dataset) 
+        raw_measurements_count = dataset.shape[0]
+        processed_measurements_count = processed_data.shape[0]
+
+        processed_data = aggregate_by_experiment(P_col, Q_col, T_col, exp_col, processed_data)
+        processed_data = calculate_boundary_values(P_col, Q_col, processed_data)
+        experiments_count = processed_data.shape[0]        
+
+        statistics = ('Source data summary:\n'
+                      f'- Raw measurements count: {raw_measurements_count}\n'
+                      f'- Processed measurements count: {processed_measurements_count}\n'
+                      f'- Number of unique experiments: {experiments_count}')
         
-        dataset = drop_negative_values(P_col, Q_col, T_col, dataset)
-        dataset = aggregate_by_experiment(P_col, Q_col, T_col, exp_col, dataset)
-        dataset = calculate_boundary_values(P_col, Q_col, dataset)
-
-        statistics = 'Ciao'
-
-        return dataset, statistics
+        return processed_data, statistics
         
 
 
@@ -80,10 +87,10 @@ class SourceFileHandling:
 #     result = {}
 #     for model, params in models_dict.items():
 #         result[model] = {
-#             "description": f"{model} model fitting parameters",
-#             "initial": params["initial"],
-#             "min": params["min"],
-#             "max": params["max"]}
+#             'description': f'{model} model fitting parameters',
+#             'initial': params['initial'],
+#             'min': params['min'],
+#             'max': params['max']}
         
 #     return result
 

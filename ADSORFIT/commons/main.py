@@ -13,9 +13,9 @@ from ADSORFIT.commons.logger import logger
 # Main window
 ###############################################################################
 with gr.Blocks() as demo:
-    with gr.Tab("Solver"):
-        solver_tab()
-    with gr.Tab("Models"):
+    with gr.Tab('Solver'):
+        solver_UI = solver_tab()
+    with gr.Tab('Models'):
         models_tab(CONFIG['MODELS'])
 
 # Launch the app

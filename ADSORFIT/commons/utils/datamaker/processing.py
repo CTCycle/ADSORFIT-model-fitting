@@ -8,7 +8,8 @@ from ADSORFIT.commons.logger import logger
 
 
 ###############################################################################
-def drop_negative_values(P_col, Q_col, T_col, dataset : pd.DataFrame):  
+def drop_negative_values(P_col, Q_col, T_col, dataset : pd.DataFrame): 
+     
     dataset = dataset[dataset[T_col].astype(int) > 0]
     dataset = dataset[dataset[P_col].astype(int) >= 0]
     dataset = dataset[dataset[Q_col].astype(int) >= 0]

@@ -26,15 +26,15 @@ class SourceFileWidgets:
 
         with gr.Row():
             with gr.Column(scale=1, min_width=50):  
-                process_button = gr.Button("Process data", interactive=False)
+                process_button = gr.Button('Process data', interactive=False)
             with gr.Column(scale=1, min_width=100):  
-                P_col_select = gr.Dropdown(label="Pressure data", choices=[], interactive=True)
+                P_col_select = gr.Dropdown(label='Pressure data', choices=[], interactive=True)
             with gr.Column(scale=1, min_width=100):  
-                Q_col_select = gr.Dropdown(label="Uptake data", choices=[], interactive=True)
+                Q_col_select = gr.Dropdown(label='Uptake data', choices=[], interactive=True)
             with gr.Column(scale=1, min_width=100):  
-                temp_col_dd = gr.Dropdown(label="Temperature", choices=[], interactive=True)
+                temp_col_dd = gr.Dropdown(label='Temperature', choices=[], interactive=True)
             with gr.Column(scale=1, min_width=100):  
-                exp_col_select = gr.Dropdown(label="Experiments", choices=[], interactive=True)
+                exp_col_select = gr.Dropdown(label='Experiments', choices=[], interactive=True)
 
         return process_button, P_col_select, Q_col_select, temp_col_dd, exp_col_select
 
@@ -43,10 +43,10 @@ class SourceFileWidgets:
 
         with gr.Row():
             with gr.Column():
-                file_browser = gr.File(label="Select source CSV File", type="filepath", file_types=[".csv"])                
+                file_browser = gr.File(label='Select source CSV File', type='filepath', file_types=['.csv'])                
             with gr.Column():
-                text_display = gr.Textbox(label="File Content", placeholder="File statistics will appear here", 
-                                          lines=10, interactive=False)           
+                text_display = gr.Textbox(label='File Content', placeholder='File statistics will appear here', 
+                                          lines=8, interactive=False)           
         
         
         return file_browser, text_display
@@ -66,17 +66,17 @@ class ModelSelectionWidgets:
             for model, params in self.models_json.items(): 
 
                 if model_selectors:
-                    gr.HTML("<hr>")  
+                    gr.HTML('<hr>')  
 
                 with gr.Row():
-                    selected = gr.Checkbox(label=f"Use {model}", value=True)                    
+                    selected = gr.Checkbox(label=f'Use {model}', value=True)                    
 
                     with gr.Column():                    
-                        initial_inputs = {k: gr.Number(label=f"Initial {k}", value=v) for k, v in params["initial"].items()}                
+                        initial_inputs = {k: gr.Number(label=f'Initial {k}', value=v) for k, v in params['initial'].items()}                
                     with gr.Column():                    
-                        min_inputs = {k: gr.Number(label=f"Min {k}", value=v) for k, v in params["min"].items()}
+                        min_inputs = {k: gr.Number(label=f'Min {k}', value=v) for k, v in params['min'].items()}
                     with gr.Column(): 
-                        max_inputs = {k: gr.Number(label=f"Max {k}", value=v) for k, v in params["max"].items()}
+                        max_inputs = {k: gr.Number(label=f'Max {k}', value=v) for k, v in params['max'].items()}
                     
                     model_selectors.append((selected, initial_inputs, min_inputs, max_inputs))
 
@@ -84,13 +84,30 @@ class ModelSelectionWidgets:
 
   
 ###############################################################################
-def solver_parameters_widget():
+class SolverParametersWidgets:
 
-    with gr.Row():
-        with gr.Column():
-            iterations = gr.Number(label="Number of Iterations", value=100)
-            seed = gr.Number(label="Random Seed", value=42)
-        with gr.Column():
-            run_button = gr.Button("Run Fitting")
+    def __init__(self, seed, max_iterations):
 
-    return iterations, seed, run_button
+        self.seed = seed
+        self.max_iterations = max_iterations
+
+    #--------------------------------------------------------------------------
+    def update_fitting_button_state(self, processed_data):
+        
+        if processed_data is not None:
+            return gr.update(interactive=True) 
+        else:
+            return gr.update(interactive=False)
+
+    #--------------------------------------------------------------------------
+    def solver_parametrizer(self):
+
+        with gr.Row():
+            with gr.Column():
+                iterations = gr.Number(label='Number of Iterations', value=self.max_iterations, 
+                                       interactive=True)
+                seed = gr.Number(label='Random Seed', value=self.seed, interactive=True)
+            with gr.Column():
+                run_button = gr.Button('Run Fitting', interactive=False)
+
+        return iterations, seed, run_button 
