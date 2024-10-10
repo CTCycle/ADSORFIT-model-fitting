@@ -46,8 +46,7 @@ class SourceFileWidgets:
                 file_browser = gr.File(label='Select source CSV File', type='filepath', file_types=['.csv'])                
             with gr.Column():
                 text_display = gr.Textbox(label='File Content', placeholder='File statistics will appear here', 
-                                          lines=8, interactive=False)           
-        
+                                          lines=8, interactive=False)         
         
         return file_browser, text_display
 
@@ -55,34 +54,64 @@ class SourceFileWidgets:
 ###############################################################################
 class ModelSelectionWidgets:
 
-    def __init__(self, models_json : dict):
-
+    def __init__(self, models_json: dict):
         self.models_json = models_json
 
+    #--------------------------------------------------------------------------    
+    def update_selected_models(self, selected_models, model_name, selected, 
+                           initial_inputs_values, min_inputs_values, max_inputs_values):
+
+        if selected:
+            # Update the selected models with the current values of the inputs
+            selected_models[model_name] = {
+                'initial': initial_inputs_values,
+                'min': min_inputs_values,
+                'max': max_inputs_values
+            }
+        else:
+            # If the model is deselected, remove it from the selected models
+            if model_name in selected_models:
+                del selected_models[model_name]
+
+        return gr.update(value=selected_models)    
+
     #--------------------------------------------------------------------------
-    def models_selector(self, model_selectors : list):
+    def models_selector(self, selected_models):
+        
+        
+        for model, params in self.models_json.items():
+            # Store parameter values for later updates
+            initial_inputs_values = {k: v for k, v in params['initial'].items()}
+            min_inputs_values = {k: v for k, v in params['min'].items()}
+            max_inputs_values = {k: v for k, v in params['max'].items()}
+            
+            with gr.Row():
+                with gr.Column(scale=1, min_width=40):
+                    # Checkbox for selecting/deselecting the model
+                    is_selected = gr.Checkbox(label=f'Use {model}', value=True)
+                with gr.Column(scale=1, min_width=50):
+                    # Inputs for initial, min, and max parameter values
+                    initial_inputs = {k: gr.Number(label=f'Initial {k}', value=v) for k, v in params['initial'].items()}
+                with gr.Column(scale=1, min_width=50):
+                    min_inputs = {k: gr.Number(label=f'Min {k}', value=v) for k, v in params['min'].items()}
+                with gr.Column(scale=1, min_width=50):
+                    max_inputs = {k: gr.Number(label=f'Max {k}', value=v) for k, v in params['max'].items()}
+                
+                # Add line break between models
+                gr.HTML('<hr>')
 
-        with gr.Column():
-            for model, params in self.models_json.items(): 
+                # Set up change events for individual inputs and the selection checkbox
+                is_selected.change(
+                    fn=self.update_selected_models,
+                    inputs=[selected_models, gr.State(model), is_selected, 
+                            gr.State(initial_inputs_values), gr.State(min_inputs_values),
+                            gr.State(max_inputs_values)],
+                    outputs=selected_models)
 
-                if model_selectors:
-                    gr.HTML('<hr>')  
+        return selected_models
 
-                with gr.Row():
-                    selected = gr.Checkbox(label=f'Use {model}', value=True)                    
 
-                    with gr.Column():                    
-                        initial_inputs = {k: gr.Number(label=f'Initial {k}', value=v) for k, v in params['initial'].items()}                
-                    with gr.Column():                    
-                        min_inputs = {k: gr.Number(label=f'Min {k}', value=v) for k, v in params['min'].items()}
-                    with gr.Column(): 
-                        max_inputs = {k: gr.Number(label=f'Max {k}', value=v) for k, v in params['max'].items()}
-                    
-                    model_selectors.append((selected, initial_inputs, min_inputs, max_inputs))
-
-        return model_selectors
-
-  
+    
 ###############################################################################
 class SolverParametersWidgets:
 
@@ -108,6 +137,7 @@ class SolverParametersWidgets:
                                        interactive=True)
                 seed = gr.Number(label='Random Seed', value=self.seed, interactive=True)
             with gr.Column():
+                get_model_button = gr.Button('Update model references', interactive=True)
                 run_button = gr.Button('Run Fitting', interactive=False)
 
-        return iterations, seed, run_button 
+        return iterations, seed, get_model_button, run_button 

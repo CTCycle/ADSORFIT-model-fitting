@@ -13,10 +13,12 @@ from ADSORFIT.commons.logger import logger
 # Main window
 ###############################################################################
 with gr.Blocks() as demo:
+    
+    selected_models = gr.State([])
     with gr.Tab('Solver'):
-        solver_UI = solver_tab()
+        solver_UI = solver_tab(selected_models)
     with gr.Tab('Models'):
-        models_tab(CONFIG['MODELS'])
+        models_selection = models_tab(CONFIG['MODELS'], selected_models)
 
 # Launch the app
 ###############################################################################

@@ -5,13 +5,19 @@ from ADSORFIT.commons.constants import CONFIG, DATA_PATH
 from ADSORFIT.commons.logger import logger
 
 
+###############################################################################
+def get_models_snapshot():
+    pass
+
+
+
 # [ADSORPTION MODELS]
 ###############################################################################
 class AdsorptionModels:
 
-    def __init__(self, selected_models):
+    def __init__(self):
 
-        self.selected_models = selected_models
+        pass        
             
     #--------------------------------------------------------------------------
     def Langmuir_model(self, P, k, qsat):        
