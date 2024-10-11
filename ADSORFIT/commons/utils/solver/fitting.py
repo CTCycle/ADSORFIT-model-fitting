@@ -10,17 +10,46 @@ from ADSORFIT.commons.constants import CONFIG
 from ADSORFIT.commons.logger import logger
 
 
+
+
+###############################################################################
+def run_solver(data, P_col, Q_col, selected_models, max_iterations, seed):     
+
+    fitter = AdsorptionDataFitting(selected_models)
+    fitting_results = fitter.fit_all_data(P_col, Q_col, max_iterations, data)
+    logger.info(f'Fitting completed with {max_iterations} iterations and seed = {seed}.')
+
+    return fitting_results
+
+
+# # Function to return model settings for Tab 2
+# ###############################################################################
+# def show_model_settings(models_dict):
+#     result = {}
+#     for model, params in models_dict.items():
+#         result[model] = {
+#             'description': f'{model} model fitting parameters',
+#             'initial': params['initial'],
+#             'min': params['min'],
+#             'max': params['max']}
+        
+#     return result
+
+
+    
+
+
 # [FITTING FUNCTION]
 ###############################################################################
-class DataFit:
+class AdsorptionDataFitting:
 
 
-    def __init__(self):
-        self.collection = AdsorptionModels()        
-        self.selected_models = CONFIG["SELECTED_MODELS"]        
+    def __init__(self):  
+        self.adsorption_models = AdsorptionModels()            
+          
 
     #--------------------------------------------------------------------------
-    def single_experiment_fit(self, X, Y):
+    def single_experiment_fit(self, X, Y, selected_models, max_iterations):
 
         '''
         Fits adsorption model functions to provided data using non-linear least squares optimization.
@@ -39,16 +68,14 @@ class DataFit:
                             includes optimal parameters ('optimal_params'), covariance matrix ('covariance'),
                             parameter estimation errors ('errors'), and the sum of squared residuals ('LSS'). 
         
-        '''
-        self.collection = AdsorptionModels()
-        all_parameters = CONFIG["MODELS"]        
-        model_parameters = {k : v for k, v in all_parameters.items() if k in CONFIG["SELECTED_MODELS"]}
-        max_iterations = CONFIG["MAX_ITERATIONS"] 
-
+        '''        
+        
+        model_parameters = {k : v for k, v in self.selected_models.items()}
+        
         results = {}        
         for name, conf in model_parameters.items():
             # get the model based on name indexing            
-            model = self.collection.get_model(name) 
+            model = self.adsorption_models.get_model(name) 
             # get the model function signature to retrieve its arguments
             signature = inspect.signature(model)            
             fn_parameters = [name for name in signature.parameters.keys()][1:]
@@ -89,16 +116,16 @@ class DataFit:
         return results 
     
     #--------------------------------------------------------------------------
-    def fit_all_data(self, dataset : pd.DataFrame):
+    def fit_all_data(self, P_col, Q_col, selected_models, max_iterations, dataset : pd.DataFrame):
 
-        pressures = [np.array(x) for x in dataset['pressure [Pa]'].to_list()]
-        uptakes = [np.array(x) for x in dataset['uptake [mol/g]'].to_list()]       
-
+        pressures = [np.array(x) for x in dataset[P_col].to_list()]
+        uptakes = [np.array(x) for x in dataset[Q_col].to_list()]  
         # fitting adsorption isotherm data with theoretical models  
-        results_dictionary = {k : [] for k in self.selected_models}
+        results_dictionary = {k : [] for k in selected_models}
+        logger.debug(f'About to perform data fitting with following models: {selected_models}')
         for x, y in zip(tqdm(pressures), uptakes):
-            results = self.single_experiment_fit(x, y)
-            for model in self.selected_models:
+            results = self.single_experiment_fit(x, y, max_iterations)
+            for model in selected_models:
                 results_dictionary[model].append(results[model])
         
         return results_dictionary

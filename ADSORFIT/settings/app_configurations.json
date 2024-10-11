@@ -1,8 +1,6 @@
 {   
     "SEED": 42,
     "MAX_ITERATIONS": 4000,
-    "SELECTED_MODELS": ["LANGMUIR", "SIPS", "FREUNDLICH"],
-
     "MODELS": {            
         "LANGMUIR": {"initial": {"K": 0.000001, "qsat": 1.0},
                       "min": {"K": 0.0, "qsat": 0.0},

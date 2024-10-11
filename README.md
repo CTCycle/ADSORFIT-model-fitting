@@ -10,7 +10,7 @@ After setting up Anaconda/Miniconda, the installation script will install all th
 
 **Important:** After installation, if the project folder is moved or its path is changed, the application will no longer function correctly. To fix this, you can either:
 
-- Open the main menu, select "ADSORFIT setup," and choose "Install project packages"
+- Open the main menu, select 'ADSORFIT setup,' and choose 'Install project packages'
 - Manually run the following commands in the terminal, ensuring the project folder is set as the current working directory (CWD):
 
     `conda activate ADSORFIT`
