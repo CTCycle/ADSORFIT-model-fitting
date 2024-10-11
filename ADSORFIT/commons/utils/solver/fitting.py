@@ -12,7 +12,7 @@ from ADSORFIT.commons.logger import logger
 
 # [FITTING FUNCTION]
 ###############################################################################
-class DataFit:
+class DatasetSolver:
 
 
     def __init__(self):

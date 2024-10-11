@@ -64,7 +64,7 @@ class DataPreProcess:
 
 # [DATASET OPERATIONS]
 ###############################################################################
-class DataSetAdapter:
+class DatasetAdapter:
 
     def __init__(self, fitting_results : dict):
 

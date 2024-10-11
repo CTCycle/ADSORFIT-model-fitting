@@ -1,7 +1,7 @@
 {   
     "SEED": 42,
     "MAX_ITERATIONS": 4000,
-    "SELECTED_MODELS": ["LANGMUIR", "SIPS", "FREUNDLICH"],
+    "SELECTED_MODELS": ["LANGMUIR", "SIPS", "FREUNDLICH", "TEMKIN"],
 
     "MODELS": {            
         "LANGMUIR": {"initial": {"K": 0.000001, "qsat": 1.0},
@@ -14,6 +14,11 @@
                   
         "FREUNDLICH": {"initial": {"K": 0.000001, "qsat": 1.0},
                        "min": {"K": 0.0, "qsat": 0.0},
-                       "max": {"K": 100.0, "qsat": 100.0}}
+                       "max": {"K": 100.0, "qsat": 100.0}},
+
+        "TEMKIN": {"initial": {"K": 0.000001, "B": 1.0},
+                   "min": {"K": 0.0, "B": 0.0},
+                   "max": {"K": 100.0, "B": 100.0}
         }
-  }
+    }
+}
