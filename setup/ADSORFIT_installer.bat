@@ -25,7 +25,7 @@ if %ERRORLEVEL%==0 (
 :dependencies
 echo.
 echo Install python libraries and packages
-call pip install numpy==1.26.4 pandas==2.1.4 openpyxl==3.1.5 tqdm==4.66.4 scikit-learn==1.5.1
+call pip install numpy==2.1.2 pandas==2.2.3 tqdm==4.66.4 scikit-learn==1.5.2
 call pip install ipykernel==6.29.5
 
 :: [INSTALL PROJECT IN EDITABLE MODE] 
