@@ -96,7 +96,7 @@ goto :main_menu
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :main
 cls
-call conda activate %env_name% && python .\commons\main.py
+call conda activate %env_name% && python .\fitting\adsorption_models_fitting.py
 pause
 goto :main_menu
 
@@ -108,7 +108,7 @@ cls
 echo =======================================
 echo            ADSORFIT setup
 echo =======================================
-echo 1. Install project dependencies
+echo 1. Install project into environment
 echo 2. Remove logs
 echo 3. Back to main menu
 echo.

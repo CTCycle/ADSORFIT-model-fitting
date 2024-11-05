@@ -15,12 +15,13 @@ from ADSORFIT.commons.logger import logger
 class DatasetSolver:
 
 
-    def __init__(self):
+    def __init__(self, configuration):
         self.collection = AdsorptionModels()        
-        self.selected_models = CONFIG["SELECTED_MODELS"]        
+        self.selected_models = [k for k, v in configuration["SELECTED_MODELS"].items() if v]   
+        self.configurations = configuration     
 
     #--------------------------------------------------------------------------
-    def single_experiment_fit(self, X, Y):
+    def single_experiment_fit(self, X, Y, exp_name):
 
         '''
         Fits adsorption model functions to provided data using non-linear least squares optimization.
@@ -39,11 +40,10 @@ class DatasetSolver:
                             includes optimal parameters ('optimal_params'), covariance matrix ('covariance'),
                             parameter estimation errors ('errors'), and the sum of squared residuals ('LSS'). 
         
-        '''
-        self.collection = AdsorptionModels()
-        all_parameters = CONFIG["MODELS"]        
-        model_parameters = {k : v for k, v in all_parameters.items() if k in CONFIG["SELECTED_MODELS"]}
-        max_iterations = CONFIG["MAX_ITERATIONS"] 
+        '''        
+        all_parameters = self.configurations["MODELS"]        
+        model_parameters = {k : v for k, v in all_parameters.items() if k in self.selected_models}
+        max_iterations = self.configurations["MAX_ITERATIONS"] 
 
         results = {}        
         for name, conf in model_parameters.items():
@@ -66,7 +66,7 @@ class DatasetSolver:
                 
                 # Calculate LSS comparing predicted vs true value 
                 predicted_Y = model(X, *optimal_params)                
-                lss = np.sum((Y - predicted_Y) ** 2)
+                lss = np.sum((Y - predicted_Y) ** 2, dtype=np.float32)
 
                 # Calculate errors from covariance                 
                 errors = np.sqrt(np.diag(covariance))
@@ -77,7 +77,7 @@ class DatasetSolver:
                                  'arguments' : fn_parameters}
                                 
             except Exception as e: 
-                logger.error(f'Could not fit data using {name} - Error: {e}')               
+                tqdm.write(f'Could not fit {exp_name} data using {name} - Error: {e}')               
                 nan_list = [np.nan for x in range(num_params)]
                 results[name] = {'optimal_params': nan_list, 
                                  'covariance': nan_list, 
@@ -89,15 +89,17 @@ class DatasetSolver:
         return results 
     
     #--------------------------------------------------------------------------
-    def fit_all_data(self, dataset : pd.DataFrame):
+    def bulk_data_fitting(self, dataset : pd.DataFrame, experiment_col, 
+                          pressure_col, uptake_col):
 
-        pressures = [np.array(x) for x in dataset['pressure [Pa]'].to_list()]
-        uptakes = [np.array(x) for x in dataset['uptake [mol/g]'].to_list()]       
+        experiments = dataset[experiment_col].to_list()
+        pressures = [np.array(x, dtype=np.float32) for x in dataset[pressure_col].to_list()]
+        uptakes = [np.array(x, dtype=np.float32) for x in dataset[uptake_col].to_list()]       
 
         # fitting adsorption isotherm data with theoretical models  
         results_dictionary = {k : [] for k in self.selected_models}
-        for x, y in zip(tqdm(pressures), uptakes):
-            results = self.single_experiment_fit(x, y)
+        for x, y, name in zip(tqdm(pressures), uptakes, experiments):
+            results = self.single_experiment_fit(x, y, name)
             for model in self.selected_models:
                 results_dictionary[model].append(results[model])
         

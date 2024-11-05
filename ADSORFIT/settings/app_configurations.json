@@ -1,7 +1,11 @@
-{   
-    "SEED": 42,
+{       
     "MAX_ITERATIONS": 4000,
-    "SELECTED_MODELS": ["LANGMUIR", "SIPS", "FREUNDLICH", "TEMKIN"],
+    "DETECT_COLUMNS" : true,
+
+    "SELECTED_MODELS": {"LANGMUIR" : true,
+                        "SIPS" : true,
+                        "FREUNDLICH" : true, 
+                        "TEMKIN": true},
 
     "MODELS": {            
         "LANGMUIR": {"initial": {"K": 0.000001, "qsat": 1.0},

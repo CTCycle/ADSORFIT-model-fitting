@@ -3,7 +3,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from ADSORFIT.commons.utils.datamaker.datasets import DataPreProcess, DatasetAdapter
+from ADSORFIT.commons.utils.datamaker.datasets import AdsorptionDataProcessing, DatasetAdapter
 from ADSORFIT.commons.utils.solver.fitting import DatasetSolver
 from ADSORFIT.commons.constants import CONFIG
 from ADSORFIT.commons.logger import logger
@@ -15,20 +15,20 @@ if __name__ == '__main__':
 
     # 1. # [LOAD AND CLEAN DATA]
     #--------------------------------------------------------------------------
-    processor = DataPreProcess()
-    dataset = processor.preprocess_dataset()    
-    logger.info(f'Number of experiments:   {processor.num_experiments}')
-    logger.info(f'Number of measurements:  {processor.num_measurements}')
-    logger.info(f'Average measurements by experiment: {processor.num_measurements/processor.num_experiments:.1f}')   
+    processor = AdsorptionDataProcessing(CONFIG)
+    dataset = processor.preprocess_dataset()       
    
     # 2. [PERFORM CURVE FITTING]
     #-------------------------------------------------------------------------- 
-    # fitting adsorption isotherm data with theoretical models       
-    fitter = DatasetSolver()   
-    fitting_results = fitter.fit_all_data(dataset)    
+    # fitting adsorption isotherm data with theoretical models, using the column
+    # references updated from the processor instance (either the hardcoded ones
+    # or those automatically detected)       
+    fitter = DatasetSolver(CONFIG)   
+    fitting_results = fitter.bulk_data_fitting(dataset, processor.experiment_col, 
+                                               processor.pressure_col, processor.uptake_col)    
 
     # extract data programmatically from the dictionaries and populate grouped dataframe     
-    adapter = DatasetAdapter(fitting_results)
+    adapter = DatasetAdapter(CONFIG, fitting_results)
     logger.info('Generating dataset with fitting results')
     fitting_dataset = adapter.adapt_results_to_dataset(dataset)
 

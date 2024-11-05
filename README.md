@@ -18,25 +18,30 @@ After setting up Anaconda/Miniconda, the installation script will install all th
     `pip install -e . --use-pep517` 
 
 ## 3. How to use
-On Windows, run `ADSORFIT.bat` to launch the main navigation menu and browse through the various options. Alternatively, you can launch the main app file running `python ADSORFIT/commons/main.py`.
+On Windows, run `ADSORFIT.bat` to launch the main navigation menu and browse through the various options. Alternatively, you can launch the main app file running `python ADSORFIT/fitting/adsorption_models_fitting.py`.
 
 ### 3.1 Navigation menu
 
-**1) Run ADSORFIT:** run the main application and start ADSORFIT
+**1) Run ADSORFIT:** run the main application and start ADSORFIT, running the selected model through the solver to fit available adsorption data. Here is an example of the console output during the fitting process:
 
-**2) ADSORFIT setup:** allows running some options command such as **install project packages** to run the developer model project installation, and **remove logs** to remove all logs saved in `resources/logs`. 
+![Console snapshot](docs/ADSORFIT_console.png)
 
-**3) Exit and close:** exit the program immediately
+
+**2) ADSORFIT setup:** allows running some options command such as **install project into environment** to run the developer model project installation, and **remove logs** to remove all logs saved in `resources/logs`. 
+
+**3) Exit and close**
 
 ### 3.2 Resources
-This folder is where the data is stored. Ensure your adsorption isotherm data is in the `resources/adsorption_data.csv` file, keeping the header intact to avoid processing errors. The CSV should include columns for experiment, temperature, pressure [Pa], and uptake [mol/g]. Here is a brief summary of the dataset columns:
+This is the folder where both the source data and the results are located. The adsorption data to be fitted must be provided as a csv file with name `resources/adsorption_data.csv`. If the option to automatically detect columns is selected, ADSORFIT will identify target columns based on string pattern matching (anything resembling these keywords will identify the corresponding column):
 
-- `experiment:` ID or name of the experiment used to group data based on individual experiments
-- `temperature:` This denotes the temperature of the adsorption isotherm, measured in Kelvin
-- `pressure [Pa]:` These are the pressure points of the adsorption isotherm, measured in Pascal
-- `uptake [mol/g]` This column contains the uptake measurements of the adsorption isotherm, expressed in mol/g
+- `experiment:` column containing the ID or name of the experiment used to group multiple measurements within the same experiment
+- `temperature:` holds the temperature of the adsorption isotherm, measured in Kelvin
+- `pressure:` contains the pressure points of the adsorption isotherm, measured in Pascal
+- `uptake` includes the uptake measurements of the adsorption isotherm, expressed in mol/g
 
-- **best fit:** collects the best fitting results of with different models
+If automatico column name detection is off, the columns `experiment`, `temperature [K]`, `pressure [Pa]` and `uptake [mol/g]` must be present and should contain the correct data.
+
+- **best fit:** collects the best fitting results obtained from different models
 
 - **logs:** the application logs are saved within this folder
 
@@ -44,7 +49,7 @@ This folder is where the data is stored. Ensure your adsorption isotherm data is
 For customization, you can modify the main configuration parameters using `settings/app_configurations.json` 
 
 #### Model configuration  
-Each model can be configured using the following settings, where you can set a value for all model parameters.
+Each model can be configured using the following settings, where you can set an initial, minimun and maximum value for all parameters.
 
 | Setting          | Description                                                     |
 |------------------|-----------------------------------------------------------------|
@@ -54,11 +59,11 @@ Each model can be configured using the following settings, where you can set a v
 
 #### Solver configuration
 
-| Parameter          | Description                                              |
-|--------------------|----------------------------------------------------------|
-| SEED               | Global random seed                                       |
-| MAX_ITERATIONS     | Max number of fitting iterations                         |
-| SELECTED_MODELS    | Currently selected model for fitting                     |
+| Parameter          | Description                                                   |
+|--------------------|---------------------------------------------------------------|
+| DETECT_COLUMNS     | Automatically detect target columns based on pattenr matching |
+| MAX_ITERATIONS     | Max number of fitting iterations                              |
+| SELECTED_MODELS    | Currently selected model for fitting                          |
 
 ## 5. License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.
