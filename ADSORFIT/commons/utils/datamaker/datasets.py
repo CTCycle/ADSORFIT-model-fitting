@@ -15,7 +15,9 @@ from ADSORFIT.commons.logger import logger
 class AdsorptionDataProcessing:
 
     def __init__(self):           
-        self.dataset = pd.read_csv(DATASET_PATH, sep =';', encoding='utf-8')        
+        self.dataset = pd.read_csv(DATASET_PATH, sep =';', encoding='utf-8')  
+        self.processed_data = pd.DataFrame() 
+        self.stats = None    
         self.experiment_col = 'experiment'
         self.temperature_col = 'temperature [K]'  
         self.pressure_col = 'pressure [Pa]' 
@@ -75,23 +77,27 @@ class AdsorptionDataProcessing:
     #--------------------------------------------------------------------------
     def preprocess_dataset(self, detect_columns=False):
 
-        if detect_columns:
+        if detect_columns:                  
             self.identify_target_columns()
 
         no_nan_data = self.dataset.dropna().reset_index()
         processed_data = self.drop_negative_values(no_nan_data)
         processed_data = self.aggregate_by_experiment(processed_data)
         processed_data = self.calculate_min_max(processed_data)
+        self.processed_data = processed_data
         
         num_experiments = processed_data.shape[0]
         num_measurements = no_nan_data.shape[0]  
-        removed_NaN = self.dataset.shape[0] - num_measurements        
-        logger.info(f'Number of NaN values:    {removed_NaN}')   
-        logger.info(f'Number of experiments:   {num_experiments}')
-        logger.info(f'Number of measurements:  {num_measurements}')
-        logger.info(f'Average measurements by experiment: {num_measurements/num_experiments:.1f}')
+        removed_NaN = self.dataset.shape[0] - num_measurements   
 
-        return processed_data
+        self.stats = f"""
+                     Number of NaN values:    {removed_NaN}
+                     Number of experiments:   {num_experiments}
+                     Number of measurements:  {num_measurements}
+                     Average measurements by experiment: {num_measurements / num_experiments:.1f}
+                     """
+
+        
 
 
 # [DATASET OPERATIONS]
