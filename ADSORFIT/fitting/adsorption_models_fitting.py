@@ -4,7 +4,7 @@ warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
 from ADSORFIT.commons.utils.datamaker.datasets import AdsorptionDataProcessing, DatasetAdapter
-from ADSORFIT.commons.utils.solver.fitting import DatasetSolver
+from ADSORFIT.commons.utils.solver.fitting import ModelSolver
 from ADSORFIT.commons.constants import CONFIG
 from ADSORFIT.commons.logger import logger
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # fitting adsorption isotherm data with theoretical models, using the column
     # references updated from the processor instance (either the hardcoded ones
     # or those automatically detected)       
-    fitter = DatasetSolver(CONFIG)   
+    fitter = ModelSolver(CONFIG)   
     fitting_results = fitter.bulk_data_fitting(dataset, processor.experiment_col, 
                                                processor.pressure_col, processor.uptake_col)    
 

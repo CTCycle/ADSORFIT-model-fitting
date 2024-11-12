@@ -17,7 +17,8 @@ class AdsorptionDataProcessing:
     def __init__(self):           
         self.dataset = pd.read_csv(DATASET_PATH, sep =';', encoding='utf-8')  
         self.processed_data = pd.DataFrame() 
-        self.stats = None    
+        self.stats = None   
+         
         self.experiment_col = 'experiment'
         self.temperature_col = 'temperature [K]'  
         self.pressure_col = 'pressure [Pa]' 
@@ -46,6 +47,8 @@ class AdsorptionDataProcessing:
 
     #--------------------------------------------------------------------------
     def drop_negative_values(self, dataset : pd.DataFrame):  
+
+        # remove negative values from temperature, pressure and uptake measurements
         dataset = dataset[dataset[self.temperature_col].astype(np.int32) > 0]
         dataset = dataset[dataset[self.pressure_col].astype(np.int32) >= 0]
         dataset = dataset[dataset[self.uptake_col].astype(np.int32) >= 0]
@@ -54,12 +57,13 @@ class AdsorptionDataProcessing:
 
     #--------------------------------------------------------------------------
     def aggregate_by_experiment(self, dataset : pd.DataFrame):
-        # create aggregation dictionary to set aggregation rules
+
+        # create aggregation dictionary by setting aggregation rules
+        # then perform grouping based on aggregated dictionary    
         aggregate_dict = {self.temperature_col : 'first',                  
                           self.pressure_col : list,
                           self.uptake_col : list}
-
-        # perform grouping based on aggregated dictionary             
+                 
         dataset_grouped = dataset.groupby(self.experiment_col, as_index=False).agg(aggregate_dict)        
 
         return dataset_grouped
@@ -91,11 +95,11 @@ class AdsorptionDataProcessing:
         removed_NaN = self.dataset.shape[0] - num_measurements   
 
         self.stats = f"""
-                     Number of NaN values:    {removed_NaN}
-                     Number of experiments:   {num_experiments}
-                     Number of measurements:  {num_measurements}
-                     Average measurements by experiment: {num_measurements / num_experiments:.1f}
-                     """
+        Number of NaN values:    {removed_NaN}
+        Number of experiments:   {num_experiments}
+        Number of measurements:  {num_measurements}
+        Average measurements by experiment: {num_measurements / num_experiments:.1f}
+        """
 
         
 
