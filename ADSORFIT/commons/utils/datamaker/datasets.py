@@ -14,15 +14,13 @@ from ADSORFIT.commons.logger import logger
 ###############################################################################
 class AdsorptionDataProcessing:
 
-    def __init__(self, configuration):           
+    def __init__(self):           
         self.dataset = pd.read_csv(DATASET_PATH, sep =';', encoding='utf-8')        
         self.experiment_col = 'experiment'
         self.temperature_col = 'temperature [K]'  
         self.pressure_col = 'pressure [Pa]' 
         self.uptake_col = 'uptake [mol/g]'
-        if configuration['DETECT_COLUMNS']:
-            self.identify_target_columns()
-
+        
     #--------------------------------------------------------------------------
     def identify_target_columns(self):
         
@@ -75,7 +73,10 @@ class AdsorptionDataProcessing:
         return dataset 
     
     #--------------------------------------------------------------------------
-    def preprocess_dataset(self):
+    def preprocess_dataset(self, detect_columns=False):
+
+        if detect_columns:
+            self.identify_target_columns()
 
         no_nan_data = self.dataset.dropna().reset_index()
         processed_data = self.drop_negative_values(no_nan_data)
