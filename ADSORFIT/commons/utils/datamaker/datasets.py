@@ -18,6 +18,7 @@ class AdsorptionDataProcessing:
         self.dataset = pd.read_csv(DATASET_PATH, sep =';', encoding='utf-8')  
         self.processed_data = pd.DataFrame() 
         self.stats = None   
+        self.processing_done = False
          
         self.experiment_col = 'experiment'
         self.temperature_col = 'temperature [K]'  
@@ -89,10 +90,12 @@ class AdsorptionDataProcessing:
         processed_data = self.aggregate_by_experiment(processed_data)
         processed_data = self.calculate_min_max(processed_data)
         self.processed_data = processed_data
+        self.processing_done = True 
         
         num_experiments = processed_data.shape[0]
         num_measurements = no_nan_data.shape[0]  
-        removed_NaN = self.dataset.shape[0] - num_measurements   
+        removed_NaN = self.dataset.shape[0] - num_measurements
+        
 
         self.stats = f"""
         #### Dataset Statistics
@@ -119,9 +122,7 @@ class DatasetAdapter:
         pass    
 
     #--------------------------------------------------------------------------
-    def adapt_results_to_dataset(self, fitting_results : dict, dataset):  
-
-        print(fitting_results)
+    def adapt_results_to_dataset(self, fitting_results : dict, dataset):        
         for k, v in fitting_results.items():            
             arguments = v[0]['arguments'] 
             optimals = [item['optimal_params'] for item in v]
@@ -157,13 +158,7 @@ class DatasetAdapter:
             file_loc = os.path.join(BEST_FIT_PATH, f'{model}_best_fit.csv') 
             df_model.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
 
-    #--------------------------------------------------------------------------
-    def downstream_dataset_adaptation(self, dataset : pd.DataFrame, fitting_results, configuration):
-
-        fitting_dataset = self.adapt_results_to_dataset(fitting_results, dataset)        
-        fitting_dataset = self.find_best_model(fitting_dataset)
-        self.save_data_to_csv(fitting_dataset, configuration)
-                    
+  
 
 
    

@@ -21,8 +21,7 @@ class ModelSolver:
 
     def __init__(self):
         self.collection = AdsorptionModels()  
-        self.results_dictionary = {}          
-
+        
     #--------------------------------------------------------------------------
     def single_experiment_fit(self, X, Y, exp_name, configuration, max_iterations):
 
@@ -98,11 +97,13 @@ class ModelSolver:
         total_experiments = len(experiments)
 
         # fitting adsorption isotherm data with theoretical models
-        self.results_dictionary = {k : [] for k in configuration.keys()}  
+        results_dictionary = {k : [] for k in configuration.keys()}  
         for idx, (x, y, name) in tqdm(enumerate(zip(pressures, uptakes, experiments))):
             results = self.single_experiment_fit(x, y, name, configuration, max_iterations)
             for model in configuration.keys():
-                self.results_dictionary[model].append(results[model])
+                results_dictionary[model].append(results[model])
+
+        return results_dictionary
       
 
    
