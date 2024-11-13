@@ -1,6 +1,7 @@
 import os
 from nicegui import ui
 import copy
+from multiprocessing import Queue
 
 from ADSORFIT.commons.constants import PROJECT_DIR, RESULTS_PATH, DATASET_PATH, BEST_FIT_PATH
 from ADSORFIT.commons.logger import logger
@@ -27,10 +28,7 @@ class ModelsConfigurationWidgets:
                                     "max": {"K": 100.0, "B": 100.0}}}  
         
         self.default_values = copy.deepcopy(self.model_states)
-
               
-    
-
     #--------------------------------------------------------------------------
     def model_configurations(self):
 
@@ -87,4 +85,3 @@ class ModelsConfigurationWidgets:
 
 
 
-    

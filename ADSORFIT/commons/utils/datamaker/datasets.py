@@ -95,10 +95,17 @@ class AdsorptionDataProcessing:
         removed_NaN = self.dataset.shape[0] - num_measurements   
 
         self.stats = f"""
-        Number of NaN values:    {removed_NaN}
-        Number of experiments:   {num_experiments}
-        Number of measurements:  {num_measurements}
-        Average measurements by experiment: {num_measurements / num_experiments:.1f}
+        #### Dataset Statistics
+
+        **Experiments column:**      {self.experiment_col}  
+        **Temperature column:**      {self.temperature_col}  
+        **Pressure column:**         {self.pressure_col}  
+        **Uptake column:**           {self.uptake_col}  
+
+        **Number of NaN values:**    {removed_NaN}  
+        **Number of experiments:**   {num_experiments}  
+        **Number of measurements:**  {num_measurements}  
+        **Average measurements by experiment:** {num_measurements / num_experiments:.1f}
         """
 
         
@@ -108,16 +115,14 @@ class AdsorptionDataProcessing:
 ###############################################################################
 class DatasetAdapter:
 
-    def __init__(self, configurations, fitting_results : dict):
-
-        self.selected_models = configurations["SELECTED_MODELS"]        
-        self.fitting_results = fitting_results
-        self.configurations = configurations
+    def __init__(self):
+        pass    
 
     #--------------------------------------------------------------------------
-    def adapt_results_to_dataset(self, dataset):  
+    def adapt_results_to_dataset(self, fitting_results : dict, dataset):  
 
-        for k, v in self.fitting_results.items():            
+        print(fitting_results)
+        for k, v in fitting_results.items():            
             arguments = v[0]['arguments'] 
             optimals = [item['optimal_params'] for item in v]
             errors =  [item['errors'] for item in v]
@@ -131,6 +136,7 @@ class DatasetAdapter:
     
     #--------------------------------------------------------------------------
     def find_best_model(self, dataset : pd.DataFrame):
+       
         LSS_columns = [x for x in dataset.columns if 'LSS' in x]
         dataset['best model'] = dataset[LSS_columns].apply(lambda x : x.idxmin(), axis=1)
         dataset['best model'] = dataset['best model'].apply(lambda x : x.replace(' LSS', ''))
@@ -140,16 +146,23 @@ class DatasetAdapter:
         return dataset
     
     #--------------------------------------------------------------------------
-    def save_data_to_csv(self, dataset : pd.DataFrame):
+    def save_data_to_csv(self, dataset : pd.DataFrame, configuration : dict):
         
         dataset.to_csv(RESULTS_PATH, index=False, sep=';', encoding='utf-8')
-        for model in self.selected_models:
-            model_dataset = dataset[dataset['best model']==model]
+        for model in configuration.keys():
+            model_dataset = dataset[dataset['best model'] == model]
             model_cols = [x for x in model_dataset.columns if model in x]
             target_cols = [x for x in model_dataset.columns[:8]] + model_cols
             df_model = model_dataset[target_cols]
             file_loc = os.path.join(BEST_FIT_PATH, f'{model}_best_fit.csv') 
             df_model.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+
+    #--------------------------------------------------------------------------
+    def downstream_dataset_adaptation(self, dataset : pd.DataFrame, fitting_results, configuration):
+
+        fitting_dataset = self.adapt_results_to_dataset(fitting_results, dataset)        
+        fitting_dataset = self.find_best_model(fitting_dataset)
+        self.save_data_to_csv(fitting_dataset, configuration)
                     
 
 

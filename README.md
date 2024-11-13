@@ -24,7 +24,9 @@ On Windows, run `ADSORFIT.bat` to launch the main navigation menu and browse thr
 
 **1) Run ADSORFIT:** run the main application and start ADSORFIT, running the selected model through the solver to fit available adsorption data. Here is an example of the console output during the fitting process:
 
-![Console snapshot](docs/ADSORFIT_console.png)
+![Solver UI snapshot](ADSORFIT/commons/assets/solver_UI.png)
+
+![Models UI snapshot](ADSORFIT/commons/assets/models_UI.png)
 
 
 **2) ADSORFIT setup:** allows running some options command such as **install project into environment** to run the developer model project installation, and **remove logs** to remove all logs saved in `resources/logs`. 
