@@ -52,21 +52,37 @@ with ui.tab_panels(tabs, value=tab_main) as panels:
                 ui.button('Process data', on_click=lambda : [processor.preprocess_dataset(identify_cols.value),
                                                              stats.set_content(processor.stats)]) 
             with ui.column().classes('w-full p-4'):     
-                data_fitting_button = ui.button('Data fitting', 
-                                                on_click=lambda : [solver.start_data_fitting_thread(processor.processed_data,
-                                                                                                   processor.experiment_col,
-                                                                                                   processor.pressure_col,
-                                                                                                   processor.uptake_col,
-                                                                                                   models_widgets.model_states,
-                                                                                                   max_iterations.value),
-                                                                                                   ui.notify('Data fitting is completed')])
+                data_fitting_button = ui.button('Data fitting', on_click=lambda : [solver.start_data_fitting_thread(
+                                                                                    processor.processed_data,
+                                                                                    processor.experiment_col,
+                                                                                    processor.pressure_col,
+                                                                                    processor.uptake_col,
+                                                                                    models_widgets.model_states,
+                                                                                    max_iterations.value)])
 
         # [PROGRESS BAR]
         #----------------------------------------------------------------------
         with ui.row().classes('w-full no-wrap justify-between'):              
             progressbar = ui.linear_progress(value=0).props('instant-feedback')
             progressbar.visible = False 
-            
+
+        # [TIMER TO UPDATE PROGRESS BAR]
+        ui.timer(0.5, lambda: update_progress())
+
+
+        def update_progress():
+            if solver.total > 0:
+                progressbar.visible = True
+                progressbar.value = solver.progress / solver.total
+                if solver.progress >= solver.total:
+                    progressbar.visible = False
+                    ui.notify('Data fitting is completed')
+                    # Reset progress
+                    solver.progress = 0
+                    solver.total = 0
+            else:
+                progressbar.visible = False
+        
 
     # [MODEL CONFIGURATIONS TAB]
     #--------------------------------------------------------------------------

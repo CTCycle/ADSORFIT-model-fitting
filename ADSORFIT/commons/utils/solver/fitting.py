@@ -87,23 +87,26 @@ class ModelSolver:
         return results 
     
     #--------------------------------------------------------------------------    
-    def bulk_data_fitting(self, dataset: pd.DataFrame, experiment_col, 
+    def bulk_data_fitting(self, dataset: pd.DataFrame, experiment_col,
                           pressure_col, uptake_col, configuration: dict,
-                          max_iterations):
+                          max_iterations, progress_callback=None):
 
         experiments = dataset[experiment_col].to_list()
         pressures = [np.array(x, dtype=np.float32) for x in dataset[pressure_col].to_list()]
-        uptakes = [np.array(x, dtype=np.float32) for x in dataset[uptake_col].to_list()]        
+        uptakes = [np.array(x, dtype=np.float32) for x in dataset[uptake_col].to_list()]
         total_experiments = len(experiments)
 
         # fitting adsorption isotherm data with theoretical models
-        results_dictionary = {k : [] for k in configuration.keys()}  
-        for idx, (x, y, name) in tqdm(enumerate(zip(pressures, uptakes, experiments))):
+        results_dictionary = {k: [] for k in configuration.keys()}
+        for idx, (x, y, name) in enumerate(zip(pressures, uptakes, experiments)):
             results = self.single_experiment_fit(x, y, name, configuration, max_iterations)
             for model in configuration.keys():
                 results_dictionary[model].append(results[model])
 
+            # Update progress
+            if progress_callback:
+                progress_callback(idx + 1, total_experiments)
+
         return results_dictionary
-      
 
    
