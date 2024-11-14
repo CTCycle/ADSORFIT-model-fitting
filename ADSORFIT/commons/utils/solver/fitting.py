@@ -2,26 +2,22 @@ import inspect
 import pandas as pd
 import numpy as np
 from scipy.optimize import curve_fit
-from tqdm import tqdm
-tqdm.pandas()
 
 from ADSORFIT.commons.utils.solver.models import AdsorptionModels
-from ADSORFIT.commons.constants import CONFIG
 from ADSORFIT.commons.logger import logger
 
 
+                
 # [FITTING FUNCTION]
 ###############################################################################
-class DatasetSolver:
+class ModelSolver:
 
 
-    def __init__(self, configuration):
-        self.collection = AdsorptionModels()        
-        self.selected_models = [k for k, v in configuration["SELECTED_MODELS"].items() if v]   
-        self.configurations = configuration     
-
+    def __init__(self):
+        self.collection = AdsorptionModels()  
+        
     #--------------------------------------------------------------------------
-    def single_experiment_fit(self, X, Y, exp_name):
+    def single_experiment_fit(self, X, Y, exp_name, configuration, max_iterations):
 
         '''
         Fits adsorption model functions to provided data using non-linear least squares optimization.
@@ -40,13 +36,9 @@ class DatasetSolver:
                             includes optimal parameters ('optimal_params'), covariance matrix ('covariance'),
                             parameter estimation errors ('errors'), and the sum of squared residuals ('LSS'). 
         
-        '''        
-        all_parameters = self.configurations["MODELS"]        
-        model_parameters = {k : v for k, v in all_parameters.items() if k in self.selected_models}
-        max_iterations = self.configurations["MAX_ITERATIONS"] 
-
+        '''  
         results = {}        
-        for name, conf in model_parameters.items():
+        for name, conf in configuration.items():
             # get the model based on name indexing            
             model = self.collection.get_model(name) 
             # get the model function signature to retrieve its arguments
@@ -77,7 +69,7 @@ class DatasetSolver:
                                  'arguments' : fn_parameters}
                                 
             except Exception as e: 
-                tqdm.write(f'Could not fit {exp_name} data using {name} - Error: {e}')               
+                logger.error(f'Could not fit {exp_name} data using {name} - Error: {e}')               
                 nan_list = [np.nan for x in range(num_params)]
                 results[name] = {'optimal_params': nan_list, 
                                  'covariance': nan_list, 
@@ -88,21 +80,27 @@ class DatasetSolver:
 
         return results 
     
-    #--------------------------------------------------------------------------
-    def bulk_data_fitting(self, dataset : pd.DataFrame, experiment_col, 
-                          pressure_col, uptake_col):
+    #--------------------------------------------------------------------------    
+    def bulk_data_fitting(self, dataset: pd.DataFrame, experiment_col,
+                          pressure_col, uptake_col, configuration: dict,
+                          max_iterations, progress_callback=None):
 
         experiments = dataset[experiment_col].to_list()
         pressures = [np.array(x, dtype=np.float32) for x in dataset[pressure_col].to_list()]
-        uptakes = [np.array(x, dtype=np.float32) for x in dataset[uptake_col].to_list()]       
+        uptakes = [np.array(x, dtype=np.float32) for x in dataset[uptake_col].to_list()]
+        total_experiments = len(experiments)
 
-        # fitting adsorption isotherm data with theoretical models  
-        results_dictionary = {k : [] for k in self.selected_models}
-        for x, y, name in zip(tqdm(pressures), uptakes, experiments):
-            results = self.single_experiment_fit(x, y, name)
-            for model in self.selected_models:
+        # fitting adsorption isotherm data with theoretical models
+        results_dictionary = {k: [] for k in configuration.keys()}
+        for idx, (x, y, name) in enumerate(zip(pressures, uptakes, experiments)):
+            results = self.single_experiment_fit(x, y, name, configuration, max_iterations)
+            for model in configuration.keys():
                 results_dictionary[model].append(results[model])
-        
+
+            # Update progress
+            if progress_callback:
+                progress_callback(idx + 1, total_experiments)
+
         return results_dictionary
 
-            
+   

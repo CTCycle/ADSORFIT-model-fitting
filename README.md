@@ -1,7 +1,7 @@
 # ADSORFIT: Automated Adsorption Model Fitting
 
 ## 1. Project Overview
-ADSORFIT is designed to streamline the process of adsorption modeling for researchers in the field. By automating the fitting of theoretical adsorption models to empirical isotherm data, this tool helps in accurately extracting crucial adsorption parameters such as adsorption constants and saturation uptakes. The core functionality revolves around minimizing the Least Squares Sum (LSS) discrepancy between observed and model-predicted uptakes, thereby refining the fit and ensuring the model constants reflect true adsorption behavior under given experimental conditions.
+ADSORFIT is a powerful tool designed to simplify and enhance adsorption modeling for researchers. It automates the fitting of theoretical adsorption models to experimental isotherm data, enabling accurate extraction of key adsorption parameters such as adsorption constants and saturation uptakes. The core functionality focuses on minimizing the Least Squares Sum (LSS) discrepancy between observed data and model-predicted uptakes. This ensures that the derived model parameters reliably represent the true adsorption behavior under the given experimental conditions. ADSORFIT features an intuitive, user-friendly interface built with NiceGUI, making advanced adsorption modeling accessible to users of all experience levels.
 
 ## 2. Installation 
 The installation process on Windows has been designed for simplicity and ease of use. To begin, simply run `ADSORFIT.bat`. On its first execution, the installation procedure will automatically start with minimal user input required. The script will check if either Anaconda or Miniconda is installed on your system. If neither is found, you will need to install it manually. You can download and install Miniconda by following the instructions here: (https://docs.anaconda.com/miniconda/).
@@ -22,9 +22,13 @@ On Windows, run `ADSORFIT.bat` to launch the main navigation menu and browse thr
 
 ### 3.1 Navigation menu
 
-**1) Run ADSORFIT:** run the main application and start ADSORFIT, running the selected model through the solver to fit available adsorption data. Here is an example of the console output during the fitting process:
+**1) Run ADSORFIT:** launch ADSORFIT to access the main user interface, which is organized into two distinct tabs. The first tab is designed for performing core computational tasks such as fitting adsorption models to isotherm data and preprocessing data. The second tab provides an interface for reviewing and adjusting key adsorption model parameters. Below are snapshots illustrating the layout and functionality of main UI:
 
-![Console snapshot](docs/ADSORFIT_console.png)
+Main tab for solver operations
+![Solver UI snapshot](ADSORFIT/commons/assets/solver_UI.png)
+
+Secondary tab holding models configurations
+![Models UI snapshot](ADSORFIT/commons/assets/models_UI.png)
 
 
 **2) ADSORFIT setup:** allows running some options command such as **install project into environment** to run the developer model project installation, and **remove logs** to remove all logs saved in `resources/logs`. 
@@ -41,7 +45,7 @@ This is the folder where both the source data and the results are located. The a
 
 If automatico column name detection is off, the columns `experiment`, `temperature [K]`, `pressure [Pa]` and `uptake [mol/g]` must be present and should contain the correct data.
 
-- **best fit:** collects the best fitting results obtained from different models
+- **best fit:** collects the best fitting results obtained from different models, if the option is selected during data fitting.
 
 - **logs:** the application logs are saved within this folder
 
@@ -56,14 +60,6 @@ Each model can be configured using the following settings, where you can set an 
 | MODEL_INITIAL    | Initial guess values for Langmuir adsorption model parameters   |
 | MODEL_MIN        | Minimun value of Langmuir adsorption model parameters           |
 | MODEL_MAX        | Maximum value of Langmuir adsorption model parameters           |
-
-#### Solver configuration
-
-| Parameter          | Description                                                   |
-|--------------------|---------------------------------------------------------------|
-| DETECT_COLUMNS     | Automatically detect target columns based on pattenr matching |
-| MAX_ITERATIONS     | Max number of fitting iterations                              |
-| SELECTED_MODELS    | Currently selected model for fitting                          |
 
 ## 5. License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.

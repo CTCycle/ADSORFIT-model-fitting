@@ -1,8 +1,6 @@
 import numpy as np
-from tqdm import tqdm
-tqdm.pandas()
 
-from ADSORFIT.commons.constants import CONFIG, DATA_PATH
+from ADSORFIT.commons.constants import DATA_PATH
 from ADSORFIT.commons.logger import logger
 
 
@@ -11,8 +9,7 @@ from ADSORFIT.commons.logger import logger
 class AdsorptionModels:
 
     def __init__(self):
-        self.model_names = ['LANGMUIR', 'SIPS', 'FREUNDLICH'] 
-        logger.debug(f"Currently selected models: {CONFIG['SELECTED_MODELS']}")        
+        self.model_names = ['LANGMUIR', 'SIPS', 'FREUNDLICH', 'TEMKIN']              
             
     #--------------------------------------------------------------------------
     def Langmuir_model(self, P, k, qsat):
