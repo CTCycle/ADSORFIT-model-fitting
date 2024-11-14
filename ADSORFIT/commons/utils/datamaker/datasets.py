@@ -3,8 +3,7 @@ import re
 import numpy as np
 import pandas as pd
 from difflib import get_close_matches
-from tqdm import tqdm
-tqdm.pandas()
+from nicegui import ui
 
 from ADSORFIT.commons.constants import RESULTS_PATH, DATASET_PATH, BEST_FIT_PATH
 from ADSORFIT.commons.logger import logger
@@ -90,7 +89,7 @@ class AdsorptionDataProcessing:
         processed_data = self.aggregate_by_experiment(processed_data)
         processed_data = self.calculate_min_max(processed_data)
         self.processed_data = processed_data
-        self.processing_done = True 
+        self.processing_done = True
         
         num_experiments = processed_data.shape[0]
         num_measurements = no_nan_data.shape[0]  
@@ -147,16 +146,17 @@ class DatasetAdapter:
         return dataset
     
     #--------------------------------------------------------------------------
-    def save_data_to_csv(self, dataset : pd.DataFrame, configuration : dict):
+    def save_data_to_csv(self, dataset : pd.DataFrame, configuration : dict, save_best_models):
         
         dataset.to_csv(RESULTS_PATH, index=False, sep=';', encoding='utf-8')
-        for model in configuration.keys():
-            model_dataset = dataset[dataset['best model'] == model]
-            model_cols = [x for x in model_dataset.columns if model in x]
-            target_cols = [x for x in model_dataset.columns[:8]] + model_cols
-            df_model = model_dataset[target_cols]
-            file_loc = os.path.join(BEST_FIT_PATH, f'{model}_best_fit.csv') 
-            df_model.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+        if save_best_models:
+            for model in configuration.keys():
+                model_dataset = dataset[dataset['best model'] == model]
+                model_cols = [x for x in model_dataset.columns if model in x]
+                target_cols = [x for x in model_dataset.columns[:8]] + model_cols
+                df_model = model_dataset[target_cols]
+                file_loc = os.path.join(BEST_FIT_PATH, f'{model}_best_fit.csv') 
+                df_model.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
 
   
 

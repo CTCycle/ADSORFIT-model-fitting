@@ -1,13 +1,7 @@
-from nicegui import ui
 import threading
 
-from tqdm import tqdm
-tqdm.pandas()
-
-from ADSORFIT.commons.utils.datamaker.datasets import AdsorptionDataProcessing, DatasetAdapter
+from ADSORFIT.commons.utils.datamaker.datasets import DatasetAdapter
 from ADSORFIT.commons.utils.solver.fitting import ModelSolver
-from ADSORFIT.commons.utils.solver.models import AdsorptionModels
-from ADSORFIT.commons.constants import CONFIG
 from ADSORFIT.commons.logger import logger
 
 
@@ -25,23 +19,26 @@ class SolverThread:
 
    #---------------------------------------------------------------------------
    def start_data_fitting_thread(self, processed_data, experiment_col, pressure_col,
-                                  uptake_col, model_states, max_iterations):
+                                  uptake_col, model_states, max_iterations, find_best_models):
+      
       threading.Thread(target=self.run_data_fitting,
-                        args=(processed_data, experiment_col, pressure_col, uptake_col, model_states, max_iterations),
-                        daemon=True).start()
+                       args=(processed_data, experiment_col, pressure_col, uptake_col, 
+                             model_states, max_iterations, find_best_models),
+                       daemon=True).start()
 
    #---------------------------------------------------------------------------
    def run_data_fitting(self, processed_data, experiment_col, pressure_col,
-                         uptake_col, model_states, max_iterations):
+                         uptake_col, model_states, max_iterations, find_best_models):
+      
       def progress_callback(current, total):
          self.progress = current
          self.total = total
 
-      fitting_results = self.solver.bulk_data_fitting(
-         processed_data, experiment_col, pressure_col,
-         uptake_col, model_states, max_iterations,
-         progress_callback=progress_callback)
+      fitting_results = self.solver.bulk_data_fitting(processed_data, experiment_col, pressure_col,
+                                                      uptake_col, model_states, max_iterations,
+                                                      progress_callback=progress_callback)
 
       fitting_dataset = self.adapter.adapt_results_to_dataset(fitting_results, processed_data)
-      fitting_dataset = self.adapter.find_best_model(fitting_dataset)
-      self.adapter.save_data_to_csv(fitting_dataset, model_states)
+      if find_best_models:
+         fitting_dataset = self.adapter.find_best_model(fitting_dataset)
+      self.adapter.save_data_to_csv(fitting_dataset, model_states, find_best_models)

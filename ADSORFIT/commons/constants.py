@@ -14,8 +14,3 @@ DATASET_PATH = join(DATA_PATH, 'adsorption_data.csv')
 RESULTS_PATH = join(DATA_PATH, 'adsorption_model_fit.csv')
 
 
-# [CONFIGURATIONS]
-###############################################################################
-CONFIG_PATH = join(PROJECT_DIR, 'settings', 'app_configurations.json')
-with open(CONFIG_PATH, 'r') as file:
-    CONFIG = json.load(file)

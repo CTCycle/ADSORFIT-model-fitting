@@ -1,16 +1,10 @@
-from nicegui import ui
 import inspect
 import pandas as pd
 import numpy as np
-
 from scipy.optimize import curve_fit
-from tqdm import tqdm
-tqdm.pandas()
 
 from ADSORFIT.commons.utils.solver.models import AdsorptionModels
-from ADSORFIT.commons.constants import CONFIG
 from ADSORFIT.commons.logger import logger
-
 
 
                 
@@ -75,7 +69,7 @@ class ModelSolver:
                                  'arguments' : fn_parameters}
                                 
             except Exception as e: 
-                tqdm.write(f'Could not fit {exp_name} data using {name} - Error: {e}')               
+                logger.error(f'Could not fit {exp_name} data using {name} - Error: {e}')               
                 nan_list = [np.nan for x in range(num_params)]
                 results[name] = {'optimal_params': nan_list, 
                                  'covariance': nan_list, 
