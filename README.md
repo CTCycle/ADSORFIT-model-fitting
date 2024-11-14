@@ -24,10 +24,8 @@ On Windows, run `ADSORFIT.bat` to launch the main navigation menu and browse thr
 
 **1) Run ADSORFIT:** launch ADSORFIT to access the main user interface, which is organized into two distinct tabs. The first tab is designed for performing core computational tasks such as fitting adsorption models to isotherm data and preprocessing data. The second tab provides an interface for reviewing and adjusting key adsorption model parameters. Below are snapshots illustrating the layout and functionality of main UI:
 
-Main tab for solver operations
 ![Solver UI snapshot](ADSORFIT/commons/assets/solver_UI.png)
 
-Secondary tab holding models configurations
 ![Models UI snapshot](ADSORFIT/commons/assets/models_UI.png)
 
 
