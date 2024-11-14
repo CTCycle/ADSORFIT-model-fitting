@@ -43,16 +43,13 @@ This is the folder where both the source data and the results are located. The a
 - `pressure:` contains the pressure points of the adsorption isotherm, measured in Pascal
 - `uptake` includes the uptake measurements of the adsorption isotherm, expressed in mol/g
 
-If automatico column name detection is off, the columns `experiment`, `temperature [K]`, `pressure [Pa]` and `uptake [mol/g]` must be present and should contain the correct data.
+If automatic column name detection is off, the columns `experiment`, `temperature [K]`, `pressure [Pa]` and `uptake [mol/g]` must be present and should contain the correct data.
 
 - **best fit:** collects the best fitting results obtained from different models, if the option is selected during data fitting.
 
 - **logs:** the application logs are saved within this folder
 
 ### 4. Configurations
-For customization, you can modify the main configuration parameters using `settings/app_configurations.json` 
-
-#### Model configuration  
 Each model can be configured using the following settings, where you can set an initial, minimun and maximum value for all parameters.
 
 | Setting          | Description                                                     |
