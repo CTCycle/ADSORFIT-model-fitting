@@ -96,7 +96,7 @@ goto :main_menu
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :main
 cls
-call conda activate %env_name% && python .\fitting\adsorption_models_fitting.py
+call conda activate %env_name% && python .\commons\main.py
 pause
 goto :main_menu
 
