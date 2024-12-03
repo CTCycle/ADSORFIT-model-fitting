@@ -4,7 +4,7 @@
 ADSORFIT is a powerful tool designed to simplify and enhance adsorption modeling for researchers. It automates the fitting of theoretical adsorption models to experimental isotherm data, enabling accurate extraction of key adsorption parameters such as adsorption constants and saturation uptakes. The core functionality focuses on minimizing the Least Squares Sum (LSS) discrepancy between observed data and model-predicted uptakes. This ensures that the derived model parameters reliably represent the true adsorption behavior under the given experimental conditions. ADSORFIT features an intuitive, user-friendly interface built with NiceGUI, making advanced adsorption modeling accessible to users of all experience levels.
 
 ## 2. Installation 
-The installation process on Windows has been designed for simplicity and ease of use. To begin, simply run `ADSORFIT.bat`. On its first execution, the installation procedure will automatically start with minimal user input required. The script will check if either Anaconda or Miniconda is installed on your system. If neither is found, you will need to install it manually. You can download and install Miniconda by following the instructions here: (https://docs.anaconda.com/miniconda/).
+The installation process on Windows has been designed for simplicity and ease of use. To begin, simply run `ADSORFIT.bat`. On its first execution, the installation procedure will automatically start with minimal user input required. The script will check if either Anaconda or Miniconda is installed on your system. If neither is found, you will need to install it manually. You can download and install Miniconda by following the instructions here: https://docs.anaconda.com/miniconda/.
 
 After setting up Anaconda/Miniconda, the installation script will install all the necessary Python dependencies. If you'd prefer to handle the installation process separately, you can run the standalone installer by executing `setup/ADSORFIT_installer.bat`. You can also use a custom python environment by modifying `settings/launcher_configurations.ini` and setting use_custom_environment as true, while specifying the name of your custom environment.
 
@@ -18,7 +18,7 @@ After setting up Anaconda/Miniconda, the installation script will install all th
     `pip install -e . --use-pep517` 
 
 ## 3. How to use
-On Windows, run `ADSORFIT.bat` to launch the main navigation menu and browse through the various options. Alternatively, you can launch the main app file running `python ADSORFIT/fitting/adsorption_models_fitting.py`.
+On Windows, run `ADSORFIT.bat` to launch the main navigation menu and browse through the various options. Alternatively, you can launch the main app file running `python ADSORFIT/commons/main.py`.
 
 ### 3.1 Navigation menu
 
@@ -34,14 +34,14 @@ On Windows, run `ADSORFIT.bat` to launch the main navigation menu and browse thr
 **3) Exit and close**
 
 ### 3.2 Resources
-This is the folder where both the source data and the results are located. The adsorption data to be fitted must be provided as a csv file with name `resources/adsorption_data.csv`. If the option to automatically detect columns is selected, ADSORFIT will identify target columns based on string pattern matching (anything resembling these keywords will identify the corresponding column):
+This folder serves as the location for both the source data and the results. The adsorption data to be fitted must be provided as a CSV file named `resources/adsorption_data.csv`. A default file with the required header names is included in the folder for reference. If automatic column name detection is disabled, the following columns must be present in the file with these exact names and units: `experiment`, `temperature [K]`, `pressure [Pa]` and `uptake [mol/g]`.
 
-- `experiment:` column containing the ID or name of the experiment used to group multiple measurements within the same experiment
+If the option to automatically detect columns is selected, ADSORFIT will identify target columns based on string pattern matching, and anything even partially matching these keywords will identify the corresponding column:
+
+- `experiment:` Contains the ID or name of the experiment, used to group multiple measurements from the same experiment
 - `temperature:` holds the temperature of the adsorption isotherm, measured in Kelvin
 - `pressure:` contains the pressure points of the adsorption isotherm, measured in Pascal
 - `uptake` includes the uptake measurements of the adsorption isotherm, expressed in mol/g
-
-If automatic column name detection is off, the columns `experiment`, `temperature [K]`, `pressure [Pa]` and `uptake [mol/g]` must be present and should contain the correct data.
 
 - **best fit:** collects the best fitting results obtained from different models, if the option is selected during data fitting.
 
@@ -52,9 +52,9 @@ Each model can be configured using the following settings, where you can set an 
 
 | Setting          | Description                                                     |
 |------------------|-----------------------------------------------------------------|
-| MODEL_INITIAL    | Initial guess values for Langmuir adsorption model parameters   |
-| MODEL_MIN        | Minimun value of Langmuir adsorption model parameters           |
-| MODEL_MAX        | Maximum value of Langmuir adsorption model parameters           |
+| MODEL_INITIAL    | Initial guess values for the adsorption model parameters   |
+| MODEL_MIN        | Minimun value of the adsorption model parameters           |
+| MODEL_MAX        | Maximum value of the adsorption model parameters           |
 
 ## 5. License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.
