@@ -20,16 +20,16 @@ On Windows, run *start_on_windows.bat* to launch the main navigation menu and br
 
 ### 3.1 Navigation menu
 
-**1) Run ADSORFIT:** launch ADSORFIT to access the main user interface, which is organized into two distinct tabs. The first tab is designed for performing core computational tasks such as fitting adsorption models to isotherm data and preprocessing data. The second tab provides an interface for reviewing and adjusting key adsorption model parameters. Below are snapshots illustrating the layout and functionality of main UI:
+**1) Run ADSORFIT UI:** launch ADSORFIT to access the main user interface, which is organized into two distinct tabs. The first tab is designed for performing core computational tasks such as fitting adsorption models to isotherm data and preprocessing data. The second tab provides an interface for reviewing and adjusting key adsorption model parameters. Below are snapshots illustrating the layout and functionality of main UI:
 
 ![Solver UI snapshot](ADSORFIT/commons/assets/solver_UI.png)
 
 ![Models UI snapshot](ADSORFIT/commons/assets/models_UI.png)
 
 
-**2) ADSORFIT setup:** allows running some options command such as **install project into environment** to run the developer model project installation, and **remove logs** to remove all logs saved in `resources/logs`. 
+**2) Setup and Maintenance:** allows running some options command such as **install project into environment** to run the developer model project installation, and **remove logs** to remove all logs saved in `resources/logs`. 
 
-**3) Exit and close**
+**3) Exit:** close the program immediately 
 
 ### 3.2 Resources
 This folder serves as the location for both the source data and the results. The adsorption data to be fitted must be provided as a CSV file named `resources/adsorption_data.csv`. A default file with the required header names is included in the folder for reference. If automatic column name detection is disabled, the following columns must be present in the file with these exact names and units: `experiment`, `temperature [K]`, `pressure [Pa]` and `uptake [mol/g]`.

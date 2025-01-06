@@ -64,7 +64,7 @@ echo =======================================
 echo                ADSORFIT 
 echo =======================================
 echo 1. Start ADSORFIT UI
-echo 2. Setup and maintenance
+echo 2. Setup and Maintenance
 echo 3. Exit
 echo.
 set /p choice="Select an option (1-3): "
