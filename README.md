@@ -27,19 +27,19 @@ On Windows, run *start_on_windows.bat* to launch the main navigation menu and br
 ![Models UI snapshot](ADSORFIT/commons/assets/models_UI.png)
 
 
-**2) Setup and Maintenance:** allows running some options command such as **install project into environment** to run the developer model project installation, and **remove logs** to remove all logs saved in *resources/logs*. 
+**2) Setup and Maintenance:** allows running some options command such as *install project in editable mode* to run the developer model project installation, and *remove logs* to remove all logs saved in *resources/logs*. 
 
 **3) Exit:** close the program immediately 
 
 ### 3.2 Resources
-This folder serves as the location for both the source data and the results. The adsorption data to be fitted must be provided as a CSV file named `resources/adsorption_data.csv`. A default file with the required header names is included in the folder for reference. If automatic column name detection is disabled, the following columns must be present in the file with these exact names and units: `experiment`, `temperature [K]`, `pressure [Pa]` and `uptake [mol/g]`.
+This folder serves as the location for both the source data and the results. The adsorption data to be fitted must be provided as a CSV file named *resources/adsorption_data.csv*. A default file with the required header names is included in the folder for reference. If automatic column name detection is disabled, the following columns must be present in the file with these exact names and units: *experiment*, *temperature [K]*, *pressure [Pa]* and *uptake [mol/g]*.
 
 If the option to automatically detect columns is selected, ADSORFIT will identify target columns based on string pattern matching, and anything even partially matching these keywords will identify the corresponding column:
 
-- `experiment:` Contains the ID or name of the experiment, used to group multiple measurements from the same experiment
-- `temperature:` holds the temperature of the adsorption isotherm, measured in Kelvin
-- `pressure:` contains the pressure points of the adsorption isotherm, measured in Pascal
-- `uptake` includes the uptake measurements of the adsorption isotherm, expressed in mol/g
+- *experiment:* Contains the ID or name of the experiment, used to group multiple measurements from the same experiment
+- *temperature:* holds the temperature of the adsorption isotherm, measured in Kelvin
+- *pressure:* contains the pressure points of the adsorption isotherm, measured in Pascal
+- *uptake:* includes the uptake measurements of the adsorption isotherm, expressed in mol/g
 
 - **best fit:** collects the best fitting results obtained from different models, if the option is selected during data fitting.
 

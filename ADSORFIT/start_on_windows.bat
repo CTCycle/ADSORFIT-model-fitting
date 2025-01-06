@@ -44,14 +44,14 @@ set "env_path=.setup\environment\%env_name%"
 
 if exist ".setup\environment\%env_name%\" (    
     echo Python environment '%env_name%' detected.
-    goto :cudacheck
+    goto :conda_activation
 
 ) else (
     echo Running first-time installation for %env_name%. 
     echo Please wait until completion and do not close this window!
     echo Depending on your internet connection, this may take a while...
     call ".\setup\install_on_windows.bat"
-    goto :cudacheck
+    goto :conda_activation
 )
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
