@@ -22,20 +22,19 @@ if %ERRORLEVEL% neq 0 (
         /RegisterPython=0 ^
         /AddToPath=0 ^
         /S ^
-        /D=%USERPROFILE%\Miniconda3    
+        /D=%~dp0setup\miniconda    
     
-    call "%USERPROFILE%\Miniconda3\Scripts\activate.bat" "%USERPROFILE%\Miniconda3"
-    echo Miniconda installation is complete.
+    call "%~dp0..\setup\miniconda\Scripts\activate.bat" "%~dp0..\setup\miniconda"
+    echo Miniconda installation is complete.    
     goto :initial_check
 
 ) else (
-    echo Anaconda/Miniconda already installed. Checking python environment...
+    echo Anaconda/Miniconda already installed. Checking python environment...    
     goto :initial_check
 )
 
-
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Check if the 'ADSORFIT' environment exists when not using a custom environment
+:: Check if the environment exists when not using a custom environment
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :initial_check   
 cd /d "%~dp0\.."
@@ -54,6 +53,16 @@ if exist ".setup\environment\%env_name%\" (
     call ".\setup\install_on_windows.bat"
     goto :cudacheck
 )
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: Precheck for conda source 
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:conda_activation
+where conda >nul 2>&1
+if %ERRORLEVEL% neq 0 (   
+    call "%~dp0..\setup\miniconda\Scripts\activate.bat" "%~dp0..\setup\miniconda"       
+    goto :main_menu
+) 
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :: Show main menu
