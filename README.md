@@ -4,21 +4,19 @@
 ADSORFIT is a powerful tool designed to simplify and enhance adsorption modeling for researchers. It automates the fitting of theoretical adsorption models to experimental isotherm data, enabling accurate extraction of key adsorption parameters such as adsorption constants and saturation uptakes. The core functionality focuses on minimizing the Least Squares Sum (LSS) discrepancy between observed data and model-predicted uptakes. This ensures that the derived model parameters reliably represent the true adsorption behavior under the given experimental conditions. ADSORFIT features an intuitive, user-friendly interface built with NiceGUI, making advanced adsorption modeling accessible to users of all experience levels.
 
 ## 2. Installation 
-The installation process on Windows has been designed for simplicity and ease of use. To begin, simply run `ADSORFIT.bat`. On its first execution, the installation procedure will automatically start with minimal user input required. The script will check if either Anaconda or Miniconda is installed on your system. If neither is found, you will need to install it manually. You can download and install Miniconda by following the instructions here: https://docs.anaconda.com/miniconda/.
-
-After setting up Anaconda/Miniconda, the installation script will install all the necessary Python dependencies. If you'd prefer to handle the installation process separately, you can run the standalone installer by executing `setup/ADSORFIT_installer.bat`. You can also use a custom python environment by modifying `settings/launcher_configurations.ini` and setting use_custom_environment as true, while specifying the name of your custom environment.
+The installation process on Windows has been designed for simplicity and ease of use. To begin, simply run *start_on_windows.bat.* On its first execution, the installation procedure will automatically start with minimal user input required. The script will check if either Anaconda or Miniconda is installed on your system. If neither is found, it will automatically download and install the latest Miniconda release from https://docs.anaconda.com/miniconda/. After setting up Anaconda/Miniconda, the installation script will proceed with the installation of all necessary Python dependencies. If you'd prefer to handle the installation process separately, you can run the standalone installer by executing *setup/install_on_windows.bat*.  
 
 **Important:** After installation, if the project folder is moved or its path is changed, the application will no longer function correctly. To fix this, you can either:
 
-- Open the main menu, select "ADSORFIT setup," and choose "Install project packages"
+- Open the main menu, select *Setup and maintentance* and choose *Install project in editable mode*
 - Manually run the following commands in the terminal, ensuring the project folder is set as the current working directory (CWD):
 
-    `conda activate ADSORFIT`
+    `conda activate FEXT`
 
     `pip install -e . --use-pep517` 
 
 ## 3. How to use
-On Windows, run `ADSORFIT.bat` to launch the main navigation menu and browse through the various options. Alternatively, you can launch the main app file running `python ADSORFIT/commons/main.py`.
+On Windows, run *start_on_windows.bat* to launch the main navigation menu and browse through the various options. Alternatively, you can launch the main app file running *python ADSORFIT/commons/main.py*. Please note that some antivirus software, such as Avast, may flag or quarantine python.exe when called by the .bat file. If you encounter unusual behavior, consider adding an exception for your Anaconda or Miniconda environments in your antivirus settings.
 
 ### 3.1 Navigation menu
 

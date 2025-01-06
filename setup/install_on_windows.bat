@@ -1,22 +1,37 @@
 @echo off
+cd /d "%~dp0"
+
+set "env_name=ADSORFIT"
+set "project_name=ADSORFIT"
+set "env_path=.\environment\%env_name%"
 
 :: [CHECK CUSTOM ENVIRONMENTS] 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-:: Check if ADSORFIT environment is available or use custom environment
+:: Check if FEXT environment is available or use custom environment
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-call conda config --add channels conda-forge
-call conda info --envs | findstr "ADSORFIT"
-if %ERRORLEVEL%==0 (
-    echo ADSORFIT environment detected
-    call conda activate ADSORFIT
-    goto :dependencies
-) else (
-    echo ADSORFIT environment has not been found, it will now be created using python 3.11
-    echo Depending on your internet connection, this may take a while!
-    call conda create -n ADSORFIT python=3.11 -y
-    call conda activate ADSORFIT
-    goto :dependencies
+call conda activate "%env_path%" 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo %env_name% is being created (python version = 3.11)
+    call conda create --prefix "%env_path%" python=3.11 -y
+    call conda activate "%env_path%"
 )
+goto :check_git
+
+:: [INSTALL GIT] 
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: Install git using conda
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:check_git
+echo.
+echo Checking git installation
+git --version >nul 2>&1
+if errorlevel 1 (
+    echo Git not found. Installing git using conda...
+    call conda install -y git
+) else (
+    echo Git is already installed.
+)
+goto :dependencies
 
 :: [INSTALL DEPENDENCIES] 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -25,7 +40,7 @@ if %ERRORLEVEL%==0 (
 :dependencies
 echo.
 echo Install python libraries and packages
-call pip install numpy==2.1.2 pandas==2.2.3 tqdm==4.66.4 scikit-learn==1.5.2
+call pip install numpy==2.1.0 pandas==2.2.3 tqdm==4.66.4 scikit-learn==1.6.0
 call pip install nicegui==2.5.0
 
 :: [INSTALL PROJECT IN EDITABLE MODE] 
@@ -33,7 +48,7 @@ call pip install nicegui==2.5.0
 :: Install project in developer mode
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 echo Install utils packages in editable mode
-call cd .. && pip install -e . --use-pep517 && cd ADSORFIT
+call cd .. && pip install -e . --use-pep517 && cd %project_name%
 
 :: [CLEAN CACHE] 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -51,7 +66,6 @@ call pip cache purge
 echo.
 echo List of installed dependencies:
 call conda list
-
 echo.
-echo Installation complete. You can now run ADSORFIT on this system!
+echo Installation complete. You can now run %env_name% on this system!
 pause
