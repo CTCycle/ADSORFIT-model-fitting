@@ -5,6 +5,9 @@ setup/environment/*
 
 
 *.log
+setup/environment/*
+setup/miniconda/*
+
 *.egg-info
 !.gitkeep
 
