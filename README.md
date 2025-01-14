@@ -11,7 +11,7 @@ The installation process on Windows has been designed for simplicity and ease of
 - Open the main menu, select *Setup and maintentance* and choose *Install project in editable mode*
 - Manually run the following commands in the terminal, ensuring the project folder is set as the current working directory (CWD):
 
-    `conda activate FEXT`
+    `conda activate ADSORFIT`
 
     `pip install -e . --use-pep517` 
 
