@@ -1,8 +1,6 @@
 __pycache__
 
 ADSORFIT/resources/best_fit/*
-setup/environment/*
-
 
 *.log
 setup/environment/*
