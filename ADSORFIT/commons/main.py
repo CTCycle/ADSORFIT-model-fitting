@@ -57,8 +57,7 @@ with ui.tab_panels(tabs, value=tab_main) as panels:
                                                                                    processor.uptake_col,
                                                                                    models_widgets.model_states,
                                                                                    max_iterations.value,
-                                                                                   best_models.value)])
-                
+                                                                                   best_models.value)])                
 
         # [PROGRESS BAR]
         #----------------------------------------------------------------------
@@ -68,14 +67,11 @@ with ui.tab_panels(tabs, value=tab_main) as panels:
         # [TIMER TO UPDATE PROGRESS BAR]
         ui.timer(0.5, lambda: pb.update_progress_bar(progress_bar, solver))
 
-
-        
-
     # [MODEL CONFIGURATIONS TAB]
     #--------------------------------------------------------------------------
     with ui.tab_panel(tab_parameters):
         models_widgets = ModelsConfigurationWidgets()       
-        models_widgets.model_configurations()   
+        models_widgets.model_configurations()  
         
 
 ui.run()

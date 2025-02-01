@@ -70,9 +70,9 @@ if %ERRORLEVEL% neq 0 (
 :main_menu
 cls
 echo.
-echo =======================================
-echo                ADSORFIT 
-echo =======================================
+echo ==========================================================================
+echo               ADSORFIT: streamlined adsorption data fitting
+echo ==========================================================================
 echo 1. Start ADSORFIT UI
 echo 2. Setup and Maintenance
 echo 3. Exit
@@ -91,7 +91,7 @@ goto :main_menu
 :main
 cls
 
-start cmd /k "conda activate "%env_path%" && python ""%app_path%"\commons\main.py""
+start cmd /k "conda activate "%env_path%" && python "%app_path%"\commons\main.py"
 goto :main_menu
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -99,9 +99,9 @@ goto :main_menu
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :setup_menu
 cls
-echo =======================================
-echo         Setup and Maintenance
-echo =======================================
+echo ==========================================================================
+echo                         Setup  and Maintenance                          
+echo ==========================================================================
 echo 1. Install project in editable mode
 echo 2. Update project
 echo 3. Remove logs
