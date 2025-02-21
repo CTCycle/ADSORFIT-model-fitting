@@ -18,6 +18,12 @@ The installation process on Windows has been designed for simplicity and ease of
 ## 3. How to use
 On Windows, run *start_on_windows.bat* to launch the main navigation menu and browse through the various options. Alternatively, you can launch the main app file running *python ADSORFIT/commons/main.py*. Please note that some antivirus software, such as Avast, may flag or quarantine python.exe when called by the .bat file. If you encounter unusual behavior, consider adding an exception for your Anaconda or Miniconda environments in your antivirus settings.
 
+**Environmental variables** are stored in *resources/variables/.env*. For security reasons, this file is typically not uploaded to GitHub. Instead, you must create this file manually by copying the template from *resources/templates/.env* and placing it in the *resources/variables* directory.
+
+**NICEGUI_PORT** – Specifies the port on which the NiceGUI application runs. The default is 8080
+
+**NICEGUI_HOST** – Defines the host address for the NiceGUI server. (0.0.0.0 allows the application to be accessible from any network interface).
+
 ### 3.1 Navigation menu
 
 **1) Run ADSORFIT UI:** launch ADSORFIT to access the main user interface, which is organized into two distinct tabs. The first tab is designed for performing core computational tasks such as fitting adsorption models to isotherm data and preprocessing data. The second tab provides an interface for reviewing and adjusting key adsorption model parameters. Below are snapshots illustrating the layout and functionality of main UI:
@@ -31,27 +37,16 @@ On Windows, run *start_on_windows.bat* to launch the main navigation menu and br
 **3) Exit:** close the program immediately 
 
 ### 3.2 Resources
-This folder serves as the location for both the source data and the results. The adsorption data to be fitted must be provided as a CSV file named *resources/adsorption_data.csv*. A default file with the required header names is included in the folder for reference. If automatic column name detection is disabled, the following columns must be present in the file with these exact names and units: *experiment*, *temperature [K]*, *pressure [Pa]* and *uptake [mol/g]*.
-
-If the option to automatically detect columns is selected, ADSORFIT will identify target columns based on string pattern matching, and anything even partially matching these keywords will identify the corresponding column:
-
-- *experiment:* Contains the ID or name of the experiment, used to group multiple measurements from the same experiment
-- *temperature:* holds the temperature of the adsorption isotherm, measured in Kelvin
-- *pressure:* contains the pressure points of the adsorption isotherm, measured in Pascal
-- *uptake:* includes the uptake measurements of the adsorption isotherm, expressed in mol/g
+This folder stores both the source data and the results. The adsorption data for fitting must be provided as a CSV file named *adsorption_data.csv*. If automatic column name detection is disabled, the file must include the following columns with these exact names and units: *experiment*, *temperature [K]*, *pressure [Pa]*, and *uptake [mol/g]*. A template of the expected CSV format is available at *resources/templates/adsorption_data.csv*. If the option to automatically detect columns is selected, ADSORFIT will identify target columns based on string pattern matching, and anything even partially matching these keywords will identify the corresponding column:
 
 - **best fit:** collects the best fitting results obtained from different models, if the option is selected during data fitting.
 
 - **logs:** the application logs are saved within this folder
 
-### 4. Configurations
-Each model can be configured using the following settings, where you can set an initial, minimun and maximum value for all parameters.
+- **templates:** stores the template files for reference
 
-| Setting          | Description                                                     |
-|------------------|-----------------------------------------------------------------|
-| MODEL_INITIAL    | Initial guess values for the adsorption model parameters   |
-| MODEL_MIN        | Minimun value of the adsorption model parameters           |
-| MODEL_MAX        | Maximum value of the adsorption model parameters           |
+### 4. Configurations
+Each model can be configured in the **Model Configuration** tab where you can set an initial guess value for the adsorption model parameters,as well as boundaries for the minimun and maximum expected values.
 
 ## 5. License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.

@@ -90,8 +90,7 @@ goto :main_menu
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :main
 cls
-
-start cmd /k "conda activate "%env_path%" && python "%app_path%"\commons\main.py"
+start cmd /k "conda activate "%env_path%" && python "%app_path%"\services\adsorption_model_fitting.py"
 goto :main_menu
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

@@ -5,7 +5,9 @@ ADSORFIT/resources/best_fit/*
 *.log
 setup/environment/*
 setup/miniconda/*
+setup/variables/.env
 
 *.egg-info
 !.gitkeep
+
 
