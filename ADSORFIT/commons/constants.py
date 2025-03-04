@@ -12,6 +12,6 @@ LOGS_PATH = join(PROJECT_DIR, 'resources', 'logs')
 # [FILENAMES]
 ###############################################################################
 DATASET_PATH = join(DATA_PATH, 'adsorption_data.csv') 
-RESULTS_PATH = join(DATA_PATH, 'adsorption_model_fit.csv')
+VALIDATION_PATH = join(DATA_PATH, 'adsorption_model_fit.csv')
 
 

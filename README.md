@@ -26,7 +26,7 @@ On Windows, run *start_on_windows.bat* to launch the main navigation menu and br
 
 ### 3.1 Navigation menu
 
-**1) Run ADSORFIT UI:** launch ADSORFIT to access the main user interface, which is organized into two distinct tabs. The first tab is designed for performing core computational tasks such as fitting adsorption models to isotherm data and preprocessing data. The second tab provides an interface for reviewing and adjusting key adsorption model parameters. Below are snapshots illustrating the layout and functionality of main UI:
+**1) Run ADSORFIT UI:** Launch ADSORFIT to access the main user interface, which is organized into two distinct tabs. The first tab allows users to perform essential computational tasks, such as fitting adsorption models to isotherm data and preprocessing datasets. The second tab provides an intuitive interface for reviewing and adjusting critical adsorption model parameters. Users can specify the maximum number of iterations for data fitting and choose whether to automatically infer column content based on their names. Additionally, users can opt to save multiple CSV files, where the best model is selected and releated results are displayed. Below are snapshots illustrating the layout and functionality of main UI:
 
 ![Solver UI snapshot](ADSORFIT/commons/assets/solver_UI.png)
 

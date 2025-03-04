@@ -5,7 +5,7 @@ import pandas as pd
 from difflib import get_close_matches
 from nicegui import ui
 
-from ADSORFIT.commons.constants import RESULTS_PATH, DATASET_PATH, BEST_FIT_PATH
+from ADSORFIT.commons.constants import VALIDATION_PATH, DATASET_PATH, BEST_FIT_PATH
 from ADSORFIT.commons.logger import logger
 
 
@@ -148,7 +148,7 @@ class DatasetAdapter:
     #--------------------------------------------------------------------------
     def save_data_to_csv(self, dataset : pd.DataFrame, configuration : dict, save_best_models):
         
-        dataset.to_csv(RESULTS_PATH, index=False, sep=';', encoding='utf-8')
+        dataset.to_csv(VALIDATION_PATH, index=False, sep=';', encoding='utf-8')
         if save_best_models:
             for model in configuration.keys():
                 model_dataset = dataset[dataset['best model'] == model]
