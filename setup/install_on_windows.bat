@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-for /f "delims=" %%i in ("%~dp0..") do set "project_folder=%%~fi"
+for /f "delims=" %%i in ("%~dp0.") do set "project_folder=%%~fi"
 set "env_name=ADSORFIT"
 set "project_name=ADSORFIT"
 set "setup_path=%project_folder%\setup"
@@ -43,7 +43,7 @@ echo.
 echo Checking git installation
 git --version >nul 2>&1
 if errorlevel 1 (
-    echo Git not found. Installing git using conda...
+    echo Git not found. Installing git using conda..
     call conda install -y git
 ) else (
     echo Git is already installed.

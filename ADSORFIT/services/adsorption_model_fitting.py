@@ -32,25 +32,14 @@ with ui.tab_panels(tabs, value=tab_main) as panels:
     with ui.tab_panel(tab_main).classes('w-full justify-between'):
         with ui.row().classes('w-full no-wrap justify-between'):           
             with ui.column().classes('w-full p-4'):
-                identify_cols = ui.checkbox('Automatically detect columns')
-                best_models = ui.checkbox('Identify best models')                
+                identify_cols = ui.checkbox('Automatically detect columns') 
+                best_models = ui.checkbox('Identify best models')
+                max_iterations = ui.number("Max iterations", value=1000)               
+                      
             with ui.column().classes('w-full p-4'):
-                max_iterations = ui.number("Max iterations", value=1000)
-            with ui.column().classes('w-full p-4'):
-                stats = ui.markdown(content="Statistics will be displayed here.").style(
-                    'padding: 10px; width: 400px; text-align: left;')                           
-
-        ui.separator()
-
-        # [BUTTONS ROW]
-        #----------------------------------------------------------------------
-        # define two buttons to load and process the data and to start the data fitting
-        with ui.row().classes('w-full no-wrap justify-between'):
-            with ui.column().classes('w-full p-4'):                
                 ui.button(
                     'Process data', on_click=lambda : [processor.preprocess_dataset(identify_cols.value),
-                                                       stats.set_content(processor.stats)]) 
-            with ui.column().classes('w-full p-4'):     
+                                                       stats.set_content(processor.stats)])           
                 data_fitting_button = ui.button(
                     'Data fitting', on_click=lambda : [solver.start_data_fitting_thread(
                                                        processor.processed_data,
@@ -59,8 +48,11 @@ with ui.tab_panels(tabs, value=tab_main) as panels:
                                                        processor.uptake_col,
                                                        models_widgets.model_states,
                                                        max_iterations.value,
-                                                       best_models.value)])                
-
+                                                       best_models.value)])      
+            with ui.column().classes('w-full p-4'):
+                stats = ui.markdown(content="Statistics will be displayed here.").style(
+                    'padding: 10px; width: 400px; text-align: left;')  
+                       
         # [PROGRESS BAR]
         #----------------------------------------------------------------------
         with ui.row().classes('w-full no-wrap justify-between'):              

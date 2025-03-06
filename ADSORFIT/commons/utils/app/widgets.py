@@ -2,8 +2,8 @@ from nicegui import ui
 import copy
 
 from ADSORFIT.commons.utils.app.threads import SolverThread
-from ADSORFIT.commons.constants import PROJECT_DIR, VALIDATION_PATH, DATASET_PATH, BEST_FIT_PATH
 from ADSORFIT.commons.logger import logger
+
 
 # Progress bar widget for tracking the progress of operations in the GUI
 ###############################################################################

@@ -5,7 +5,7 @@ import pandas as pd
 from difflib import get_close_matches
 from nicegui import ui
 
-from ADSORFIT.commons.constants import VALIDATION_PATH, DATASET_PATH, BEST_FIT_PATH
+from ADSORFIT.commons.constants import DATASET_PATH, BEST_FIT_PATH
 from ADSORFIT.commons.logger import logger
 
 
@@ -17,8 +17,7 @@ class AdsorptionDataProcessing:
         self.dataset = pd.read_csv(DATASET_PATH, sep =';', encoding='utf-8')  
         self.processed_data = pd.DataFrame() 
         self.stats = None   
-        self.processing_done = False
-         
+        self.processing_done = False         
         self.experiment_col = 'experiment'
         self.temperature_col = 'temperature [K]'  
         self.pressure_col = 'pressure [Pa]' 

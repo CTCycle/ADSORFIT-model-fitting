@@ -53,7 +53,6 @@ LOG_CONFIG =  {
     },    
 }
 
-
 # override logger configuration and load root logger
 ###############################################################################
 logging.config.dictConfig(LOG_CONFIG)
