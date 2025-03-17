@@ -46,9 +46,10 @@ Each adsorption model can be configured in the **Model Configuration** tab where
 
 **Environmental variables** are stored in *setup/variables/.env*. For security reasons, this file is typically not uploaded to GitHub. Instead, you must create this file manually by copying the template from *resources/templates/.env* and placing it in the *setup/variables* directory.
 
-**NICEGUI_PORT** – Specifies the port on which the NiceGUI application runs. The default is 8080
-
-**NICEGUI_HOST** – Defines the host address for the NiceGUI server. (0.0.0.0 allows the application to be accessible from any network interface).
+| Variable              | Description                                              |
+|-----------------------|----------------------------------------------------------|
+| NICEGUI_PORT          | Port to run NiceGUI application  (default is 8080)       |
+| NICEGUI_HOST          | Host address for the NiceGUI server                      |
 
 ## 5. License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.
