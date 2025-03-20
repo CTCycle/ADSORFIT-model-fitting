@@ -31,11 +31,10 @@ On Windows, run *start_on_windows.bat* to launch the main navigation menu and br
 **3) Exit:** close the program immediately 
 
 ### 3.2 Resources
-This is where you can find the source adsorption data and the fitting results. The experimental adsorption isotherm data should be loaded in this folder as a CSV file named *adsorption_data.csv*. If automatic column name detection is disabled, the file must include the following columns with these exact names and units: *experiment*, *temperature [K]*, *pressure [Pa]*, and *uptake [mol/g]*. On the other hand, if the option to automatically detect columns is selected, ADSORFIT will identify target columns based on keywords and string pattern matching.
+This folder organizes data and results of the curve fitting operations, and by default all data is stored within an SQLite database. To visualize and interact with SQLite database files, we recommend downloading and installing the DB Browser for SQLite, available at: https://sqlitebrowser.org/dl/.
 
-A template of the expected CSV format is available at *resources/templates/adsorption_data.csv*. 
 
-- **best fit:** collects the best fitting results obtained from different models, if the option is selected during data fitting.
+- **database:** The experimental adsorption isotherm data should be loaded in this folder as a CSV file named *adsorption_data.csv*. If automatic column name detection is disabled, the file must include the following columns with these exact names and units: *experiment*, *temperature [K]*, *pressure [Pa]*, and *uptake [mol/g]*. On the other hand, if the option to automatically detect columns is selected, ADSORFIT will identify target columns based on keywords and string pattern matching. A template of the expected CSV format is available at *resources/templates/adsorption_data.csv*. Fitting results will be centrally stored within the main database *ADSORFIT_database.db*. 
 
 - **logs:** log files are saved here
 

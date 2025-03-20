@@ -4,8 +4,7 @@ from os.path import join, abspath
 ###############################################################################
 ROOT_DIR = abspath(join(__file__, "../../.."))
 PROJECT_DIR = join(ROOT_DIR, 'ADSORFIT')
-DATA_PATH = join(PROJECT_DIR, 'resources')
-BEST_FIT_PATH = join(DATA_PATH, 'best fit')
+DATA_PATH = join(PROJECT_DIR, 'resources', 'database')
 LOGS_PATH = join(PROJECT_DIR, 'resources', 'logs')
 
 # [FILENAMES]

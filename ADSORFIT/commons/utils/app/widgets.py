@@ -38,6 +38,7 @@ class ProgressBarWidgets:
                     solver.total = 0
             else:
                 progress_bar.visible = False
+                
 
 ###############################################################################
 class ModelsConfigurationWidgets:

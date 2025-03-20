@@ -92,8 +92,7 @@ class AdsorptionModels:
         return qe
     
     #--------------------------------------------------------------------------
-    def get_model(self, model_name): 
-
+    def get_model(self, model_name):
         models = {'LANGMUIR' : self.Langmuir_model,
                   'SIPS' : self.Sips_model,
                   'FREUNDLICH': self.Freundlich_model,

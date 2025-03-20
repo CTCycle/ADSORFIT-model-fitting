@@ -3,9 +3,9 @@ import re
 import numpy as np
 import pandas as pd
 from difflib import get_close_matches
-from nicegui import ui
 
-from ADSORFIT.commons.constants import DATASET_PATH, BEST_FIT_PATH
+from ADSORFIT.commons.utils.data.database import ADSORFITDatabase
+from ADSORFIT.commons.constants import DATASET_PATH, RESULTS_PATH
 from ADSORFIT.commons.logger import logger
 
 
@@ -24,8 +24,7 @@ class AdsorptionDataProcessing:
         self.uptake_col = 'uptake [mol/g]'
         
     #--------------------------------------------------------------------------
-    def identify_target_columns(self):
-        
+    def identify_target_columns(self):        
         target_patterns = {'experiment_col': 'experiment',
                            'temperature_col': 'temperature',
                            'pressure_col': 'pressure',
@@ -34,19 +33,20 @@ class AdsorptionDataProcessing:
         # Iterate over patterns to find matching columns in dataset
         for attr, pattern in target_patterns.items():  
             # Find columns that match the pattern (case-insensitive)
-            matched_cols = [col for col in self.dataset.columns if re.search(pattern, col, re.IGNORECASE)]
+            matched_cols = [col for col in self.dataset.columns 
+                            if re.search(pattern, col, re.IGNORECASE)]
 
             # If exact pattern match is not found, try to find a close match
             if not matched_cols:
-                close_matches = get_close_matches(pattern, self.dataset.columns, cutoff=0.6)
+                close_matches = get_close_matches(
+                    pattern, self.dataset.columns, cutoff=0.6)
                 if close_matches:                 
                     setattr(self, attr, close_matches[0])  
             else:                
                 setattr(self, attr, matched_cols[0])   
 
     #--------------------------------------------------------------------------
-    def drop_negative_values(self, dataset : pd.DataFrame):  
-
+    def drop_negative_values(self, dataset : pd.DataFrame):
         # remove negative values from temperature, pressure and uptake measurements
         dataset = dataset[dataset[self.temperature_col].astype(np.int32) > 0]
         dataset = dataset[dataset[self.pressure_col].astype(np.int32) >= 0]
@@ -56,30 +56,32 @@ class AdsorptionDataProcessing:
 
     #--------------------------------------------------------------------------
     def aggregate_by_experiment(self, dataset : pd.DataFrame):
-
         # create aggregation dictionary by setting aggregation rules
         # then perform grouping based on aggregated dictionary    
         aggregate_dict = {self.temperature_col : 'first',                  
                           self.pressure_col : list,
                           self.uptake_col : list}
                  
-        dataset_grouped = dataset.groupby(self.experiment_col, as_index=False).agg(aggregate_dict)        
+        dataset_grouped = dataset.groupby(
+            self.experiment_col, as_index=False).agg(aggregate_dict)        
 
         return dataset_grouped
     
     #--------------------------------------------------------------------------
     def calculate_min_max(self, dataset : pd.DataFrame):
-
-        dataset[f'min {self.pressure_col}'] = dataset[self.pressure_col].apply(lambda x : min(x))
-        dataset[f'max {self.pressure_col}'] = dataset[self.pressure_col].apply(lambda x : max(x))
-        dataset[f'min {self.uptake_col}'] = dataset[self.uptake_col].apply(lambda x : min(x))
-        dataset[f'max {self.uptake_col}'] = dataset[self.uptake_col].apply(lambda x : max(x))
+        dataset[f'min {self.pressure_col}'] = dataset[self.pressure_col].apply(
+            lambda x : min(x))
+        dataset[f'max {self.pressure_col}'] = dataset[self.pressure_col].apply(
+            lambda x : max(x))
+        dataset[f'min {self.uptake_col}'] = dataset[self.uptake_col].apply(
+            lambda x : min(x))
+        dataset[f'max {self.uptake_col}'] = dataset[self.uptake_col].apply(
+            lambda x : max(x))
 
         return dataset 
     
     #--------------------------------------------------------------------------
     def preprocess_dataset(self, detect_columns=False):
-
         if detect_columns:                  
             self.identify_target_columns()
 
@@ -88,12 +90,10 @@ class AdsorptionDataProcessing:
         processed_data = self.aggregate_by_experiment(processed_data)
         processed_data = self.calculate_min_max(processed_data)
         self.processed_data = processed_data
-        self.processing_done = True
-        
+        self.processing_done = True        
         num_experiments = processed_data.shape[0]
         num_measurements = no_nan_data.shape[0]  
-        removed_NaN = self.dataset.shape[0] - num_measurements
-        
+        removed_NaN = self.dataset.shape[0] - num_measurements        
 
         self.stats = f"""
         #### Dataset Statistics
@@ -109,15 +109,14 @@ class AdsorptionDataProcessing:
         **Average measurements by experiment:** {num_measurements / num_experiments:.1f}
         """
 
-        
-
 
 # [DATASET OPERATIONS]
 ###############################################################################
 class DatasetAdapter:
 
     def __init__(self):
-        pass    
+        self.csv_kwargs = {'index': False, 'sep': ';', 'encoding': 'utf-8'}
+        self.database = ADSORFITDatabase()    
 
     #--------------------------------------------------------------------------
     def adapt_results_to_dataset(self, fitting_results : dict, dataset):        
@@ -137,25 +136,29 @@ class DatasetAdapter:
     def find_best_model(self, dataset : pd.DataFrame):
        
         LSS_columns = [x for x in dataset.columns if 'LSS' in x]
-        dataset['best model'] = dataset[LSS_columns].apply(lambda x : x.idxmin(), axis=1)
-        dataset['best model'] = dataset['best model'].apply(lambda x : x.replace(' LSS', ''))
-        dataset['worst model'] = dataset[LSS_columns].apply(lambda x : x.idxmax(), axis=1)
-        dataset['worst model'] = dataset['worst model'].apply(lambda x : x.replace(' LSS', ''))
+        dataset['best model'] = dataset[LSS_columns].apply(
+            lambda x : x.idxmin(), axis=1)
+        dataset['best model'] = dataset['best model'].apply(
+            lambda x : x.replace(' LSS', ''))
+        dataset['worst model'] = dataset[LSS_columns].apply(
+            lambda x : x.idxmax(), axis=1)
+        dataset['worst model'] = dataset['worst model'].apply(
+            lambda x : x.replace(' LSS', ''))
 
         return dataset
     
     #--------------------------------------------------------------------------
-    def save_data_to_csv(self, dataset : pd.DataFrame, configuration : dict, save_best_models):
-        
-        dataset.to_csv(VALIDATION_PATH, index=False, sep=';', encoding='utf-8')
+    def save_to_database(self, dataset : pd.DataFrame, configuration : dict, save_best_models):        
+        # save dataframe as a table in sqlite database
+        self.database.save_fitting_results(dataset)
         if save_best_models:
             for model in configuration.keys():
                 model_dataset = dataset[dataset['best model'] == model]
                 model_cols = [x for x in model_dataset.columns if model in x]
                 target_cols = [x for x in model_dataset.columns[:8]] + model_cols
-                df_model = model_dataset[target_cols]
-                file_loc = os.path.join(BEST_FIT_PATH, f'{model}_best_fit.csv') 
-                df_model.to_csv(file_loc, index=False, sep=';', encoding='utf-8')
+                best_fit_data = model_dataset[target_cols]
+                table_name = f'BEST_FIT_{model}'
+                self.database.save_best_fit(best_fit_data, table_name)
 
   
 

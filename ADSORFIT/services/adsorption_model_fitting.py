@@ -6,7 +6,7 @@ warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
 from ADSORFIT.commons.utils.app.widgets import ModelsConfigurationWidgets, ProgressBarWidgets
-from ADSORFIT.commons.utils.datamaker.datasets import AdsorptionDataProcessing
+from ADSORFIT.commons.utils.data.processing import AdsorptionDataProcessing
 from ADSORFIT.commons.utils.app.threads import SolverThread
 from ADSORFIT.commons.logger import logger
 

@@ -1,6 +1,6 @@
 import threading
 
-from ADSORFIT.commons.utils.datamaker.datasets import DatasetAdapter
+from ADSORFIT.commons.utils.data.processing import DatasetAdapter
 from ADSORFIT.commons.utils.solver.fitting import ModelSolver
 from ADSORFIT.commons.logger import logger
                 
@@ -42,4 +42,4 @@ class SolverThread:
       # downstream data manipulation and process to adapt the results to the dataset
       fitting_dataset = self.adapter.adapt_results_to_dataset(fitting_results, processed_data)
       fitting_dataset = self.adapter.find_best_model(fitting_dataset) if find_best_models else fitting_dataset
-      self.adapter.save_data_to_csv(fitting_dataset, model_states, find_best_models)
+      self.adapter.save_to_database(fitting_dataset, model_states, find_best_models)
