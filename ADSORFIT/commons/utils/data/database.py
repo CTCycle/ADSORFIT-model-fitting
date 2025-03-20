@@ -10,7 +10,15 @@ from ADSORFIT.commons.logger import logger
 class ADSORFITDatabase:
 
     def __init__(self):             
-        self.db_path = os.path.join(DATA_PATH, 'ADSORFIT_database.db')                  
+        self.db_path = os.path.join(DATA_PATH, 'ADSORFIT_database.db')  
+
+    #--------------------------------------------------------------------------
+    def save_adsorption_data(self, data : pd.DataFrame): 
+        # connect to sqlite database and save the preprocessed data as table
+        conn = sqlite3.connect(self.db_path)         
+        data.to_sql('ADSORPTION_DATA', conn, if_exists='replace')
+        conn.commit()
+        conn.close()                
 
     #--------------------------------------------------------------------------
     def save_fitting_results(self, data : pd.DataFrame): 

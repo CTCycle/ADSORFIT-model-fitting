@@ -13,8 +13,11 @@ from ADSORFIT.commons.logger import logger
 ###############################################################################
 class AdsorptionDataProcessing:
 
-    def __init__(self):           
-        self.dataset = pd.read_csv(DATASET_PATH, sep =';', encoding='utf-8')  
+    def __init__(self): 
+        self.database = ADSORFITDatabase()          
+        self.dataset = pd.read_csv(DATASET_PATH, sep =';', encoding='utf-8')
+        self.database.save_adsorption_data(self.dataset) 
+
         self.processed_data = pd.DataFrame() 
         self.stats = None   
         self.processing_done = False         
@@ -133,8 +136,7 @@ class DatasetAdapter:
         return dataset   
     
     #--------------------------------------------------------------------------
-    def find_best_model(self, dataset : pd.DataFrame):
-       
+    def find_best_model(self, dataset : pd.DataFrame):       
         LSS_columns = [x for x in dataset.columns if 'LSS' in x]
         dataset['best model'] = dataset[LSS_columns].apply(
             lambda x : x.idxmin(), axis=1)
@@ -150,6 +152,7 @@ class DatasetAdapter:
     #--------------------------------------------------------------------------
     def save_to_database(self, dataset : pd.DataFrame, configuration : dict, save_best_models):        
         # save dataframe as a table in sqlite database
+        dataset.drop(columns=['pressure [Pa]', 'uptake [mol/g]'], inplace=True)
         self.database.save_fitting_results(dataset)
         if save_best_models:
             for model in configuration.keys():

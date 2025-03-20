@@ -1,12 +1,12 @@
-ADSORFIT/resources/best_fit/*
-
-*.log
+ADSORFIT/resources/database/*
 
 setup/environment/*
 setup/miniconda/*
 setup/variables/.env
 
 __pycache__
+*.db
+*.log
 *.egg-info
 !.gitkeep
 
