@@ -118,7 +118,7 @@ class AdsorptionDataProcessing:
 class DatasetAdapter:
 
     def __init__(self):
-        self.csv_kwargs = {'index': False, 'sep': ';', 'encoding': 'utf-8'}
+        self.csv_kwargs = {'sep': ';', 'encoding': 'utf-8'}
         self.database = ADSORFITDatabase()    
 
     #--------------------------------------------------------------------------
