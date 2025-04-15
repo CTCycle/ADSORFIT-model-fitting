@@ -57,7 +57,7 @@ goto :dependencies
 :dependencies
 echo.
 echo Install python libraries and packages
-call pip install numpy==2.0.2 pandas==2.2.3 tqdm==4.67.1 scikit-learn==1.6.1
+call pip install numpy==2.1.3 pandas==2.2.3 tqdm==4.67.1 scikit-learn==1.6.1
 call pip install nicegui==2.10.0
 
 :: [INSTALL PROJECT IN EDITABLE MODE] 
