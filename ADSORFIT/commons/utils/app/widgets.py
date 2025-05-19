@@ -60,7 +60,7 @@ class ModelsConfigurationWidgets:
         self.default_values = copy.deepcopy(self.model_states)
               
     #--------------------------------------------------------------------------
-    def model_configurations(self):
+    def model_configuration(self):
         for model_name, params in self.model_states.items():
             ui.separator()
             with ui.grid().style('grid-template-columns: 1fr 2fr 3fr'):

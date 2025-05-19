@@ -40,7 +40,7 @@ This folder organizes data and results of the curve fitting operations, and by d
 
 - **templates:** reference template files can be found here
 
-### 4. Configurations
+### 4. Configuration
 Each adsorption model can be configured in the **Model Configuration** tab where you can set an initial guess value for the adsorption model parameters,as well as boundaries for the minimun and maximum expected values.
 
 **Environmental variables** are stored in *setup/variables/.env*. For security reasons, this file is typically not uploaded to GitHub. Instead, you must create this file manually by copying the template from *resources/templates/.env* and placing it in the *setup/variables* directory.

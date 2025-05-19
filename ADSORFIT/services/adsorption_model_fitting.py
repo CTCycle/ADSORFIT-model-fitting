@@ -13,10 +13,10 @@ from ADSORFIT.commons.logger import logger
 
 ###############################################################################
 # build tabs for the main UI. One tab will display the solver homepage while the
-# second tab holds the model configurations with togglable widgets 
+# second tab holds the model configuration with togglable widgets 
 with ui.tabs() as tabs:    
     tab_main = ui.tab('ADSORFIT Solver')
-    tab_parameters = ui.tab('Model configurations')
+    tab_parameters = ui.tab('Model configuration')
 
 # define the tab panels where we place the wigdets for each tab. At first,
 # We initialize the progress bar and the core solver thread that will be used to fit the data
@@ -66,7 +66,7 @@ with ui.tab_panels(tabs, value=tab_main) as panels:
     #--------------------------------------------------------------------------
     with ui.tab_panel(tab_parameters):
         models_widgets = ModelsConfigurationWidgets()       
-        models_widgets.model_configurations()          
+        models_widgets.model_configuration()          
 
 # run the main UI
 ui.run()
