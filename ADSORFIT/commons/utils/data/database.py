@@ -13,7 +13,7 @@ class ADSORFITDatabase:
         self.db_path = os.path.join(DATA_PATH, 'ADSORFIT_database.db')  
 
     #--------------------------------------------------------------------------
-    def save_adsorption_data(self, data : pd.DataFrame): 
+    def save_adsorption_data(self, data): 
         # connect to sqlite database and save the preprocessed data as table
         conn = sqlite3.connect(self.db_path)         
         data.to_sql('ADSORPTION_DATA', conn, if_exists='replace')
@@ -21,7 +21,7 @@ class ADSORFITDatabase:
         conn.close()                
 
     #--------------------------------------------------------------------------
-    def save_fitting_results(self, data : pd.DataFrame): 
+    def save_fitting_results(self, data): 
         # connect to sqlite database and save the preprocessed data as table
         conn = sqlite3.connect(self.db_path)         
         data.to_sql('ADSORPTION_FITTING_RESULTS', conn, if_exists='replace')
@@ -29,7 +29,7 @@ class ADSORFITDatabase:
         conn.close() 
 
     #--------------------------------------------------------------------------
-    def save_best_fit(self, data : pd.DataFrame, table_name='BEST_FIT'): 
+    def save_best_fit(self, data, table_name='BEST_FIT'): 
         # connect to sqlite database and save the preprocessed data as table
         conn = sqlite3.connect(self.db_path)         
         data.to_sql(table_name, conn, if_exists='replace')

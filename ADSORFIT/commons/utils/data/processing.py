@@ -49,7 +49,7 @@ class AdsorptionDataProcessing:
                 setattr(self, attr, matched_cols[0])   
 
     #--------------------------------------------------------------------------
-    def drop_negative_values(self, dataset : pd.DataFrame):
+    def drop_negative_values(self, dataset):
         # remove negative values from temperature, pressure and uptake measurements
         dataset = dataset[dataset[self.temperature_col].astype(np.int32) > 0]
         dataset = dataset[dataset[self.pressure_col].astype(np.int32) >= 0]
@@ -58,7 +58,7 @@ class AdsorptionDataProcessing:
         return dataset   
 
     #--------------------------------------------------------------------------
-    def aggregate_by_experiment(self, dataset : pd.DataFrame):
+    def aggregate_by_experiment(self, dataset):
         # create aggregation dictionary by setting aggregation rules
         # then perform grouping based on aggregated dictionary    
         aggregate_dict = {self.temperature_col : 'first',                  
@@ -71,7 +71,7 @@ class AdsorptionDataProcessing:
         return dataset_grouped
     
     #--------------------------------------------------------------------------
-    def calculate_min_max(self, dataset : pd.DataFrame):
+    def calculate_min_max(self, dataset):
         dataset[f'min {self.pressure_col}'] = dataset[self.pressure_col].apply(
             lambda x : min(x))
         dataset[f'max {self.pressure_col}'] = dataset[self.pressure_col].apply(
@@ -136,7 +136,7 @@ class DatasetAdapter:
         return dataset   
     
     #--------------------------------------------------------------------------
-    def find_best_model(self, dataset : pd.DataFrame):       
+    def find_best_model(self, dataset):       
         LSS_columns = [x for x in dataset.columns if 'LSS' in x]
         dataset['best model'] = dataset[LSS_columns].apply(
             lambda x : x.idxmin(), axis=1)
@@ -150,7 +150,7 @@ class DatasetAdapter:
         return dataset
     
     #--------------------------------------------------------------------------
-    def save_to_database(self, dataset : pd.DataFrame, configuration : dict, save_best_models):        
+    def save_to_database(self, dataset, configuration : dict, save_best_models):        
         # save dataframe as a table in sqlite database
         dataset.drop(columns=['pressure [Pa]', 'uptake [mol/g]'], inplace=True)
         self.database.save_fitting_results(dataset)
