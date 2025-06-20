@@ -1,14 +1,16 @@
 ADSORFIT/resources/database/*
 
-setup/environment/*
-setup/miniconda/*
-setup/variables/.env
+!ADSORFIT/commons/assets/*
+ADSORFIT/app/python/*
+ADSORFIT/app/git/*
 
 __pycache__
+*.jpeg
+*.jpg
+*.png
 *.db
 *.log
+*.npy
 *.egg-info
 !.gitkeep
-
-
 
