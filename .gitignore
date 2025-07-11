@@ -1,8 +1,8 @@
 ADSORFIT/resources/database/*
 
 !ADSORFIT/commons/assets/*
-ADSORFIT/app/python/*
-ADSORFIT/app/git/*
+ADSORFIT/setup/python/*
+ADSORFIT/setup/git/*
 
 __pycache__
 *.jpeg
