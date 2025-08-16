@@ -10,10 +10,10 @@ from PySide6.QtWidgets import (QPushButton, QCheckBox, QPlainTextEdit, QSpinBox,
                                QGraphicsScene, QGraphicsPixmapItem, QGraphicsView, QDialog)
 
 from TokenBenchy.app.utils.data.database import TokenBenchyDatabase
-from TokenBenchy.app.interface.dialogs import SaveConfigDialog, LoadConfigDialog
-from TokenBenchy.app.interface.events import DatasetEvents, BenchmarkEvents, VisualizationEnvents
+from TokenBenchy.app.client.dialogs import SaveConfigDialog, LoadConfigDialog
+from TokenBenchy.app.client.events import DatasetEvents, BenchmarkEvents, VisualizationEnvents
 from TokenBenchy.app.configuration import Configuration
-from TokenBenchy.app.interface.workers import ThreadWorker
+from TokenBenchy.app.client.workers import ThreadWorker
 from TokenBenchy.app.logger import logger
 
 

@@ -7,7 +7,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from ADSORFIT.app.interface.window import MainWindow
+from ADSORFIT.app.client.window import MainWindow
 from ADSORFIT.app.constants import UI_PATH
 from ADSORFIT.app.logger import logger
 
