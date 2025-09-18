@@ -1,55 +1,70 @@
-import os
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, QLabel, 
-                               QDialogButtonBox, QListWidget)
+from __future__ import annotations
+
+from pathlib import Path
+
+from PySide6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QLineEdit,
+    QListWidget,
+    QVBoxLayout,
+    QLabel,
+)
 
 from ADSORFIT.app.constants import CONFIG_PATH
-         
+
 
 ###############################################################################
 class SaveConfigDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Save Configuration As")
-        self.layout = QVBoxLayout(self)
-
-        self.label = QLabel("Enter a name for your configuration:", self)
-        self.layout.addWidget(self.label)
+        self.setWindowTitle("Save Configuration")
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Enter a name for your configuration:", self))
 
         self.name_edit = QLineEdit(self)
-        self.layout.addWidget(self.name_edit)
+        layout.addWidget(self.name_edit)
 
-        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        self.layout.addWidget(self.buttons)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel,
+            parent=self,
+        )
+        layout.addWidget(buttons)
 
-        self.buttons.accepted.connect(self.accept)
-        self.buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
 
-    def get_name(self):
-        return self.name_edit.text().strip()       
+    # -------------------------------------------------------------------------
+    def get_name(self) -> str:
+        return self.name_edit.text().strip()
 
-###############################################################################   
+
+###############################################################################
 class LoadConfigDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Load Configuration")
-        self.layout = QVBoxLayout(self)
-
-        self.label = QLabel("Select a configuration:", self)
-        self.layout.addWidget(self.label)
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Select a configuration:", self))
 
         self.config_list = QListWidget(self)
-        self.layout.addWidget(self.config_list)
+        layout.addWidget(self.config_list)
 
-        # Populate the list with available .json files
-        configs = [f for f in os.listdir(CONFIG_PATH) if f.endswith('.json')]
-        self.config_list.addItems(configs)
+        config_dir = Path(CONFIG_PATH)
+        config_dir.mkdir(parents=True, exist_ok=True)
+        for path in sorted(config_dir.glob("*.json")):
+            self.config_list.addItem(path.name)
 
-        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        self.layout.addWidget(self.buttons)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel,
+            parent=self,
+        )
+        layout.addWidget(buttons)
 
-        self.buttons.accepted.connect(self.accept)
-        self.buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
 
-    def get_selected_config(self):
-        selected = self.config_list.currentItem()
-        return selected.text() if selected else None
+    # -------------------------------------------------------------------------
+    def get_selected_config(self) -> str | None:
+        item = self.config_list.currentItem()
+        return item.text() if item else None

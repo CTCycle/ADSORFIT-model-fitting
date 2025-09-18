@@ -1,82 +1,105 @@
+from __future__ import annotations
+
 import inspect
-import pandas as pd
+from typing import Any
+
 import numpy as np
+import pandas as pd
 from scipy.optimize import curve_fit
 
-from ADSORFIT.commons.utils.solver.models import AdsorptionModels
-from ADSORFIT.commons.logger import logger
+from ADSORFIT.app.logger import logger
+from ADSORFIT.app.utils.solver.models import AdsorptionModels
 
-                
-# [FITTING FUNCTION]
+
 ###############################################################################
 class ModelSolver:
+    def __init__(self) -> None:
+        self.collection = AdsorptionModels()
 
-    def __init__(self):
-        self.collection = AdsorptionModels()  
-        
-    #--------------------------------------------------------------------------
-    def single_experiment_fit(self, X, Y, exp_name, configuration, max_iterations):        
-        results = {}        
-        for name, conf in configuration.items():
-            # get the model based on name indexing            
-            model = self.collection.get_model(name) 
-            # get the model function signature to retrieve its arguments
-            signature = inspect.signature(model)            
-            fn_parameters = [name for name in signature.parameters.keys()][1:]
-            p0_values = [v for v in conf['initial'].values()]
-            num_params = len(p0_values)
-            boundaries = ([v for v in conf['min'].values()], 
-                          [v for v in conf['max'].values()])            
+    # -------------------------------------------------------------------------
+    def single_experiment_fit(
+        self,
+        pressure: np.ndarray,
+        uptake: np.ndarray,
+        experiment_name: str,
+        configuration: dict[str, Any],
+        max_iterations: int,
+    ) -> dict[str, dict[str, Any]]:
+        results: dict[str, dict[str, Any]] = {}
+        for model_name, model_config in configuration.items():
+            model = self.collection.get_model(model_name)
+            signature = inspect.signature(model)
+            param_names = list(signature.parameters.keys())[1:]
+            initial = [model_config.get("initial", {}).get(param, 1.0) for param in param_names]
+            lower = [model_config.get("min", {}).get(param, 0.0) for param in param_names]
+            upper = [model_config.get("max", {}).get(param, 100.0) for param in param_names]
+
             try:
                 optimal_params, covariance = curve_fit(
-                    model, X, Y, p0=p0_values, bounds=boundaries, full_output=False, 
-                    maxfev=max_iterations, check_finite=True, absolute_sigma=False)
-                
-                # Calculate LSS comparing predicted vs true value 
-                predicted_Y = model(X, *optimal_params)                
-                lss = np.sum((Y - predicted_Y) ** 2, dtype=np.float32)
+                    model,
+                    pressure,
+                    uptake,
+                    p0=initial,
+                    bounds=(lower, upper),
+                    maxfev=max_iterations,
+                    check_finite=True,
+                    absolute_sigma=False,
+                )
+                optimal_list = optimal_params.tolist()
+                predicted = model(pressure, *optimal_params)
+                lss = float(np.sum((uptake - predicted) ** 2, dtype=np.float64))
+                errors = (
+                    np.sqrt(np.diag(covariance)).tolist() if covariance is not None else None
+                )
+                results[model_name] = {
+                    "optimal_params": optimal_list,
+                    "covariance": covariance.tolist() if covariance is not None else None,
+                    "errors": errors if errors is not None else [np.nan] * len(param_names),
+                    "LSS": lss,
+                    "arguments": param_names,
+                }
+            except Exception as exc:  # noqa: BLE001
+                logger.exception(
+                    "Failed to fit experiment %s with model %s", experiment_name, model_name
+                )
+                results[model_name] = {
+                    "optimal_params": [np.nan] * len(param_names),
+                    "covariance": None,
+                    "errors": [np.nan] * len(param_names),
+                    "LSS": np.nan,
+                    "arguments": param_names,
+                    "exception": exc,
+                }
+        return results
 
-                # Calculate errors from covariance                 
-                errors = np.sqrt(np.diag(covariance))
-                results[name] = {'optimal_params': optimal_params, 
-                                 'covariance': covariance, 
-                                 'errors': errors,
-                                 'LSS' : lss,
-                                 'arguments' : fn_parameters}
-                                
-            except Exception as e: 
-                logger.error(f'Could not fit {exp_name} data using {name} - Error: {e}')               
-                nan_list = [np.nan for x in range(num_params)]
-                results[name] = {'optimal_params': nan_list, 
-                                 'covariance': nan_list, 
-                                 'errors': nan_list,
-                                 'LSS' : np.nan,
-                                 'arguments' : fn_parameters,
-                                 'exception' : e}                
+    # -------------------------------------------------------------------------
+    def bulk_data_fitting(
+        self,
+        dataset: pd.DataFrame,
+        configuration: dict[str, Any],
+        pressure_col: str,
+        uptake_col: str,
+        max_iterations: int,
+        progress_callback: Any | None = None,
+    ) -> dict[str, list[dict[str, Any]]]:
+        results: dict[str, list[dict[str, Any]]] = {
+            model: [] for model in configuration.keys()
+        }
+        total_experiments = dataset.shape[0]
+        for index, row in dataset.iterrows():
+            pressure = np.asarray(row[pressure_col], dtype=np.float64)
+            uptake = np.asarray(row[uptake_col], dtype=np.float64)
+            experiment_name = row.get("experiment", f"experiment_{index}")
+            experiment_results = self.single_experiment_fit(
+                pressure,
+                uptake,
+                experiment_name,
+                configuration,
+                max_iterations,
+            )
+            for model_name, data in experiment_results.items():
+                results[model_name].append(data)
 
-        return results 
-    
-    #--------------------------------------------------------------------------    
-    def bulk_data_fitting(self, dataset: pd.DataFrame, experiment_col,
-                          pressure_col, uptake_col, configuration: dict,
-                          max_iterations, progress_callback=None):
-
-        experiments = dataset[experiment_col].to_list()
-        pressures = [np.array(x, dtype=np.float32) for x in dataset[pressure_col].to_list()]
-        uptakes = [np.array(x, dtype=np.float32) for x in dataset[uptake_col].to_list()]
-        total_experiments = len(experiments)
-
-        # fitting adsorption isotherm data with theoretical models
-        results_dictionary = {k: [] for k in configuration.keys()}
-        for idx, (x, y, name) in enumerate(zip(pressures, uptakes, experiments)):
-            results = self.single_experiment_fit(x, y, name, configuration, max_iterations)
-            for model in configuration.keys():
-                results_dictionary[model].append(results[model])
-
-            # Update progress
-            if progress_callback:
-                progress_callback(idx + 1, total_experiments)
-
-        return results_dictionary
-
-   
+            if progress_callback is not None:
+                progress_callback(index + 1, total_experiments)
+        return results

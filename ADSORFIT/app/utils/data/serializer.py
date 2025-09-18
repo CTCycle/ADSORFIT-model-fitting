@@ -1,58 +1,67 @@
 from __future__ import annotations
 
+import json
+from typing import Any
+
 import pandas as pd
 
-from TokenBenchy.app.utils.data.database import database
+from ADSORFIT.app.utils.data.database import database
+
+RAW_DATA_TABLE = "ADSORPTION_DATA"
+PROCESSED_DATA_TABLE = "ADSORPTION_PROCESSED_DATA"
+FITTING_RESULTS_TABLE = "ADSORPTION_FITTING_RESULTS"
+BEST_FIT_TABLE = "ADSORPTION_BEST_FIT"
 
 
-# [DATA SERIALIZATION]
 ###############################################################################
 class DataSerializer:
-    def __init__(self) -> None:
-        pass
+    # -------------------------------------------------------------------------
+    def save_raw_dataset(self, dataset: pd.DataFrame) -> None:
+        database.write_dataframe(dataset, RAW_DATA_TABLE)
 
     # -------------------------------------------------------------------------
-    def load_local_metrics(self) -> pd.DataFrame:
-        # Local per-text, per-tokenizer stats
-        return database.load_from_database("TOKENIZATION_LOCAL_STATS")
-    # -------------------------------------------------------------------------
-    def load_global_metrics(self) -> pd.DataFrame:
-        return database.load_from_database("TOKENIZATION_GLOBAL_METRICS")
+    def load_raw_dataset(self) -> pd.DataFrame:
+        return database.read_dataframe(RAW_DATA_TABLE)
 
     # -------------------------------------------------------------------------
-    def load_vocabularies(self) -> pd.DataFrame:
-        return database.load_from_database("VOCABULARY")
+    def save_processed_dataset(self, dataset: pd.DataFrame) -> None:
+        encoded = dataset.applymap(self._encode_lists)
+        database.write_dataframe(encoded, PROCESSED_DATA_TABLE)
 
     # -------------------------------------------------------------------------
-    def load_text_dataset(self) -> pd.DataFrame:
-        return database.load_from_database("TEXT_DATASET")
+    def load_processed_dataset(self) -> pd.DataFrame:
+        df = database.read_dataframe(PROCESSED_DATA_TABLE)
+        return df.applymap(self._decode_lists)
 
     # -------------------------------------------------------------------------
-    def save_text_dataset(self, dataset: pd.DataFrame) -> None:
-        database.save_into_database(dataset, "TEXT_DATASET")
+    def save_fitting_results(self, dataset: pd.DataFrame) -> None:
+        database.write_dataframe(dataset, FITTING_RESULTS_TABLE)
 
     # -------------------------------------------------------------------------
-    def save_dataset_statistics(self, dataset: pd.DataFrame) -> None:
-        database.upsert_into_database(dataset, "TEXT_DATASET_STATISTICS")
+    def load_fitting_results(self) -> pd.DataFrame:
+        return database.read_dataframe(FITTING_RESULTS_TABLE)
 
     # -------------------------------------------------------------------------
-    def save_vocabulary_tokens(self, dataset: pd.DataFrame) -> None:
-        database.upsert_into_database(dataset, "VOCABULARY")
+    def save_best_fit(self, dataset: pd.DataFrame) -> None:
+        database.write_dataframe(dataset, BEST_FIT_TABLE)
 
     # -------------------------------------------------------------------------
-    def save_vocabulary_statistics(self, dataset: pd.DataFrame) -> None:
-        database.save_into_database(dataset, "VOCABULARY_STATISTICS")
+    def load_best_fit(self) -> pd.DataFrame:
+        return database.read_dataframe(BEST_FIT_TABLE)
 
     # -------------------------------------------------------------------------
-    def save_local_metrics(self, dataset: pd.DataFrame) -> None:
-        database.save_into_database(dataset, "TOKENIZATION_LOCAL_STATS")
+    @staticmethod
+    def _encode_lists(value: Any) -> Any:
+        if isinstance(value, list):
+            return json.dumps(value)
+        return value
 
     # -------------------------------------------------------------------------
-    def save_NSL_benchmark(self, dataset: pd.DataFrame) -> None:
-        database.save_into_database(dataset, "NSL_RESULTS")
-
-    # -------------------------------------------------------------------------
-    def save_global_metrics(self, dataset: pd.DataFrame) -> None:
-        database.upsert_into_database(dataset, "TOKENIZATION_GLOBAL_METRICS")
-
-
+    @staticmethod
+    def _decode_lists(value: Any) -> Any:
+        if isinstance(value, str) and value.startswith("["):
+            try:
+                return json.loads(value)
+            except json.JSONDecodeError:
+                return value
+        return value

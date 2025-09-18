@@ -1,79 +1,76 @@
-import os
-import json
+from __future__ import annotations
 
-from FAIRS.app.constants import CONFIG_PATH
+import json
+from copy import deepcopy
+from pathlib import Path
+from typing import Any
+
+from ADSORFIT.app.constants import CONFIG_PATH, DATASET_PATH
+
+DEFAULT_CONFIGURATION: dict[str, Any] = {
+    "datasetPath": DATASET_PATH,
+    "detectCols": True,
+    "maxIterations": 50000,
+    "selectLangmuir": False,
+    "experimentColumn": "experiment",
+    "temperatureColumn": "temperature [K]",
+    "pressureColumn": "pressure [Pa]",
+    "uptakeColumn": "uptake [mol/g]",
+    "minLangK": 0.01,
+    "maxLangK": 1.0,
+    "minLangQSat": 0.01,
+    "maxLangQSat": 10.0,
+}
 
 
 ###############################################################################
 class Configuration:
-    
-    def __init__(self):
-        self.configuration = { 
-            # Dataset
-            'seed': 42,
-            'sample_size': 1.0,
-            'validation_size': 0.2,
-            'shuffle_dataset': True,
-            'shuffle_size': 256,
-            'use_data_generator': False,
-            # Model 
-            'QNet_neurons': 64,
-            'embedding_dimensions' : 200,
-            'perceptive_field_size': 64,
-            'jit_compile': False,
-            'jit_backend': 'inductor',
-            'exploration_rate' : 0.75,
-            'exploration_rate_decay' : 0.995,
-            'discount_rate' : 0.5,
-            'model_update_frequency': 10,
-             # Device
-            'use_device_GPU': False,
-            'device_id': 0,
-            'use_mixed_precision': False,
-            'num_workers': 0,
+    def __init__(self) -> None:
+        Path(CONFIG_PATH).mkdir(parents=True, exist_ok=True)
+        self._configuration = deepcopy(DEFAULT_CONFIGURATION)
 
-            # Training            
-            'split_seed': 76,
-            'train_seed': 42, 
-            'train_sample_size': 1.0,
-            'episodes': 100,
-            'max_steps_episode': 2000,
-            'additional_episodes': 10,
-            'batch_size': 32,
-            'learning_rate': 0.0001,
-            'max_memory_size': 10000,
-            'replay_buffer_size': 1000,
-            'use_tensorboard': False,
-            'plot_training_metrics' : True,
-            'save_checkpoints': False,
-            'checkpoints_frequency': 1,
-            # environment
-            'initial_capital': 1000,
-            'bet_amount': 10,
-            'render_environment': False,
-            # inference
-                  
-            # Validation
-            'val_batch_size': 20,
-            'num_evaluation_images': 6            
-        }
+    # -------------------------------------------------------------------------
+    def get_configuration(self) -> dict[str, Any]:
+        return deepcopy(self._configuration)
 
-    #--------------------------------------------------------------------------  
-    def get_configuration(self):
-        return self.configuration
-    
-    #--------------------------------------------------------------------------
-    def update_value(self, key: str, value: bool):       
-        self.configuration[key] = value
+    # -------------------------------------------------------------------------
+    def update_value(self, key: str, value: Any) -> None:
+        self._configuration[key] = value
 
-    #--------------------------------------------------------------------------
-    def save_configuration_to_json(self, name : str):  
-        full_path = os.path.join(CONFIG_PATH, f'{name}.json')      
-        with open(full_path, 'w') as f:
-            json.dump(self.configuration, f, indent=4)
+    # -------------------------------------------------------------------------
+    def update_values(self, values: dict[str, Any]) -> None:
+        self._configuration.update(values)
 
-    #--------------------------------------------------------------------------
-    def load_configuration_from_json(self, name : str):      
-        full_path = os.path.join(CONFIG_PATH, name)
-        with open(full_path, 'r') as f:
-            self.configuration = json.load(f)
+    # -------------------------------------------------------------------------
+    def save_configuration_to_json(self, name: str) -> Path:
+        target = Path(CONFIG_PATH, f"{name}.json")
+        with target.open("w", encoding="utf-8") as handle:
+            json.dump(self._configuration, handle, indent=4)
+        return target
+
+    # -------------------------------------------------------------------------
+    def load_configuration_from_json(self, name: str) -> dict[str, Any]:
+        target = Path(CONFIG_PATH, name)
+        with target.open(encoding="utf-8") as handle:
+            data = json.load(handle)
+        self._configuration = deepcopy(DEFAULT_CONFIGURATION)
+        self._configuration.update(data)
+        return self.get_configuration()
+
+    # -------------------------------------------------------------------------
+    def get_model_configuration(self) -> dict[str, Any]:
+        models: dict[str, Any] = {}
+        if self._configuration.get("selectLangmuir", False):
+            min_k = self._configuration["minLangK"]
+            max_k = self._configuration["maxLangK"]
+            min_q = self._configuration["minLangQSat"]
+            max_q = self._configuration["maxLangQSat"]
+            models["LANGMUIR"] = {
+                "initial": {
+                    "K": (min_k + max_k) / 2,
+                    "qsat": (min_q + max_q) / 2,
+                },
+                "min": {"K": min_k, "qsat": min_q},
+                "max": {"K": max_k, "qsat": max_q},
+            }
+        return models

@@ -1,25 +1,22 @@
+from __future__ import annotations
+
 import sys
+
 from PySide6.QtWidgets import QApplication
-from qt_material import apply_stylesheet
 
-# [SETTING WARNINGS]
-import warnings
-warnings.simplefilter(action='ignore', category=Warning)
-
-# [IMPORT CUSTOM MODULES]
 from ADSORFIT.app.client.window import MainWindow, apply_style
 from ADSORFIT.app.constants import UI_PATH
 from ADSORFIT.app.logger import logger
 
 
-# [RUN MAIN]
 ###############################################################################
-if __name__ == "__main__":  
-    app = QApplication(sys.argv)
-    app = apply_style(app)
-    main_window = MainWindow(UI_PATH)
-    main_window.show()
-    sys.exit(app.exec())
-
-
-   
+if __name__ == "__main__":
+    try:
+        qt_app = QApplication(sys.argv)
+        apply_style(qt_app)
+        main_window = MainWindow(UI_PATH)
+        main_window.show()
+        sys.exit(qt_app.exec())
+    except Exception:
+        logger.exception("ADSORFIT failed to start")
+        sys.exit(1)
