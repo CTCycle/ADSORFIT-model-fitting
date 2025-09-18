@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 from typing import Any, cast
+from collections.abc import Callable
 
 from PySide6.QtCore import QFile, QIODevice, QThreadPool, Slot
 from PySide6.QtGui import QAction
@@ -10,6 +11,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
+    QComboBox,
     QDialog,
     QDoubleSpinBox,
     QFileDialog,
@@ -17,6 +19,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QRadioButton,
     QSpinBox,
 )
 from qt_material import apply_stylesheet
@@ -57,114 +60,163 @@ class MainWindow:
         self.main_win.showMaximized()
 
         self.config_manager = Configuration()
-        self.dataset_events = DatasetEvents(self.config_manager)
-        self.fitting_events = FittingEvents(self.config_manager)
+        self.configuration = self.config_manager.get_configuration()
+        self.dataset_events = DatasetEvents(self.configuration)
+        self.fitting_events = FittingEvents(self.configuration)
 
         self.threadpool = QThreadPool.globalInstance()
         self.worker: ThreadWorker | None = None
-
+        self.progress_bar: QProgressBar | None = None
         self.widgets: dict[str, Any] = {}
-        self.actions: dict[str, QAction] = {}
-        self._register_widgets()
-        self._register_actions()
-        self._set_widgets_from_configuration()
-        self._connect_actions()
-        self._connect_buttons()
-        self._auto_connect_settings()
-        self._set_states()
 
-    # ---------------------------------------------------------------------
+        self._setup_configuration(
+            [
+                # actions
+                (QAction, "actionLoadConfig", "load_configuration_action"),
+                (QAction, "actionSaveConfig", "save_configuration_action"),
+                (QAction, "actionDeleteData", "delete_data_action"),
+                (QAction, "actionExportData", "export_data_action"),
+                (QAction, "actionReloadApp", "reload_app_action"),
+                # progress widgets
+                (QPushButton, "stopThread", "stop_thread"),
+                (QProgressBar, "progressBar", "progress_bar"),
+                # dataset controls
+                (QPushButton, "loadDataset", "load_dataset"),
+                (QCheckBox, "detectCols", "detect_cols"),
+                (QSpinBox, "maxIterations", "max_iterations"),
+                # model configuration
+                (QPushButton, "runFitting", "run_fitting"),
+                (QCheckBox, "selectLangmuir", "select_langmuir"),
+                (QDoubleSpinBox, "minLangK", "min_lang_k"),
+                (QDoubleSpinBox, "maxLangK", "max_lang_k"),
+                (QDoubleSpinBox, "minLangQSat", "min_lang_qsat"),
+                (QDoubleSpinBox, "maxLangQSat", "max_lang_qsat"),
+            ]
+        )
+
+        self.progress_bar = self.widgets.get("progress_bar") if self.widgets else None
+        if isinstance(self.progress_bar, QProgressBar):
+            self.progress_bar.setValue(0)
+
+        self._set_widgets_from_configuration()
+
+        self._connect_signals(
+            [
+                ("save_configuration_action", "triggered", self.save_configuration),
+                ("load_configuration_action", "triggered", self.load_configuration),
+                ("delete_data_action", "triggered", self.delete_database),
+                ("export_data_action", "triggered", self.export_database),
+                ("reload_app_action", "triggered", self.reload_dataset),
+                ("load_dataset", "clicked", self.select_and_load_dataset),
+                ("run_fitting", "clicked", self.run_fitting),
+                ("stop_thread", "clicked", self.stop_running_worker),
+            ]
+        )
+
+        self._auto_connect_settings()
+
+    # -------------------------------------------------------------------------
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return self.widgets[name]
+        except (AttributeError, KeyError) as e:
+            raise AttributeError(
+                f"{type(self).__name__!s} has no attribute {name!r}"
+            ) from e
+
+    # [SHOW WINDOW]
+    ###########################################################################
     def show(self) -> None:
         self.main_win.show()
 
-    # ---------------------------------------------------------------------
-    def _register_widgets(self) -> None:
-        definitions = [
-            (QCheckBox, "detectCols", "detectCols"),
-            (QSpinBox, "maxIterations", "maxIterations"),
-            (QPushButton, "loadDataset", "loadDataset"),
-            (QPushButton, "runFitting", "runFitting"),
-            (QCheckBox, "selectLangmuir", "selectLangmuir"),
-            (QDoubleSpinBox, "minLangK", "minLangK"),
-            (QDoubleSpinBox, "maxLangK", "maxLangK"),
-            (QDoubleSpinBox, "minLangQSat", "minLangQSat"),
-            (QDoubleSpinBox, "maxLangQSat", "maxLangQSat"),
-            (QProgressBar, "progressBar", "progressBar"),
-            (QPushButton, "stopThread", "stopThread"),
-        ]
-        for cls, name, key in definitions:
-            widget = self.main_win.findChild(cls, name)
-            if widget is None:
-                raise ValueError(f"Widget {name} not found in UI definition")
-            self.widgets[key] = widget
+    # [HELPERS]
+    ###########################################################################
+    def connect_update_setting(
+        self, widget: Any, signal_name: str, config_key: str, getter: Any | None = None
+    ) -> None:
+        if getter is None:
+            if isinstance(widget, (QCheckBox, QRadioButton)):
+                getter = widget.isChecked
+            elif isinstance(widget, (QSpinBox, QDoubleSpinBox)):
+                getter = widget.value
+            elif isinstance(widget, QComboBox):
+                getter = widget.currentText
+
+        signal = getattr(widget, signal_name)
+        signal.connect(partial(self._update_single_setting, config_key, getter))
+
+    # -------------------------------------------------------------------------
+    def _update_single_setting(self, config_key: str, getter: Any, *args) -> None:
+        value = getter()
+        self.config_manager.update_value(config_key, value)
+
 
     # ---------------------------------------------------------------------
-    def _register_actions(self) -> None:
-        mapping = [
-            ("actionSaveConfig", "saveConfig"),
-            ("actionLoadConfig", "loadConfig"),
-            ("actionDeleteData", "deleteData"),
-            ("actionExportData", "exportData"),
-            ("actionReloadApp", "reloadApp"),
-        ]
-        for name, key in mapping:
-            action = self.main_win.findChild(QAction, name)
-            if action is None:
-                raise ValueError(f"Action {name} not found in UI definition")
-            self.actions[key] = action
+    def connect_update_setting(
+        self,
+        widget: Any,
+        signal_name: str,
+        config_key: str,
+        getter: Callable[[], Any] | None = None,
+    ) -> None:
+        if getter is None:
+            if isinstance(widget, QCheckBox):
+                getter = widget.isChecked
+            elif isinstance(widget, (QSpinBox, QDoubleSpinBox)):
+                getter = widget.value
+        signal = getattr(widget, signal_name)
+        signal.connect(partial(self._update_single_setting, config_key, getter))
 
     # ---------------------------------------------------------------------
-    def _connect_actions(self) -> None:
-        self.actions["saveConfig"].triggered.connect(self.save_configuration)
-        self.actions["loadConfig"].triggered.connect(self.load_configuration)
-        self.actions["deleteData"].triggered.connect(self.delete_database)
-        self.actions["exportData"].triggered.connect(self.export_database)
-        self.actions["reloadApp"].triggered.connect(self.reload_dataset)
-
-    # ---------------------------------------------------------------------
-    def _connect_buttons(self) -> None:
-        self.widgets["loadDataset"].clicked.connect(self.select_and_load_dataset)
-        self.widgets["runFitting"].clicked.connect(self.run_fitting)
-        self.widgets["stopThread"].clicked.connect(self.stop_running_worker)
+    def _update_single_setting(self, config_key: str, getter: Callable[[], Any], *args: Any) -> None:
+        value = getter()
+        self.config_manager.update_value(config_key, value)
+        self._refresh_configuration()
 
     # ---------------------------------------------------------------------
     def _auto_connect_settings(self) -> None:
         bindings = [
-            ("detectCols", "toggled"),
-            ("maxIterations", "valueChanged"),
-            ("selectLangmuir", "toggled"),
-            ("minLangK", "valueChanged"),
-            ("maxLangK", "valueChanged"),
-            ("minLangQSat", "valueChanged"),
-            ("maxLangQSat", "valueChanged"),
+            ("detect_cols", "toggled", "detect_cols"),
+            ("max_iterations", "valueChanged", "max_iterations"),
+            ("select_langmuir", "toggled", "select_langmuir"),
+            ("min_lang_k", "valueChanged", "min_lang_k"),
+            ("max_lang_k", "valueChanged", "max_lang_k"),
+            ("min_lang_qsat", "valueChanged", "min_lang_qsat"),
+            ("max_lang_qsat", "valueChanged", "max_lang_qsat"),
         ]
-        for key, signal_name in bindings:
-            widget = self.widgets[key]
-            signal = getattr(widget, signal_name)
-            signal.connect(partial(self._update_setting, key))
+
+        for attr, signal_name, config_key in connections:
+            widget = self.widgets[attr]
+            self.connect_update_setting(widget, signal_name, config_key)
+            
+    # ---------------------------------------------------------------------
+    def _setup_configuration(self, widget_defs: list[tuple[type[Any], str, str]]) -> None:
+        for cls, name, attr in widget_defs:
+            widget = self.main_win.findChild(cls, name)
+            if widget is None:
+                raise ValueError(f"Widget {name} not found in UI definition")
+            setattr(self, attr, widget)
+            self.widgets[attr] = widget
 
     # ---------------------------------------------------------------------
-    def _update_setting(self, key: str, value: Any) -> None:
-        self.config_manager.update_value(key, value)
+    def _connect_signals(self, connections: list[tuple[str, str, Callable[..., Any]]]) -> None:
+        for attr, signal, slot in connections:
+            widget = self.widgets[attr]
+            getattr(widget, signal).connect(slot)
 
     # ---------------------------------------------------------------------
     def _set_widgets_from_configuration(self) -> None:
         config = self.config_manager.get_configuration()
-        for key, widget in self.widgets.items():
-            if key not in config:
+        for attr, widget in self.widgets.items():
+            if attr not in config:
                 continue
-            value = config[key]
+            value = config[attr]
             if isinstance(widget, QCheckBox):
                 widget.setChecked(bool(value))
             elif isinstance(widget, (QSpinBox, QDoubleSpinBox)) and isinstance(
                 value, (int, float)
             ):
                 widget.setValue(value)
-
-    # ---------------------------------------------------------------------
-    def _set_states(self) -> None:
-        self.progress_bar: QProgressBar = self.widgets["progressBar"]
-        self.progress_bar.setValue(0)
 
     # ---------------------------------------------------------------------
     def _send_message(self, message: str) -> None:
@@ -178,8 +230,9 @@ class MainWindow:
         on_error,
         on_interrupted,
     ) -> None:
-        self.progress_bar.setValue(0)
-        worker.signals.progress.connect(self.progress_bar.setValue)
+        if isinstance(self.progress_bar, QProgressBar):
+            self.progress_bar.setValue(0)
+            worker.signals.progress.connect(self.progress_bar.setValue)
         worker.signals.finished.connect(on_finished)
         worker.signals.error.connect(on_error)
         worker.signals.interrupted.connect(on_interrupted)
@@ -200,8 +253,8 @@ class MainWindow:
         dialog = SaveConfigDialog(self.main_win)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             name = dialog.get_name() or "default"
-            path = self.config_manager.save_configuration_to_json(name)
-            self._send_message(f"Configuration saved to {path.name}")
+            self.config_manager.save_configuration_to_json(name)
+            self._send_message(f"Configuration saved to {name}.json")
 
     # ---------------------------------------------------------------------
     @Slot()
@@ -211,6 +264,7 @@ class MainWindow:
             selection = dialog.get_selected_config()
             if selection:
                 self.config_manager.load_configuration_from_json(selection)
+                self._refresh_configuration()
                 self._set_widgets_from_configuration()
                 self._send_message(f"Configuration {selection} loaded")
 
@@ -248,16 +302,16 @@ class MainWindow:
 
     # ---------------------------------------------------------------------
     def _queue_dataset_load(self, dataset_path: str | None) -> None:
-        detect = self.widgets["detectCols"].isChecked()
+        self._refresh_configuration()
+        detect_checkbox = self.widgets.get("detect_cols")
+        detect = bool(detect_checkbox.isChecked()) if isinstance(detect_checkbox, QCheckBox) else True
         self.worker = ThreadWorker(
             self.dataset_events.load_dataset,
             dataset_path=dataset_path,
             detect_columns=detect,
         )
-        target = dataset_path or self.config_manager.get_configuration().get("datasetPath")
-        self._send_message(
-            f"Loading dataset from {target or 'configured location'}"
-        )
+        target = dataset_path or self.configuration.get("dataset_path")
+        self._send_message(f"Loading dataset from {target or 'configured location'}")
         self._start_thread_worker(
             self.worker,
             on_finished=self.on_dataset_loaded,
@@ -275,7 +329,16 @@ class MainWindow:
                 "A task is already running. Please wait for it to finish.",
             )
             return
-        if not self.config_manager.get_model_configuration():
+        self._refresh_configuration()
+        if not any(
+            self.configuration.get(flag, False)
+            for flag in (
+                "select_langmuir",
+                "select_sips",
+                "select_freundlich",
+                "select_temkin",
+            )
+        ):
             QMessageBox.warning(
                 self.main_win,
                 "No models selected",
@@ -322,23 +385,45 @@ class MainWindow:
     def on_dataset_loaded(self, payload: dict[str, Any]) -> None:
         path = payload.get("path")
         stats = payload.get("stats", "Dataset loaded successfully.")
-        stats_text = stats.replace("**", "")
+        detect = payload.get("detect_cols")
+        columns = payload.get("columns", {})
+
+        if isinstance(path, str):
+            self.config_manager.update_value("dataset_path", path)
+        if isinstance(detect, bool):
+            self.config_manager.update_value("detect_cols", detect)
+        for key, config_key in (
+            ("experiment", "experiment_column"),
+            ("temperature", "temperature_column"),
+            ("pressure", "pressure_column"),
+            ("uptake", "uptake_column"),
+        ):
+            value = columns.get(key)
+            if value is not None:
+                self.config_manager.update_value(config_key, value)
+
+        self._refresh_configuration()
+        self._set_widgets_from_configuration()
+
+        stats_text = stats.replace("**", "") if isinstance(stats, str) else "Dataset loaded"
         self._send_message(f"Dataset loaded from {path}")
         QMessageBox.information(self.main_win, "Dataset loaded", stats_text)
-        self.progress_bar.setValue(0)
+        if isinstance(self.progress_bar, QProgressBar):
+            self.progress_bar.setValue(0)
         self.worker = None
 
     # ---------------------------------------------------------------------
     @Slot(object)
     def on_fitting_completed(self, payload: dict[str, Any]) -> None:
         results = payload.get("results")
-        if results is not None:
+        if isinstance(results, dict):
             message = f"Fitting completed for {len(results)} experiments"
         else:
             message = "Fitting completed"
         self._send_message(message)
         QMessageBox.information(self.main_win, "Fitting completed", message)
-        self.progress_bar.setValue(0)
+        if isinstance(self.progress_bar, QProgressBar):
+            self.progress_bar.setValue(0)
         self.worker = None
 
     # ---------------------------------------------------------------------
@@ -350,11 +435,13 @@ class MainWindow:
             "Operation failed",
             "An error occurred during the operation. Check logs for details.",
         )
-        self.progress_bar.setValue(0)
+        if isinstance(self.progress_bar, QProgressBar):
+            self.progress_bar.setValue(0)
         self.worker = None
 
     # ---------------------------------------------------------------------
     def on_task_interrupted(self) -> None:
         self._send_message("Current task interrupted")
-        self.progress_bar.setValue(0)
+        if isinstance(self.progress_bar, QProgressBar):
+            self.progress_bar.setValue(0)
         self.worker = None

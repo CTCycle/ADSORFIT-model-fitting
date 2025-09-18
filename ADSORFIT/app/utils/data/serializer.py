@@ -15,53 +15,38 @@ BEST_FIT_TABLE = "ADSORPTION_BEST_FIT"
 
 ###############################################################################
 class DataSerializer:
+
     # -------------------------------------------------------------------------
     def save_raw_dataset(self, dataset: pd.DataFrame) -> None:
-        database.write_dataframe(dataset, RAW_DATA_TABLE)
+        database.save_into_database(dataset, "ADSORPTION_DATA")
 
     # -------------------------------------------------------------------------
     def load_raw_dataset(self) -> pd.DataFrame:
-        return database.read_dataframe(RAW_DATA_TABLE)
+        return database.load_from_database("ADSORPTION_DATA")
 
     # -------------------------------------------------------------------------
     def save_processed_dataset(self, dataset: pd.DataFrame) -> None:
-        encoded = dataset.applymap(self._encode_lists)
-        database.write_dataframe(encoded, PROCESSED_DATA_TABLE)
+        database.save_into_database(dataset, "ADSORPTION_PROCESSED_DATA")
 
     # -------------------------------------------------------------------------
     def load_processed_dataset(self) -> pd.DataFrame:
-        df = database.read_dataframe(PROCESSED_DATA_TABLE)
-        return df.applymap(self._decode_lists)
+        encoded = database.load_from_database("ADSORPTION_PROCESSED_DATA")
+        return encoded
 
     # -------------------------------------------------------------------------
     def save_fitting_results(self, dataset: pd.DataFrame) -> None:
-        database.write_dataframe(dataset, FITTING_RESULTS_TABLE)
+        database.save_into_database(dataset, "ADSORPTION_FITTING_RESULTS")
 
     # -------------------------------------------------------------------------
     def load_fitting_results(self) -> pd.DataFrame:
-        return database.read_dataframe(FITTING_RESULTS_TABLE)
+        return database.load_from_database("ADSORPTION_FITTING_RESULTS")
 
     # -------------------------------------------------------------------------
     def save_best_fit(self, dataset: pd.DataFrame) -> None:
-        database.write_dataframe(dataset, BEST_FIT_TABLE)
+        database.save_into_database(dataset, "ADSORPTION_BEST_FIT")
 
     # -------------------------------------------------------------------------
     def load_best_fit(self) -> pd.DataFrame:
-        return database.read_dataframe(BEST_FIT_TABLE)
+        return database.load_from_database("ADSORPTION_BEST_FIT")
 
-    # -------------------------------------------------------------------------
-    @staticmethod
-    def _encode_lists(value: Any) -> Any:
-        if isinstance(value, list):
-            return json.dumps(value)
-        return value
-
-    # -------------------------------------------------------------------------
-    @staticmethod
-    def _decode_lists(value: Any) -> Any:
-        if isinstance(value, str) and value.startswith("["):
-            try:
-                return json.loads(value)
-            except json.JSONDecodeError:
-                return value
-        return value
+    

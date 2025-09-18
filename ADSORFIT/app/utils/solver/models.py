@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 
 import numpy as np
 
@@ -31,7 +32,7 @@ class AdsorptionModels:
         return beta * np.log(k * pressure)
 
     # -------------------------------------------------------------------------
-    def get_model(self, model_name: str):
+    def get_model(self, model_name: str) -> Any:
         models = {
             "LANGMUIR": self.langmuir,
             "SIPS": self.sips,

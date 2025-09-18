@@ -78,7 +78,7 @@ class AdsorptionDataProcessor:
     # -------------------------------------------------------------------------
     def _drop_invalid_values(self, dataset: pd.DataFrame) -> pd.DataFrame:
         cols = self.columns.as_dict()
-        valid = dataset.dropna(subset=cols.values())
+        valid = dataset.dropna(subset=list(cols.values()))
         valid = valid[valid[cols["temperature"]].astype(float) > 0]
         valid = valid[valid[cols["pressure"]].astype(float) >= 0]
         valid = valid[valid[cols["uptake"]].astype(float) >= 0]
@@ -131,7 +131,7 @@ class AdsorptionDataProcessor:
 
 ###############################################################################
 class DatasetAdapter:
-    # -------------------------------------------------------------------------
+    
     @staticmethod
     def combine_results(
         fitting_results: dict[str, list[dict[str, Any]]],
