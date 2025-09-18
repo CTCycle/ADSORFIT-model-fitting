@@ -7,7 +7,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=Warning)
 
 # [IMPORT CUSTOM MODULES]
-from ADSORFIT.app.client.window import MainWindow
+from ADSORFIT.app.client.window import MainWindow, apply_style
 from ADSORFIT.app.constants import UI_PATH
 from ADSORFIT.app.logger import logger
 
@@ -15,14 +15,11 @@ from ADSORFIT.app.logger import logger
 # [RUN MAIN]
 ###############################################################################
 if __name__ == "__main__":  
-    app = QApplication(sys.argv) 
-
-    # setup stylesheet
-    extra = {'density_scale': '-1'}
-    apply_stylesheet(app, theme='dark_yellow.xml', extra=extra)
-
-    main_window = MainWindow(UI_PATH)   
+    app = QApplication(sys.argv)
+    app = apply_style(app)
+    main_window = MainWindow(UI_PATH)
     main_window.show()
     sys.exit(app.exec())
+
 
    

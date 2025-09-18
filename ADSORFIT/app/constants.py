@@ -11,3 +11,7 @@ LOGS_PATH = join(PROJECT_DIR, 'resources', 'logs')
 ###############################################################################
 DATASET_PATH = join(DATA_PATH, 'adsorption_data.csv') 
 RESULTS_PATH = join(DATA_PATH, 'adsorption_model_fit.csv')
+
+# [UI LAYOUT PATH]
+###############################################################################
+UI_PATH = join(PROJECT_DIR, "app", "assets", "window_layout.ui")

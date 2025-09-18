@@ -14,9 +14,9 @@ from ADSORFIT.commons.logger import logger
 class AdsorptionDataProcessing:
 
     def __init__(self): 
-        self.database = ADSORFITDatabase()          
+        database = ADSORFITDatabase()          
         self.dataset = pd.read_csv(DATASET_PATH, sep =';', encoding='utf-8')
-        self.database.save_adsorption_data(self.dataset) 
+        database.save_adsorption_data(self.dataset) 
 
         self.processed_data = pd.DataFrame() 
         self.stats = None   
@@ -119,7 +119,7 @@ class DatasetAdapter:
 
     def __init__(self):
         self.csv_kwargs = {'sep': ';', 'encoding': 'utf-8'}
-        self.database = ADSORFITDatabase()    
+        database = ADSORFITDatabase()    
 
     #--------------------------------------------------------------------------
     def adapt_results_to_dataset(self, fitting_results : dict, dataset):        
@@ -153,7 +153,7 @@ class DatasetAdapter:
     def save_to_database(self, dataset, configuration : dict, save_best_models):        
         # save dataframe as a table in sqlite database
         dataset.drop(columns=['pressure [Pa]', 'uptake [mol/g]'], inplace=True)
-        self.database.save_fitting_results(dataset)
+        database.save_fitting_results(dataset)
         if save_best_models:
             for model in configuration.keys():
                 model_dataset = dataset[dataset['best model'] == model]
@@ -161,7 +161,7 @@ class DatasetAdapter:
                 target_cols = [x for x in model_dataset.columns[:8]] + model_cols
                 best_fit_data = model_dataset[target_cols]
                 table_name = f'BEST_FIT_{model}'
-                self.database.save_best_fit(best_fit_data, table_name)
+                database.save_best_fit(best_fit_data, table_name)
 
   
 

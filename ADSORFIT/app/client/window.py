@@ -1,50 +1,92 @@
-from TokenBenchy.app.variables import EnvironmentVariables
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any, cast
+
+from ADSORFIT.app.variables import EnvironmentVariables
+
 EV = EnvironmentVariables()
 
 from functools import partial
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, QIODevice, Slot, QThreadPool, Qt
-from PySide6.QtGui import QPainter, QPixmap, QAction
-from PySide6.QtWidgets import (QPushButton, QCheckBox, QPlainTextEdit, QSpinBox,
-                               QMessageBox, QComboBox, QTextEdit, QProgressBar,
-                               QGraphicsScene, QGraphicsPixmapItem, QGraphicsView, QDialog)
 
-from TokenBenchy.app.utils.data.database import TokenBenchyDatabase
-from TokenBenchy.app.client.dialogs import SaveConfigDialog, LoadConfigDialog
-from TokenBenchy.app.client.events import DatasetEvents, BenchmarkEvents, VisualizationEnvents
-from TokenBenchy.app.configuration import Configuration
-from TokenBenchy.app.client.workers import ThreadWorker
-from TokenBenchy.app.logger import logger
+from PySide6.QtCore import QFile, QIODevice, QThreadPool, Slot
+from PySide6.QtGui import QAction
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDoubleSpinBox,
+    QFileDialog,
+    QMainWindow,
+    QMessageBox,
+    QPlainTextEdit,
+    QProgressBar,
+    QPushButton,
+    QRadioButton,
+    QSpinBox,
+    QTextEdit,
+)
+from qt_material import apply_stylesheet
+
+from ADSORFIT.app.client.dialogs import LoadConfigDialog, SaveConfigDialog
+from ADSORFIT.app.client.events import (
+    BenchmarkEvents,
+    DatasetEvents,
+    VisualizationEnvents,
+)
+from ADSORFIT.app.client.workers import ThreadWorker
+from ADSORFIT.app.configuration import Configuration
+from ADSORFIT.app.logger import logger
+from ADSORFIT.app.utils.data.database import database
+
+
+###############################################################################
+def apply_style(app: QApplication) -> QApplication:
+    theme = "dark_yellow"
+    extra = {"density_scale": "-1"}
+    apply_stylesheet(app, theme=f"{theme}.xml", extra=extra)
+
+    # Make % text visible/centered for ALL progress bars
+    app.setStyleSheet(
+        app.styleSheet()
+        + """
+    QProgressBar {
+        text-align: center;   /* align percentage to the center */
+        color: black;        /* black text for yellow bar */
+        font-weight: bold;   /* bold percentage */        
+    }
+    """
+    )
+
+    return app
 
 
 ###############################################################################
 class MainWindow:
     
-    def __init__(self, ui_file_path: str): 
-        super().__init__()           
+    def __init__(self, ui_file_path: str) -> None: 
+        super().__init__()
         loader = QUiLoader()
         ui_file = QFile(ui_file_path)
-        ui_file.open(QIODevice.ReadOnly)
-        self.main_win = loader.load(ui_file)
-        ui_file.close()  
+        ui_file.open(QIODevice.OpenModeFlag.ReadOnly)
+        self.main_win = cast(QMainWindow, loader.load(ui_file))
+        ui_file.close()
         self.main_win.showMaximized()
-        
-        self.tokenizers = []            
-        
+
+        self.tokenizers = []
+
         # initial settings
         self.config_manager = Configuration()
         self.configuration = self.config_manager.get_configuration()
-    
+
         # set thread pool for the workers
         self.threadpool = QThreadPool.globalInstance()
-        self.worker = None          
-
-        # get Hugging Face access token        
-        self.hf_access_token = EV.get_HF_access_token()
+        self.worker: ThreadWorker | None = None        
 
         # initialize database
-        self.database = TokenBenchyDatabase()
-        self.database.initialize_database() 
+        database.initialize_database()
 
         # persistent handlers
         self.loading_handler = DatasetEvents(self.configuration, self.hf_access_token)        

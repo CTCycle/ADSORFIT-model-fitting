@@ -2,7 +2,7 @@ import os
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, QLabel, 
                                QDialogButtonBox, QListWidget)
 
-from TokenBenchy.app.constants import CONFIG_PATH
+from ADSORFIT.app.constants import CONFIG_PATH
          
 
 ###############################################################################

@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
-from TokenBenchy.app.utils.data.serializer import DataSerializer
-from TokenBenchy.app.utils.downloads import DatasetManager, TokenizersDownloadManager
-from TokenBenchy.app.utils.benchmarks import BenchmarkTokenizers, VisualizeBenchmarkResults
-from TokenBenchy.app.utils.data.processing import ProcessDataset
-from TokenBenchy.app.client.workers import check_thread_status, update_progress_callback
-from TokenBenchy.app.logger import logger
+from ADSORFIT.app.utils.data.serializer import DataSerializer
+from ADSORFIT.app.utils.downloads import DatasetManager, TokenizersDownloadManager
+from ADSORFIT.app.utils.benchmarks import BenchmarkTokenizers, VisualizeBenchmarkResults
+from ADSORFIT.app.utils.data.processing import ProcessDataset
+from ADSORFIT.app.client.workers import check_thread_status, update_progress_callback
+from ADSORFIT.app.logger import logger
 
 
 
