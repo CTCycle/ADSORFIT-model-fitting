@@ -1,45 +1,168 @@
-import threading
+from __future__ import annotations
 
-from ADSORFIT.app.utils.data.processing import DatasetAdapter
-from ADSORFIT.app.utils.solver.fitting import ModelSolver
+import asyncio
+import json
+from collections.abc import Callable
+from typing import Any
+
+import numpy as np
+import pandas as pd
+
 from ADSORFIT.app.logger import logger
-                
-# [FITTING FUNCTION]
-###############################################################################
-class SolverThread:
+from ADSORFIT.app.utils.data.processing import (
+    AdsorptionDataProcessor,
+    DatasetAdapter,
+)
+from ADSORFIT.app.utils.data.serializer import DataSerializer
+from ADSORFIT.app.utils.solver.fitting import ModelSolver
 
-   def __init__(self):        
+
+###############################################################################
+class FittingWorker:
+    def __init__(self) -> None:
+        self.serializer = DataSerializer()
         self.solver = ModelSolver()
         self.adapter = DatasetAdapter()
-        self.progress, self.total = 0, 0        
-        logger.debug(f"Solver thread initialized with progress as {self.progress} and total as {self.total}")
 
-   #---------------------------------------------------------------------------
-   def start_data_fitting_thread(self, processed_data, experiment_col, pressure_col,
-                                 uptake_col, model_states, max_iterations, find_best_models):
-      
-      # Start the data fitting process in a separate thread to keep the GUI responsive
-      # give the data fitting function as target for the Thread instance 
-      threading.Thread(
-         target=self.run_data_fitting, args=(
-            processed_data, experiment_col, pressure_col, uptake_col, 
-            model_states, max_iterations, find_best_models), daemon=True).start()
+    #-------------------------------------------------------------------------------
+    async def run_job(
+        self,
+        dataset_payload: dict[str, Any],
+        configuration: dict[str, dict[str, dict[str, float]]],
+        max_iterations: int,
+        save_best: bool,
+        progress_callback: Callable[[int, int], None] | None = None,
+    ) -> dict[str, Any]:
+        return await asyncio.to_thread(
+            self._execute,
+            dataset_payload,
+            configuration,
+            max_iterations,
+            save_best,
+            progress_callback,
+        )
 
-   #---------------------------------------------------------------------------
-   def run_data_fitting(self, processed_data, experiment_col, pressure_col,
-                        uptake_col, model_states, max_iterations, find_best_models):
-      
-      # Callback function to update progress bar values
-      def progress_callback(current, total):
-         self.progress = current
-         self.total = total
+    #-------------------------------------------------------------------------------
+    def _execute(
+        self,
+        dataset_payload: dict[str, Any],
+        configuration: dict[str, dict[str, dict[str, float]]],
+        max_iterations: int,
+        save_best: bool,
+        progress_callback: Callable[[int, int], None] | None,
+    ) -> dict[str, Any]:
+        dataframe = self._build_dataframe(dataset_payload)
+        if dataframe.empty:
+            raise ValueError("Uploaded dataset is empty.")
 
-      # Call the solver bulk data fitting and add the progress bar callback 
-      fitting_results = self.solver.bulk_data_fitting(
-         processed_data, experiment_col, pressure_col, uptake_col, 
-         model_states, max_iterations, progress_callback=progress_callback)
+        logger.info("Saving raw dataset with %s rows", dataframe.shape[0])
+        self.serializer.save_raw_dataset(dataframe)
 
-      # downstream data manipulation and process to adapt the results to the dataset
-      fitting_dataset = self.adapter.adapt_results_to_dataset(fitting_results, processed_data)
-      fitting_dataset = self.adapter.find_best_model(fitting_dataset) if find_best_models else fitting_dataset
-      self.adapter.save_to_database(fitting_dataset, model_states, find_best_models)
+        processor = AdsorptionDataProcessor(dataframe)
+        processed, detected_columns, stats = processor.preprocess(detect_columns=True)
+
+        logger.info("Processed dataset contains %s experiments", processed.shape[0])
+        serializable_processed = self._stringify_sequences(processed)
+        self.serializer.save_processed_dataset(serializable_processed)
+
+        logger.debug("Detected dataset statistics:\n%s", stats)
+
+        if processed.empty:
+            raise ValueError("No valid experiments found after preprocessing the dataset.")
+
+        model_configuration = self._normalize_configuration(configuration)
+        logger.debug("Running solver with configuration: %s", model_configuration)
+
+        results = self.solver.bulk_data_fitting(
+            processed,
+            model_configuration,
+            detected_columns.pressure,
+            detected_columns.uptake,
+            max_iterations,
+            progress_callback=progress_callback,
+        )
+
+        combined = self.adapter.combine_results(results, processed)
+        self.serializer.save_fitting_results(combined)
+
+        best_frame = None
+        if save_best:
+            best_frame = self.adapter.compute_best_models(combined)
+            self.serializer.save_best_fit(best_frame)
+
+        experiment_count = int(processed.shape[0])
+        response: dict[str, Any] = {
+            "status": "success",
+            "processed_rows": experiment_count,
+            "models": sorted(model_configuration.keys()),
+            "best_model_saved": bool(save_best),
+        }
+
+        if best_frame is not None:
+            response["best_model_preview"] = self._build_preview(best_frame)
+
+        summary_lines = [
+            "[INFO] ADSORFIT fitting completed.",
+            f"Experiments processed: {experiment_count}",
+        ]
+        if save_best:
+            summary_lines.append("Best model selection stored in database.")
+        response["summary"] = "\n".join(summary_lines)
+
+        return response
+
+    #-------------------------------------------------------------------------------
+    def _build_dataframe(self, payload: dict[str, Any]) -> pd.DataFrame:
+        records = payload.get("records")
+        columns = payload.get("columns")
+        if isinstance(records, list):
+            dataframe = pd.DataFrame.from_records(records, columns=columns)
+        else:
+            dataframe = pd.DataFrame()
+        return dataframe
+
+    #-------------------------------------------------------------------------------
+    def _normalize_configuration(
+        self, configuration: dict[str, dict[str, dict[str, float]]]
+    ) -> dict[str, dict[str, dict[str, float]]]:
+        normalized: dict[str, dict[str, dict[str, float]]] = {}
+        for model_name, config in configuration.items():
+            min_values = config.get("min", {})
+            max_values = config.get("max", {})
+            initial_values = config.get("initial", {})
+            normalized_entry: dict[str, dict[str, float]] = {
+                "min": {},
+                "max": {},
+                "initial": {},
+            }
+            for parameter, lower in min_values.items():
+                normalized_entry["min"][parameter] = float(lower)
+            for parameter, upper in max_values.items():
+                normalized_entry["max"][parameter] = float(upper)
+            for parameter, init in initial_values.items():
+                normalized_entry["initial"][parameter] = float(init)
+            normalized[model_name] = normalized_entry
+        return normalized
+
+    #-------------------------------------------------------------------------------
+    def _stringify_sequences(self, dataset: pd.DataFrame) -> pd.DataFrame:
+        converted = dataset.copy()
+        for column in converted.columns:
+            if converted[column].apply(lambda value: isinstance(value, (list, tuple))).any():
+                converted[column] = converted[column].apply(
+                    lambda value: json.dumps(value) if isinstance(value, (list, tuple)) else value
+                )
+        return converted
+
+    #-------------------------------------------------------------------------------
+    def _build_preview(self, dataset: pd.DataFrame) -> list[dict[str, Any]]:
+        preview_columns = [column for column in dataset.columns if column.endswith("LSS")]
+        preview_columns.extend([
+            column
+            for column in dataset.columns
+            if column in {"experiment", "best model", "worst model"}
+        ])
+        trimmed = dataset.loc[:, dict.fromkeys(preview_columns).keys()]
+        limited = trimmed.head(5)
+        limited = limited.replace({np.nan: None})
+        return limited.to_dict(orient="records")

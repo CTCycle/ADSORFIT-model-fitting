@@ -26,6 +26,7 @@ class ModelSolver:
         max_iterations: int,
     ) -> dict[str, dict[str, Any]]:
         results: dict[str, dict[str, Any]] = {}
+        evaluations = max(1, int(max_iterations))
         for model_name, model_config in configuration.items():
             model = self.collection.get_model(model_name)
             signature = inspect.signature(model)
@@ -41,7 +42,7 @@ class ModelSolver:
                     uptake,
                     p0=initial,
                     bounds=(lower, upper),
-                    maxfev=max_iterations,
+                    maxfev=evaluations,
                     check_finite=True,
                     absolute_sigma=False,
                 )
