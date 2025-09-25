@@ -6,7 +6,9 @@ build-backend = "hatchling.build"
 name = "ADSORFIT"
 version = "2.0"
 requires-python = ">=3.12,<3.13"
-dependencies = [    
+dependencies = [
+    "fastapi==0.115.6",
+    "gradio==5.7.1",
     "scikit-learn==1.6.1",
     "PySide6==6.9.1",
     "qt-material==2.17",
@@ -14,9 +16,10 @@ dependencies = [
     "seaborn==0.13.2",
     "numpy==2.3.2",
     "pandas==2.2.3",
-    "tqdm==4.67.1",   
-    "SQLAlchemy==2.0.41",     
-    "python-dotenv==1.1.0"
+    "tqdm==4.67.1",
+    "SQLAlchemy==2.0.41",
+    "python-dotenv==1.1.0",
+    "uvicorn[standard]==0.32.1"
 ]
 
 [tool.hatch.build.targets.wheel]
