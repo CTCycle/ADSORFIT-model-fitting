@@ -5,6 +5,8 @@ ADSORFIT/setup/python/*
 ADSORFIT/setup/git/*
 
 __pycache__
+*.lock
+*.exe
 *.vscode
 *.jpeg
 *.jpg

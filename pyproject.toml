@@ -7,8 +7,8 @@ name = "ADSORFIT"
 version = "2.0"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "fastapi==0.115.6",
-    "gradio==5.7.1",
+    "fastapi==0.117.1",
+    "gradio==5.47.0",   
     "scikit-learn==1.6.1",    
     "matplotlib==3.10.1",
     "seaborn==0.13.2",
