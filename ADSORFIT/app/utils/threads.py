@@ -1,8 +1,8 @@
 import threading
 
-from ADSORFIT.commons.utils.data.processing import DatasetAdapter
-from ADSORFIT.commons.utils.solver.fitting import ModelSolver
-from ADSORFIT.commons.logger import logger
+from ADSORFIT.app.utils.data.processing import DatasetAdapter
+from ADSORFIT.app.utils.solver.fitting import ModelSolver
+from ADSORFIT.app.logger import logger
                 
 # [FITTING FUNCTION]
 ###############################################################################

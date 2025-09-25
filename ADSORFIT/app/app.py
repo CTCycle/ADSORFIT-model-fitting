@@ -1,22 +1,37 @@
 from __future__ import annotations
 
-import sys
+from Pharmagent.app.variables import EnvironmentVariables
 
-from PySide6.QtWidgets import QApplication
+EV = EnvironmentVariables()
 
-from ADSORFIT.app.client.window import MainWindow, apply_style
-from ADSORFIT.app.constants import UI_PATH
-from ADSORFIT.app.logger import logger
+import os
 
+from fastapi import FastAPI
+import gradio as gr
+
+from Pharmagent.app.api.endpoints.agent import router as report_router
+from Pharmagent.app.api.endpoints.ollama import router as models_router
+from Pharmagent.app.api.endpoints.pharmacology import router as pharma_router
+from Pharmagent.app.client.main import create_interface
+from Pharmagent.app.logger import logger
+from Pharmagent.app.utils.database.sqlite import database
 
 ###############################################################################
-if __name__ == "__main__":
-    try:
-        qt_app = QApplication(sys.argv)
-        apply_style(qt_app)
-        main_window = MainWindow(UI_PATH)
-        main_window.show()
-        sys.exit(qt_app.exec())
-    except Exception:
-        logger.exception("ADSORFIT failed to start")
-        sys.exit(1)
+# initialize the database if it has not been created
+if not os.path.exists(database.db_path):
+    logger.info("Database not found, creating instance and making all tables")
+    database.initialize_database()
+    logger.info("Pharmagent database has been initialized successfully.")
+
+app = FastAPI(
+    title="LLM Backend",
+    version="0.1.0",
+    description="Minimal FastAPI bootstrap with chat, embeddings, and a placeholder endpoint.",
+)
+
+app.include_router(report_router)
+app.include_router(models_router)
+app.include_router(pharma_router)
+
+ui_app = create_interface()
+app = gr.mount_gradio_app(app, ui_app, path="/ui", root_path="/ui")
