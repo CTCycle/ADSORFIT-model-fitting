@@ -9,9 +9,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi==0.115.6",
     "gradio==5.7.1",
-    "scikit-learn==1.6.1",
-    "PySide6==6.9.1",
-    "qt-material==2.17",
+    "scikit-learn==1.6.1",    
     "matplotlib==3.10.1",
     "seaborn==0.13.2",
     "numpy==2.3.2",
@@ -23,5 +21,5 @@ dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["tokenbenchy"] 
+packages = ["adsorfit"] 
 
