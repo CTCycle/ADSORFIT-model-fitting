@@ -22,12 +22,12 @@ def create_interface() -> gr.Blocks:
 
         with gr.Row(equal_height=True):
             with gr.Column(scale=1):
-                max_iterations = gr.Slider(
+                max_iterations = gr.Number(
                     label="Max iteration",
                     minimum=1,
                     maximum=1_000_000,
-                    step=1,
                     value=1000,
+                    precision=0,
                 )
                 save_best_checkbox = gr.Checkbox(
                     label="Save best fitting data",
