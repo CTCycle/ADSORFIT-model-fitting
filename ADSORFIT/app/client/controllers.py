@@ -165,8 +165,8 @@ def load_dataset(file: Any) -> tuple[DatasetPayload | None, str]:
 def _build_parameter_bounds(
     metadata: list[ParameterKey],
     values: tuple[Any, ...],
-) -> dict[str, dict[str, dict[str, float]]]:
-    bounds: dict[str, dict[str, dict[str, float]]] = {}
+) -> dict[str, dict[str, dict[str, float | None]]]:
+    bounds: dict[str, dict[str, dict[str, float | None]]] = {}
     for (model, parameter, bound_type), raw_value in zip(metadata, values, strict=False):
         if model not in bounds:
             bounds[model] = {}
