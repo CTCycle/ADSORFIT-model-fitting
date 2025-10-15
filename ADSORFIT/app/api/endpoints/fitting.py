@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from ADSORFIT.app.logger import logger
-from ADSORFIT.app.utils.threads import FittingWorker
+from ADSORFIT.app.utils.jobs import FittingWorker
 from ADSORFIT.app.api.schemas.fitting import FittingRequest, FittingResponse
 
 router = APIRouter(tags=["fitting"])
