@@ -5,13 +5,7 @@ from typing import Any
 
 import pandas as pd
 
-from ADSORFIT.app.utils.data.database import database
-
-RAW_DATA_TABLE = "ADSORPTION_DATA"
-PROCESSED_DATA_TABLE = "ADSORPTION_PROCESSED_DATA"
-FITTING_RESULTS_TABLE = "ADSORPTION_FITTING_RESULTS"
-BEST_FIT_TABLE = "ADSORPTION_BEST_FIT"
-
+from ADSORFIT.app.utils.repository.database import database
 
 ###############################################################################
 class DataSerializer:

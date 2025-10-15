@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from ADSORFIT.app.logger import logger
-from ADSORFIT.app.utils.data.processing import (
+from ADSORFIT.app.utils.services.processing import (
     AdsorptionDataProcessor,
     DatasetAdapter,
 )
