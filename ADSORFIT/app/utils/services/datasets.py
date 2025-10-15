@@ -45,6 +45,24 @@ class DatasetService:
             buffer.seek(0)
             dataframe = pd.read_csv(buffer)
 
+            if dataframe.shape[1] == 1:
+                column_name = dataframe.columns[0]
+                first_value = None
+                if not dataframe.empty:
+                    first_value = dataframe.iloc[0, 0]
+
+                for delimiter in (";", "\t", "|"):
+                    if (
+                        isinstance(column_name, str)
+                        and delimiter in column_name
+                    ) or (
+                        isinstance(first_value, str)
+                        and delimiter in first_value
+                    ):
+                        buffer.seek(0)
+                        dataframe = pd.read_csv(buffer, sep=delimiter)
+                        break
+
         if dataframe.empty:
             raise ValueError("Uploaded dataset is empty.")
 
