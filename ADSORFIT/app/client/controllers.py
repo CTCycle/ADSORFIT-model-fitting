@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 import copy
-import io
-import json
 import math
 import os
 from typing import Any
-from urllib import error, request
 
-import pandas as pd
+import httpx
 
 
 MODEL_PARAMETER_DEFAULTS: dict[str, dict[str, tuple[float, float]]] = {
@@ -71,72 +68,52 @@ def _resolve_file_path(file: Any) -> str | None:
 
 
 #-------------------------------------------------------------------------------
-def _read_dataframe(file: Any) -> pd.DataFrame:
+def _extract_file_payload(file: Any) -> tuple[bytes, str | None]:
     path = _resolve_file_path(file)
     if path:
-        extension = os.path.splitext(path)[1].lower()
-        if extension == ".csv":
-            return pd.read_csv(path)
-        if extension in {".xls", ".xlsx"}:
-            return pd.read_excel(path, sheet_name=0)
-        raise ValueError(f"Unsupported file type: {extension}")
+        with open(path, "rb") as handle:
+            return handle.read(), os.path.basename(path)
 
-    binary_data: bytes | None = None
     if hasattr(file, "data"):
         data = getattr(file, "data")
         if isinstance(data, (bytes, bytearray)):
-            binary_data = bytes(data)
-    if binary_data is None and isinstance(file, dict):
+            name = None
+            if hasattr(file, "orig_name"):
+                name = getattr(file, "orig_name")
+            elif hasattr(file, "name"):
+                name = getattr(file, "name")
+            if isinstance(name, str):
+                name = os.path.basename(name)
+            return bytes(data), name
+
+    if isinstance(file, dict):
         data = file.get("data")
         if isinstance(data, (bytes, bytearray)):
-            binary_data = bytes(data)
+            name = file.get("orig_name") or file.get("name") or file.get("path")
+            if isinstance(name, str):
+                name = os.path.basename(name)
+            return bytes(data), name
 
-    if binary_data is None:
-        raise ValueError("Unable to access the uploaded dataset.")
-
-    buffer = io.BytesIO(binary_data)
-    if hasattr(file, "orig_name"):
-        name = getattr(file, "orig_name")
-    elif isinstance(file, dict):
-        name = file.get("orig_name")
-    else:
-        name = None
-
-    if isinstance(name, str):
-        extension = os.path.splitext(name)[1].lower()
-    else:
-        extension = ""
-
-    if extension == ".csv" or not extension:
-        buffer.seek(0)
-        return pd.read_csv(buffer)
-    if extension in {".xls", ".xlsx"}:
-        buffer.seek(0)
-        return pd.read_excel(buffer, sheet_name=0)
-
-    raise ValueError(f"Unsupported file type: {extension or 'unknown'}")
+    raise ValueError("Unable to access the uploaded dataset.")
 
 
 #-------------------------------------------------------------------------------
-def _format_dataset_summary(df: pd.DataFrame) -> str:
-    rows, columns = df.shape
-    total_nans = int(df.isna().sum().sum())
-    column_summaries: list[str] = []
-    for column in df.columns:
-        dtype = df[column].dtype
-        missing = int(df[column].isna().sum())
-        column_summaries.append(
-            f"- {column}: dtype={dtype}, missing={missing}"
-        )
+def _extract_error_message(response: httpx.Response) -> str:
+    try:
+        payload = response.json()
+    except ValueError:
+        text = response.text.strip()
+        return text or f"HTTP error {response.status_code}"
 
-    summary_lines = [
-        f"Rows: {rows}",
-        f"Columns: {columns}",
-        f"NaN cells: {total_nans}",
-        "Column details:",
-        *column_summaries,
-    ]
-    return "\n".join(summary_lines)
+    detail = payload.get("detail") if isinstance(payload, dict) else None
+    if isinstance(detail, str) and detail:
+        return detail
+
+    message = payload.get("message") if isinstance(payload, dict) else None
+    if isinstance(message, str) and message:
+        return message
+
+    return f"HTTP error {response.status_code}"
 
 
 #-------------------------------------------------------------------------------
@@ -145,20 +122,31 @@ def load_dataset(file: Any) -> tuple[DatasetPayload | None, str]:
         return None, "No dataset loaded."
 
     try:
-        dataframe = _read_dataframe(file)
+        file_bytes, filename = _extract_file_payload(file)
     except ValueError as exc:
         return None, f"[ERROR] {exc}"
-    except Exception as exc:  # noqa: BLE001
-        return None, f"[ERROR] Failed to read dataset: {exc}"
 
-    serializable = dataframe.where(pd.notna(dataframe), None)
-    dataset_payload: DatasetPayload = {
-        "columns": list(serializable.columns),
-        "records": serializable.to_dict(orient="records"),
-        "row_count": int(serializable.shape[0]),
-    }
-    stats = _format_dataset_summary(dataframe)
-    return dataset_payload, stats
+    ok, response, message = _post_file("datasets/load", file_bytes, filename)
+    if not ok or response is None:
+        return None, f"[ERROR] {message}"
+
+    status = response.get("status") if isinstance(response, dict) else None
+    if status != "success":
+        detail = response.get("detail") if isinstance(response, dict) else None
+        if not detail:
+            detail = "Failed to load dataset."
+        return None, f"[ERROR] {detail}"
+
+    dataset = response.get("dataset") if isinstance(response, dict) else None
+    summary = response.get("summary") if isinstance(response, dict) else None
+
+    if not isinstance(dataset, dict):
+        return None, "[ERROR] Backend returned an invalid dataset payload."
+
+    if not isinstance(summary, str):
+        summary = "[INFO] Dataset loaded successfully."
+
+    return dataset, summary
 
 
 #-------------------------------------------------------------------------------
@@ -215,31 +203,47 @@ def _build_solver_configuration(
 #-------------------------------------------------------------------------------
 def _post_json(route: str, payload: dict[str, Any]) -> tuple[bool, dict[str, Any] | None, str]:
     url = f"{API_BASE_URL.rstrip('/')}/{route.lstrip('/')}"
-    encoded = json.dumps(payload).encode("utf-8")
-    headers = {"Content-Type": "application/json"}
-    request_obj = request.Request(url, data=encoded, headers=headers, method="POST")
     try:
-        with request.urlopen(request_obj, timeout=120) as response:
-            raw_body = response.read().decode("utf-8")
-    except error.HTTPError as exc:
-        try:
-            raw_body = exc.read().decode("utf-8")
-        except Exception:  # noqa: BLE001
-            raw_body = ""
-        message = raw_body or f"HTTP error {exc.code}"
+        response = httpx.post(url, json=payload, timeout=120.0)
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        message = _extract_error_message(exc.response)
         return False, None, message
-    except error.URLError as exc:
-        return False, None, f"Failed to reach ADSORFIT backend: {exc.reason}"
-    except Exception as exc:  # noqa: BLE001
-        return False, None, f"Unexpected error contacting backend: {exc}"
-
-    if not raw_body:
-        return False, None, "Backend returned an empty response."
+    except httpx.RequestError as exc:
+        return False, None, f"Failed to reach ADSORFIT backend: {exc}"
 
     try:
-        data = json.loads(raw_body)
-    except json.JSONDecodeError as exc:
+        data = response.json()
+    except ValueError as exc:
         return False, None, f"Invalid JSON response: {exc}"
+
+    return True, data, ""
+
+
+#-------------------------------------------------------------------------------
+def _post_file(
+    route: str,
+    file_bytes: bytes,
+    filename: str | None,
+) -> tuple[bool, dict[str, Any] | None, str]:
+    url = f"{API_BASE_URL.rstrip('/')}/{route.lstrip('/')}"
+    safe_name = filename or "dataset"
+    files = {"file": (safe_name, file_bytes, "application/octet-stream")}
+
+    try:
+        response = httpx.post(url, files=files, timeout=120.0)
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        message = _extract_error_message(exc.response)
+        return False, None, message
+    except httpx.RequestError as exc:
+        return False, None, f"Failed to reach ADSORFIT backend: {exc}"
+
+    try:
+        data = response.json()
+    except ValueError as exc:
+        return False, None, f"Invalid JSON response: {exc}"
+
     return True, data, ""
 
 

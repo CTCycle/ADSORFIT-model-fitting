@@ -1,7 +1,7 @@
 # ADSORFIT: Automated Adsorption Model Fitting
 
 ## 1. Project Overview
-ADSORFIT is a powerful yet simple tool designed to facilitate adsorption modeling for researchers. It automates experimental data fitting using theoretical adsorption models, enabling accurate extraction of adsorption constants and saturation uptakes from your adsorption isotherms. The core functionality revolves around minimizing the Least Squares Sum (LSS) discrepancy between observed data and model-predicted uptakes. This ensures that the derived model parameters reliably represent the true adsorption behavior under the given experimental conditions. To make things even easier, ADSORFIT features an intuitive, user-friendly interface built with NiceGUI, making it accessible to users of all experience levels.
+ADSORFIT is a powerful yet simple tool designed to facilitate adsorption modeling for researchers. It automates experimental data fitting using theoretical adsorption models, enabling accurate extraction of adsorption constants and saturation uptakes from your adsorption isotherms. The core functionality revolves around minimizing the Least Squares Sum (LSS) discrepancy between observed data and model-predicted uptakes. This ensures that the derived model parameters reliably represent the true adsorption behavior under the given experimental conditions. The application now exposes its computation layer through a FastAPI backend and serves an intuitive user interface powered by Gradio, making it accessible to users of all experience levels.
 
 ## 2. Installation 
 The installation process on Windows has been designed to be fully automated. To begin, simply run *start_on_windows.bat.* On its first execution, the installation procedure will execute with minimal user input required. The script will check if either Anaconda or Miniconda is installed and can be accessed from your system path. If neither is found, it will automatically download and install the latest Miniconda release from https://docs.anaconda.com/miniconda/. Following this step, the script will proceed with the installation of all necessary Python dependencies. Should you prefer to handle the installation process separately, you can run the standalone installer by running *setup/install_on_windows.bat*.  
@@ -20,11 +20,7 @@ On Windows, run *start_on_windows.bat* to launch the main navigation menu and br
 
 ### 3.1 Navigation menu
 
-**1) Run ADSORFIT UI:** Launch ADSORFIT to access the main user interface, which is organized into two distinct tabs. The first tab allows users to perform essential computational tasks, such as fitting adsorption models to isotherm data and preprocessing datasets. The second tab provides an intuitive interface for reviewing and adjusting critical adsorption model parameters. Users can specify the maximum number of iterations for data fitting and choose whether to automatically infer columns content based on their header. Additionally, it is possible to save multiple CSV files, each of them reporting the best results for a given model. 
-
-![Solver UI snapshot](ADSORFIT/commons/assets/solver_UI.png)
-
-![Models UI snapshot](ADSORFIT/commons/assets/models_UI.png)
+**1) Run ADSORFIT UI:** Launch ADSORFIT to access the FastAPI backend and the Gradio-powered interface. When running locally (for example with `uvicorn ADSORFIT.app.app:app --reload` or via the Windows launcher), the backend listens on `http://127.0.0.1:8000` and the UI is exposed at `http://127.0.0.1:8000/ui`. The interface lets you upload an adsorption dataset, review automatic statistics, configure parameter bounds per model, and start the fitting procedure. Results are streamed back to the status panel as soon as the backend completes the computation.
 
 **2) Setup and Maintenance:** execute optional commands such as *Install project into environment* to reinstall the project within your environment, *update project* to pull the last updates from github, and *remove logs* to remove all logs saved in *resources/logs*. 
 
@@ -47,8 +43,10 @@ Each adsorption model can be configured in the **Model Configuration** tab where
 
 | Variable              | Description                                              |
 |-----------------------|----------------------------------------------------------|
-| NICEGUI_PORT          | Port to run NiceGUI application  (default is 8080)       |
-| NICEGUI_HOST          | Host address for the NiceGUI server                      |
+| FASTAPI_HOST          | Host address for the FastAPI server (default is 127.0.0.1) |
+| FASTAPI_PORT          | Port to run the FastAPI server (default is 8000)          |
+| RELOAD                | Enable auto-reload for development (true/false)           |
+| ADSORFIT_API_URL      | Base URL used by the Gradio client to reach the backend   |
 
 ## 5. License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.

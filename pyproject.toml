@@ -17,6 +17,7 @@ dependencies = [
     "tqdm==4.67.1",
     "SQLAlchemy==2.0.41",
     "python-dotenv==1.1.0",
+    "httpx==0.27.2",
     "uvicorn[standard]==0.32.1"
 ]
 
