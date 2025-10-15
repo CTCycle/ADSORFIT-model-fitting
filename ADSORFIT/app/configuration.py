@@ -2,14 +2,13 @@ import json
 import os
 from typing import Any
 
-from ADSORFIT.app.constants import CONFIG_PATH, DATASET_PATH
+from ADSORFIT.app.constants import CONFIG_PATH
 
 
 ###############################################################################
 class Configuration:
     def __init__(self) -> None:
-        self.configuration = {
-            "dataset_path": DATASET_PATH,
+        self.configuration = {            
             "detect_cols": True,
             "max_iterations": 50000,
             "select_langmuir": False,

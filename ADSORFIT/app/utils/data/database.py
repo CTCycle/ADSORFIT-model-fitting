@@ -1,28 +1,57 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 import sqlalchemy
+from sqlalchemy import Column, Float, Integer, String, UniqueConstraint, create_engine
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 from ADSORFIT.app.constants import DATA_PATH
 from ADSORFIT.app.logger import logger
 from ADSORFIT.app.utils.singleton import singleton
 
 
+Base = declarative_base()
+
+
+###############################################################################
+class RouletteSeries(Base):
+    __tablename__ = "ROULETTE_SERIES"
+    id = Column(Integer, primary_key=True)
+    extraction = Column(Integer)
+    color = Column(String)
+    color_code = Column(Integer)
+    position = Column(Integer)
+    __table_args__ = (UniqueConstraint("id"),)
+
+
+###############################################################################
+class PredictedGames(Base):
+    __tablename__ = "PREDICTED_GAMES"
+    id = Column(Integer, primary_key=True)
+    checkpoint = Column(String)
+    extraction = Column(Integer)
+    predicted_action = Column(String)
+    __table_args__ = (UniqueConstraint("id"),)
+
 ###############################################################################
 @singleton
 class ADSORFITDatabase:
-    def __init__(self) -> None:
-        Path(DATA_PATH).mkdir(parents=True, exist_ok=True)
-        self.db_path = Path(DATA_PATH) / "ADSORFIT_database.db"
+    def __init__(self) -> None:        
+        self.db_path = os.path.join(DATA_PATH, "database.db")
         self.engine: Engine = sqlalchemy.create_engine(
             f"sqlite:///{self.db_path}", echo=False, future=True
         )
+       
+        self.Session = sessionmaker(bind=self.engine, future=True)
+        self.insert_batch_size = 1000
 
     # -------------------------------------------------------------------------
     def initialize_database(self) -> None:
@@ -31,40 +60,62 @@ class ADSORFITDatabase:
 
     # -------------------------------------------------------------------------
     def get_table_class(self, table_name: str) -> Any:
-        raise ValueError("ADSORFIT tables are created dynamically; declarative classes are not defined")
+        for cls in Base.__subclasses__():
+            if hasattr(cls, "__tablename__") and cls.__tablename__ == table_name:
+                return cls
+        raise ValueError(f"No table class found for name {table_name}")
+
 
     # -------------------------------------------------------------------------
-    def _upsert_dataframe(self, df: pd.DataFrame, table_cls: Any, batch_size: int | None = None) -> None:
-        raise NotImplementedError("Upsert by declarative class is not supported in ADSORFIT")
+    def _upsert_dataframe(self, df: pd.DataFrame, table_cls) -> None:
+        table = table_cls.__table__
+        session = self.Session()
+        try:
+            unique_cols = []
+            for uc in table.constraints:
+                if isinstance(uc, UniqueConstraint):
+                    unique_cols = uc.columns.keys()
+                    break
+            if not unique_cols:
+                raise ValueError(f"No unique constraint found for {table_cls.__name__}")
+
+            # Batch insertions for speed
+            records = df.to_dict(orient="records")
+            for i in range(0, len(records), self.insert_batch_size):
+                batch = records[i : i + self.insert_batch_size]
+                stmt = insert(table).values(batch)
+                # Columns to update on conflict
+                update_cols = {
+                    c: getattr(stmt.excluded, c)  # type: ignore
+                    for c in batch[0]
+                    if c not in unique_cols
+                }
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=unique_cols, set_=update_cols
+                )
+                session.execute(stmt)
+                session.commit()
+            session.commit()
+        finally:
+            session.close()
 
     # -------------------------------------------------------------------------
     def load_from_database(self, table_name: str) -> pd.DataFrame:
-        inspector = inspect(self.engine)
-        if table_name not in inspector.get_table_names():
-            logger.info("Table %s not found in ADSORFIT database", table_name)
-            return pd.DataFrame()
         with self.engine.connect() as conn:
-            return pd.read_sql_table(table_name, conn)
+            data = pd.read_sql_table(table_name, conn)
+
+        return data
 
     # -------------------------------------------------------------------------
     def save_into_database(self, df: pd.DataFrame, table_name: str) -> None:
-        if df.empty:
-            logger.warning("Attempted to save empty dataframe to %s", table_name)
-            return
         with self.engine.begin() as conn:
-            try:
-                conn.execute(text(f'DELETE FROM "{table_name}"'))
-            except OperationalError:
-                pass
+            conn.execute(sqlalchemy.text(f'DELETE FROM "{table_name}"'))
             df.to_sql(table_name, conn, if_exists="append", index=False)
 
     # -------------------------------------------------------------------------
     def upsert_into_database(self, df: pd.DataFrame, table_name: str) -> None:
-        if df.empty:
-            logger.warning("Attempted to upsert empty dataframe to %s", table_name)
-            return
-        with self.engine.begin() as conn:
-            df.to_sql(table_name, conn, if_exists="append", index=False)
+        table_cls = self.get_table_class(table_name)
+        self._upsert_dataframe(df, table_cls)
 
     # -------------------------------------------------------------------------
     def export_all_tables_as_csv(
