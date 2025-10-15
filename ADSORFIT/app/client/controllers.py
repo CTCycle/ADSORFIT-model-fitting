@@ -41,7 +41,7 @@ def get_parameter_defaults() -> dict[str, dict[str, tuple[float, float]]]:
 
 
 #-------------------------------------------------------------------------------
-def _resolve_file_path(file: Any) -> str | None:
+def resolve_file_path(file: Any) -> str | None:
     if file is None:
         return None
 
@@ -68,8 +68,8 @@ def _resolve_file_path(file: Any) -> str | None:
 
 
 #-------------------------------------------------------------------------------
-def _extract_file_payload(file: Any) -> tuple[bytes, str | None]:
-    path = _resolve_file_path(file)
+def extract_file_payload(file: Any) -> tuple[bytes, str | None]:
+    path = resolve_file_path(file)
     if path:
         with open(path, "rb") as handle:
             return handle.read(), os.path.basename(path)
@@ -98,7 +98,7 @@ def _extract_file_payload(file: Any) -> tuple[bytes, str | None]:
 
 
 #-------------------------------------------------------------------------------
-def _extract_error_message(response: httpx.Response) -> str:
+def extract_error_message(response: httpx.Response) -> str:
     try:
         payload = response.json()
     except ValueError:
@@ -122,11 +122,11 @@ def load_dataset(file: Any) -> tuple[DatasetPayload | None, str]:
         return None, "No dataset loaded."
 
     try:
-        file_bytes, filename = _extract_file_payload(file)
+        file_bytes, filename = extract_file_payload(file)
     except ValueError as exc:
         return None, f"[ERROR] {exc}"
 
-    ok, response, message = _post_file("datasets/load", file_bytes, filename)
+    ok, response, message = post_file("datasets/load", file_bytes, filename)
     if not ok or response is None:
         return None, f"[ERROR] {message}"
 
@@ -150,7 +150,7 @@ def load_dataset(file: Any) -> tuple[DatasetPayload | None, str]:
 
 
 #-------------------------------------------------------------------------------
-def _build_parameter_bounds(
+def build_parameter_bounds(
     metadata: list[ParameterKey],
     values: tuple[Any, ...],
 ) -> dict[str, dict[str, dict[str, float | None]]]:
@@ -175,7 +175,7 @@ def _build_parameter_bounds(
 
 
 #-------------------------------------------------------------------------------
-def _build_solver_configuration(
+def build_solver_configuration(
     bounds: dict[str, dict[str, dict[str, float | None]]],
 ) -> dict[str, dict[str, dict[str, float]]]:
     configuration: dict[str, dict[str, dict[str, float]]] = {}
@@ -201,13 +201,13 @@ def _build_solver_configuration(
 
 
 #-------------------------------------------------------------------------------
-def _post_json(route: str, payload: dict[str, Any]) -> tuple[bool, dict[str, Any] | None, str]:
+def post_json(route: str, payload: dict[str, Any]) -> tuple[bool, dict[str, Any] | None, str]:
     url = f"{API_BASE_URL.rstrip('/')}/{route.lstrip('/')}"
     try:
         response = httpx.post(url, json=payload, timeout=120.0)
         response.raise_for_status()
     except httpx.HTTPStatusError as exc:
-        message = _extract_error_message(exc.response)
+        message = extract_error_message(exc.response)
         return False, None, message
     except httpx.RequestError as exc:
         return False, None, f"Failed to reach ADSORFIT backend: {exc}"
@@ -221,7 +221,7 @@ def _post_json(route: str, payload: dict[str, Any]) -> tuple[bool, dict[str, Any
 
 
 #-------------------------------------------------------------------------------
-def _post_file(
+def post_file(
     route: str,
     file_bytes: bytes,
     filename: str | None,
@@ -234,7 +234,7 @@ def _post_file(
         response = httpx.post(url, files=files, timeout=120.0)
         response.raise_for_status()
     except httpx.HTTPStatusError as exc:
-        message = _extract_error_message(exc.response)
+        message = extract_error_message(exc.response)
         return False, None, message
     except httpx.RequestError as exc:
         return False, None, f"Failed to reach ADSORFIT backend: {exc}"
@@ -261,7 +261,7 @@ def start_fitting(
     if not metadata:
         return "[ERROR] No parameter configuration available."
 
-    bounds = _build_parameter_bounds(metadata, values)
+    bounds = build_parameter_bounds(metadata, values)
 
     invalid_ranges: list[str] = []
     for model, parameters in bounds.items():
@@ -279,7 +279,7 @@ def start_fitting(
 
     iterations = max(1, int(round(max_iterations)))
 
-    configuration = _build_solver_configuration(bounds)
+    configuration = build_solver_configuration(bounds)
 
     dataset_payload = {
         "columns": list(dataset.get("columns", [])),
@@ -293,7 +293,7 @@ def start_fitting(
         "dataset": dataset_payload,
     }
 
-    ok, response, message = _post_json("fitting/run", payload)
+    ok, response, message = post_json("fitting/run", payload)
     if not ok or response is None:
         return f"[ERROR] {message}"
 

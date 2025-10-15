@@ -8,10 +8,8 @@ from ADSORFIT.app.logger import logger
 from ADSORFIT.app.utils.threads import FittingWorker
 from ADSORFIT.app.api.schemas.fitting import FittingRequest, FittingResponse
 
-
 router = APIRouter(tags=["fitting"])
 worker = FittingWorker()
-
 
 #-------------------------------------------------------------------------------
 @router.post("/run", response_model=FittingResponse, status_code=status.HTTP_200_OK)

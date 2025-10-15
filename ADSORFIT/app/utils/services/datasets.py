@@ -17,18 +17,18 @@ class DatasetService:
         if not payload:
             raise ValueError("Uploaded dataset is empty.")
 
-        dataframe = self._read_dataframe(payload, filename)
+        dataframe = self.read_dataframe(payload, filename)
         serializable = dataframe.where(pd.notna(dataframe), None)
         dataset_payload: dict[str, Any] = {
             "columns": list(serializable.columns),
             "records": serializable.to_dict(orient="records"),
             "row_count": int(serializable.shape[0]),
         }
-        summary = self._format_dataset_summary(dataframe)
+        summary = self.format_dataset_summary(dataframe)
         return dataset_payload, summary
 
     #-------------------------------------------------------------------------------
-    def _read_dataframe(self, payload: bytes, filename: str | None) -> pd.DataFrame:
+    def read_dataframe(self, payload: bytes, filename: str | None) -> pd.DataFrame:
         extension = ""
         if isinstance(filename, str):
             extension = os.path.splitext(filename)[1].lower()
@@ -51,7 +51,7 @@ class DatasetService:
         return dataframe
 
     #-------------------------------------------------------------------------------
-    def _format_dataset_summary(self, dataframe: pd.DataFrame) -> str:
+    def format_dataset_summary(self, dataframe: pd.DataFrame) -> str:
         rows, columns = dataframe.shape
         total_nans = int(dataframe.isna().sum().sum())
         column_summaries: list[str] = []

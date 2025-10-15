@@ -50,16 +50,16 @@ class AdsorptionDataProcessor:
             raise ValueError("Provided dataset is empty")
 
         if detect_columns:
-            self._identify_columns()
+            self.identify_columns()
 
-        cleaned = self._drop_invalid_values(self.dataset)
-        grouped = self._aggregate_by_experiment(cleaned)
-        stats = self._build_statistics(cleaned, grouped)
+        cleaned = self.drop_invalid_values(self.dataset)
+        grouped = self.aggregate_by_experiment(cleaned)
+        stats = self.build_statistics(cleaned, grouped)
 
         return grouped, self.columns, stats
 
     # -------------------------------------------------------------------------
-    def _identify_columns(self) -> None:
+    def identify_columns(self) -> None:
         for attr, pattern in DEFAULT_COLUMN_MAPPING.items():
             matched_cols = [
                 column
@@ -76,7 +76,7 @@ class AdsorptionDataProcessor:
                 setattr(self.columns, attr, close_matches[0])
 
     # -------------------------------------------------------------------------
-    def _drop_invalid_values(self, dataset: pd.DataFrame) -> pd.DataFrame:
+    def drop_invalid_values(self, dataset: pd.DataFrame) -> pd.DataFrame:
         cols = self.columns.as_dict()
         valid = dataset.dropna(subset=list(cols.values()))
         valid = valid[valid[cols["temperature"]].astype(float) > 0]
@@ -85,7 +85,7 @@ class AdsorptionDataProcessor:
         return valid.reset_index(drop=True)
 
     # -------------------------------------------------------------------------
-    def _aggregate_by_experiment(self, dataset: pd.DataFrame) -> pd.DataFrame:
+    def aggregate_by_experiment(self, dataset: pd.DataFrame) -> pd.DataFrame:
         cols = self.columns.as_dict()
         aggregate = {
             cols["temperature"]: "first",
@@ -105,7 +105,7 @@ class AdsorptionDataProcessor:
         return grouped
 
     # -------------------------------------------------------------------------
-    def _build_statistics(
+    def build_statistics(
         self, cleaned: pd.DataFrame, grouped: pd.DataFrame
     ) -> str:
         total_measurements = cleaned.shape[0]

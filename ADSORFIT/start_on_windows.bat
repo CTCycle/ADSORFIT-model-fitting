@@ -29,7 +29,7 @@ set "UV_ZIP_ARM=https://github.com/astral-sh/uv/releases/%UV_CHANNEL%/download/u
 
 REM pyproject + app
 set "pyproject=%root_folder%pyproject.toml"
-set "UVICORN_MODULE=ADSORFIT.app.app:app"
+set "UVICORN_MODULE=DILIGENT.app.app:app"
 
 REM .env overrides
 set "DOTENV=%setup_dir%\.env"
@@ -164,7 +164,7 @@ if /i "!RELOAD!"=="true" set "RELOAD_FLAG=--reload"
 
 start "" "!UI_URL!"
 
-echo [RUN] Launching ADSORFIT via uvicorn (!UVICORN_MODULE!)
+echo [RUN] Launching application via uvicorn (!UVICORN_MODULE!)
 pushd "%root_folder%" >nul
 "%uv_exe%" run --python "%python_exe%" uvicorn !UVICORN_MODULE! --host "!FASTAPI_HOST!" --port !FASTAPI_PORT! !RELOAD_FLAG! --log-level info
 set "run_ec=%ERRORLEVEL%"

@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.optimize import curve_fit
 
 from ADSORFIT.app.logger import logger
-from ADSORFIT.app.utils.solver.models import AdsorptionModels
+from ADSORFIT.app.utils.services.models import AdsorptionModels
 
 
 ###############################################################################
@@ -103,4 +103,5 @@ class ModelSolver:
 
             if progress_callback is not None:
                 progress_callback(index + 1, total_experiments)
+                
         return results

@@ -65,7 +65,7 @@ class PatientData(BaseModel):
 
     @field_validator("name", mode="before")
     @classmethod
-    def _strip_name(cls, value: str | None) -> str | None:
+    def strip_name(cls, value: str | None) -> str | None:
         if value is None:
             return None
         stripped = str(value).strip()
@@ -75,20 +75,20 @@ class PatientData(BaseModel):
         "anamnesis", "drugs", "exams", "alt", "alt_max", "alp", "alp_max", mode="before"
     )
     @classmethod
-    def _strip_text(cls, value: str | None) -> str | None:
+    def strip_text(cls, value: str | None) -> str | None:
         if value is None:
             return None
         stripped = str(value).strip()
         return stripped or None
 
     @model_validator(mode="after")
-    def _require_sections(self) -> "PatientData":
+    def require_sections(self) -> "PatientData":
         if any((self.anamnesis, self.drugs, self.exams)):
             return self
         raise ValueError("Provide at least one clinical section before submitting.")
 
     @staticmethod
-    def _coerce_marker(value: str | None) -> tuple[float | None, str | None]:
+    def coerce_marker(value: str | None) -> tuple[float | None, str | None]:
         if value is None:
             return None, None
         stripped = str(value).strip()
@@ -102,8 +102,8 @@ class PatientData(BaseModel):
 
     def manual_hepatic_markers(self) -> dict[str, Any]:
         markers: dict[str, Any] = {}
-        alt_value, alt_text = self._coerce_marker(self.alt)
-        alt_cutoff, alt_cutoff_text = self._coerce_marker(self.alt_max)
+        alt_value, alt_text = self.coerce_marker(self.alt)
+        alt_cutoff, alt_cutoff_text = self.coerce_marker(self.alt_max)
         if any((alt_value is not None, alt_text, alt_cutoff, alt_cutoff_text)):
             entry: dict[str, Any] = {
                 "value": alt_value,
@@ -115,8 +115,8 @@ class PatientData(BaseModel):
                 entry["cutoff"] = alt_cutoff
                 entry["cutoff_text"] = alt_cutoff_text
             markers["ALAT"] = entry
-        alp_value, alp_text = self._coerce_marker(self.alp)
-        alp_cutoff, alp_cutoff_text = self._coerce_marker(self.alp_max)
+        alp_value, alp_text = self.coerce_marker(self.alp)
+        alp_cutoff, alp_cutoff_text = self.coerce_marker(self.alp_max)
         if any((alp_value is not None, alp_text, alp_cutoff, alp_cutoff_text)):
             entry = {
                 "value": alp_value,
@@ -175,7 +175,7 @@ class PatientOutputReport(BaseModel):
 
     @field_validator("report", mode="before")
     @classmethod
-    def _strip_report(cls, v: str) -> str:
+    def strip_report(cls, v: str) -> str:
         if v is None:
             return v
         return str(v).strip()
@@ -238,7 +238,7 @@ class BloodTest(BaseModel):
 
     @field_validator("name")
     @classmethod
-    def _normalize_name(cls, v: str) -> str:
+    def normalize_name(cls, v: str) -> str:
         v = re.sub(r"\s+", " ", v.strip())
         return v.rstrip(",:;.- ")
 
@@ -272,7 +272,7 @@ class DrugEntry(BaseModel):
 
     @field_validator("daytime_administration")
     @classmethod
-    def _validate_schedule(cls, value: list[float]) -> list[float]:
+    def validate_schedule(cls, value: list[float]) -> list[float]:
         if value and len(value) != 4:
             raise ValueError("daytime_administration must contain exactly four values.")
         return value
@@ -326,7 +326,7 @@ class DrugToxicityFindings(BaseModel):
 
     @field_validator("pattern", "adverse_reactions")
     @classmethod
-    def _normalize_unique(cls, value: list[str]) -> list[str]:
+    def normalize_unique(cls, value: list[str]) -> list[str]:
         unique: dict[str, str] = {}
         for item in value:
             if not item:
@@ -360,7 +360,7 @@ class DrugHepatotoxicityAnalysis(BaseModel):
     )
 
     @model_validator(mode="after")
-    def _require_result_or_error(self) -> "DrugHepatotoxicityAnalysis":
+    def require_result_or_error(self) -> "DrugHepatotoxicityAnalysis":
         if self.analysis is None and not self.error:
             raise ValueError("Either analysis or error must be provided for each drug.")
         return self
