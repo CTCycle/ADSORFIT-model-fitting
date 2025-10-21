@@ -12,16 +12,15 @@ from nicegui.events import EventArguments, UploadEventArguments
 from ADSORFIT.app.client.controllers import (
     DatasetPayload,
     ParameterKey,
-    get_parameter_defaults,
-    load_dataset,
-    start_fitting,
+    client_controller,
 )
 
 
 ###############################################################################
 class InterfaceSession:
     def __init__(self) -> None:
-        self.parameter_defaults = get_parameter_defaults()
+        self.controller = client_controller
+        self.parameter_defaults = self.controller.get_parameter_defaults()
         self.dataset: DatasetPayload | None = None
         self.parameter_metadata: list[ParameterKey] = []
         self.parameter_inputs: list[Number] = []
@@ -98,7 +97,7 @@ class InterfaceSession:
     async def handle_dataset_upload(self, event: UploadEventArguments) -> None:
         if self.dataset_stats_area is not None:
             self.dataset_stats_area.value = "[INFO] Uploading dataset..."
-        dataset, message = await asyncio.to_thread(load_dataset, event)
+        dataset, message = await asyncio.to_thread(self.controller.load_dataset, event)
         self.dataset = dataset
         if self.dataset_stats_area is not None:
             self.dataset_stats_area.value = message
@@ -122,7 +121,7 @@ class InterfaceSession:
             values.append(element.value)
 
         message = await asyncio.to_thread(
-            start_fitting,
+            self.controller.start_fitting,
             list(self.parameter_metadata),
             max_iterations,
             save_best,

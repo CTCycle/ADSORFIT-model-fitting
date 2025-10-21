@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from typing import Any
 
 import pandas as pd
@@ -29,11 +28,15 @@ class DataSerializer:
 
     # -------------------------------------------------------------------------
     def save_fitting_results(self, dataset: pd.DataFrame) -> None:
-        database.save_into_database(dataset, "ADSORPTION_FITTING_RESULTS")
+        encoded = self.convert_lists_to_strings(dataset)
+        database.save_into_database(encoded, "ADSORPTION_FITTING_RESULTS")
 
     # -------------------------------------------------------------------------
     def load_fitting_results(self) -> pd.DataFrame:
-        return database.load_from_database("ADSORPTION_FITTING_RESULTS")
+        encoded = database.load_from_database("ADSORPTION_FITTING_RESULTS")
+        if encoded.empty:
+            return encoded
+        return self.convert_strings_to_lists(encoded)
 
     # -------------------------------------------------------------------------
     def save_best_fit(self, dataset: pd.DataFrame) -> None:
@@ -42,5 +45,51 @@ class DataSerializer:
     # -------------------------------------------------------------------------
     def load_best_fit(self) -> pd.DataFrame:
         return database.load_from_database("ADSORPTION_BEST_FIT")
+
+    # -------------------------------------------------------------------------
+    def convert_list_to_string(self, value: Any) -> Any:
+        if isinstance(value, (list, tuple)):
+            parts: list[str] = []
+            for element in value:
+                if element is None:
+                    continue
+                text = str(element)
+                if text:
+                    parts.append(text)
+            return ",".join(parts)
+        return value
+
+    # -------------------------------------------------------------------------
+    def convert_string_to_list(self, value: Any) -> Any:
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                return []
+            parts = [segment.strip() for segment in stripped.split(",")]
+            converted: list[float] = []
+            for part in parts:
+                if not part:
+                    continue
+                try:
+                    converted.append(float(part))
+                except ValueError:
+                    return value
+            return converted
+        return value
+
+    # -------------------------------------------------------------------------
+    def convert_lists_to_strings(self, dataset: pd.DataFrame) -> pd.DataFrame:
+        converted = dataset.copy()
+        for column in converted.columns:
+            converted[column] = converted[column].apply(self.convert_list_to_string)
+        return converted
+
+    # -------------------------------------------------------------------------
+    def convert_strings_to_lists(self, dataset: pd.DataFrame) -> pd.DataFrame:
+        converted = dataset.copy()
+        for column in converted.columns:
+            if converted[column].dtype == object:
+                converted[column] = converted[column].apply(self.convert_string_to_list)
+        return converted
 
     
