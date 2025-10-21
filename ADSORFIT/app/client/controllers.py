@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import copy
+import inspect
 import math
 import os
 from typing import Any
@@ -74,22 +76,35 @@ def resolve_file_path(file: Any) -> str | None:
 #-------------------------------------------------------------------------------
 def extract_file_payload(file: Any) -> tuple[bytes, str | None]:
     if isinstance(file, UploadEventArguments):
-        content = file.content
-        if hasattr(content, "seek"):
+        upload = getattr(file, "file", None)
+        if upload is not None:
             try:
-                content.seek(0)
-            except (OSError, ValueError):
-                pass
-        if hasattr(content, "read"):
-            data = content.read()
-        else:
-            data = content
-        if not isinstance(data, (bytes, bytearray)):
-            data = bytes(data)
-        name = file.name if isinstance(file.name, str) else None
-        if isinstance(name, str):
-            name = os.path.basename(name)
-        return bytes(data), name
+                data = read_uploaded_file(upload)
+            except ValueError:
+                data = None
+            else:
+                name = upload.name if isinstance(getattr(upload, "name", None), str) else None
+                if isinstance(name, str):
+                    name = os.path.basename(name)
+                return bytes(data), name
+
+        content = getattr(file, "content", None)
+        if content is not None:
+            if hasattr(content, "seek"):
+                try:
+                    content.seek(0)
+                except (OSError, ValueError):
+                    pass
+            if hasattr(content, "read"):
+                data = content.read()
+            else:
+                data = content
+            if not isinstance(data, (bytes, bytearray)):
+                data = bytes(data)
+            name = getattr(file, "name", None)
+            if isinstance(name, str):
+                name = os.path.basename(name)
+            return bytes(data), name
 
     path = resolve_file_path(file)
     if path:
@@ -117,6 +132,41 @@ def extract_file_payload(file: Any) -> tuple[bytes, str | None]:
             return bytes(data), name
 
     raise ValueError("Unable to access the uploaded dataset.")
+
+
+#-------------------------------------------------------------------------------
+def read_uploaded_file(upload: Any) -> bytes:
+    reader = getattr(upload, "read", None)
+    if callable(reader):
+        result = reader()
+        if inspect.isawaitable(result):
+            try:
+                asyncio.get_running_loop()
+            except RuntimeError:
+                return asyncio.run(result)
+            loop = asyncio.new_event_loop()
+            try:
+                return loop.run_until_complete(result)
+            finally:
+                loop.close()
+        if isinstance(result, (bytes, bytearray)):
+            return bytes(result)
+
+    data = getattr(upload, "_data", None)
+    if isinstance(data, (bytes, bytearray)):
+        return bytes(data)
+
+    path = getattr(upload, "_path", None)
+    if isinstance(path, str) and os.path.exists(path):
+        with open(path, "rb") as handle:
+            return handle.read()
+    if hasattr(path, "__fspath__"):
+        file_path = os.fspath(path)
+        if isinstance(file_path, str) and os.path.exists(file_path):
+            with open(file_path, "rb") as handle:
+                return handle.read()
+
+    raise ValueError("Unable to access the uploaded dataset contents.")
 
 
 #-------------------------------------------------------------------------------
