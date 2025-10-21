@@ -26,6 +26,7 @@ class InterfaceSession:
         self.parameter_inputs: list[Number] = []
         self.max_iterations_input: Number | None = None
         self.save_best_checkbox: Checkbox | None = None
+        self.model_checkboxes: dict[str, Checkbox] = {}
         self.dataset_stats_area: Textarea | None = None
         self.fitting_status_area: Textarea | None = None
 
@@ -33,6 +34,7 @@ class InterfaceSession:
     def build(self) -> None:
         self.parameter_metadata = []
         self.parameter_inputs = []
+        self.model_checkboxes = {}
 
         container = ui.column().classes("w-full max-w-6xl mx-auto gap-6 p-4")
         with container:
@@ -74,17 +76,23 @@ class InterfaceSession:
                     for model_name, parameters in self.parameter_defaults.items():
                         with ui.expansion(model_name, value=False).classes("w-full"):
                             with ui.column().classes("w-full gap-3"):
+                                checkbox = ui.checkbox(
+                                    "Enable model", value=True
+                                ).props("dense")
+                                self.model_checkboxes[model_name] = checkbox
                                 for parameter_name, (min_default, max_default) in parameters.items():
                                     with ui.row().classes("w-full gap-3"):
                                         min_input = ui.number(
                                             f"{parameter_name} min",
                                             value=float(min_default),
+                                            min=0.0,
                                             precision=4,
                                             step=0.0001,
                                         ).classes("w-full")
                                         max_input = ui.number(
                                             f"{parameter_name} max",
                                             value=float(max_default),
+                                            min=0.0,
                                             precision=4,
                                             step=0.0001,
                                         ).classes("w-full")
@@ -120,12 +128,25 @@ class InterfaceSession:
         for element in self.parameter_inputs:
             values.append(element.value)
 
+        selected_models = [
+            name
+            for name, checkbox in self.model_checkboxes.items()
+            if checkbox.value
+        ]
+        if not selected_models:
+            if self.fitting_status_area is not None:
+                self.fitting_status_area.value = (
+                    "[ERROR] Please select at least one model before starting the fitting process."
+                )
+            return
+
         message = await asyncio.to_thread(
             self.controller.start_fitting,
             list(self.parameter_metadata),
             max_iterations,
             save_best,
             self.dataset,
+            selected_models,
             *values,
         )
 
