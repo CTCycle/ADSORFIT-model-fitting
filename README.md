@@ -20,7 +20,7 @@ On Windows, run *start_on_windows.bat* to launch the main navigation menu and br
 
 ### 3.1 Navigation menu
 
-**1) Run ADSORFIT UI:** Launch ADSORFIT to access the FastAPI backend and the Gradio-powered interface. When running locally (for example with `uvicorn ADSORFIT.app.app:app --reload` or via the Windows launcher), the backend listens on `http://127.0.0.1:8000` and the UI is exposed at `http://127.0.0.1:8000/ui`. The interface lets you upload an adsorption dataset, review automatic statistics, configure parameter bounds per model, and start the fitting procedure. Results are streamed back to the status panel as soon as the backend completes the computation.
+**1) Run ADSORFIT UI:** Launch ADSORFIT to access the FastAPI backend and the Gradio-powered interface. When running locally (for example with `uvicorn ADSORFIT.app.app:app --reload` or via the Windows launcher), the backend listens on `http://127.0.0.1:8000` and the UI is exposed at `http://127.0.0.1:8000/ui`. The interface lets you upload an adsorption dataset, review automatic statistics, configure parameter bounds per model, and start the fitting procedure. Each model accordion now includes an **Enable model** toggle so you can decide which theoretical isotherms participate in the fitting run. At least one model must remain enabled before the solver can start. Results are streamed back to the status panel as soon as the backend completes the computation.
 
 **2) Setup and Maintenance:** execute optional commands such as *Install project into environment* to reinstall the project within your environment, *update project* to pull the last updates from github, and *remove logs* to remove all logs saved in *resources/logs*. 
 
@@ -37,7 +37,7 @@ This folder organizes data and results of the curve fitting operations, and by d
 - **templates:** reference template files can be found here
 
 ### 4. Configuration
-Each adsorption model can be configured in the **Model Configuration** tab where you can set an initial guess value for the adsorption model parameters,as well as boundaries for the minimun and maximum expected values.
+Each adsorption model can be configured in the **Model Configuration** tab where you can set an initial guess value for the adsorption model parameters,as well as boundaries for the minimun and maximum expected values. Parameter bounds are now restricted to positive numbers to prevent invalid negative configurations during fitting.
 
 **Environmental variables** are stored in the *app* folder (within the project folder). For security reasons, this file is typically not uploaded to GitHub. Instead, you must create this file manually by copying the template from *resources/templates/.env* and placing it in the *app* directory.
 

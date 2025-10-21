@@ -269,9 +269,13 @@ class ClientController:
     def build_solver_configuration(
         self,
         bounds: dict[str, dict[str, dict[str, float | None]]],
+        selected_models: list[str],
     ) -> dict[str, dict[str, dict[str, float]]]:
         configuration: dict[str, dict[str, dict[str, float]]] = {}
-        for model_name, parameters in MODEL_PARAMETER_DEFAULTS.items():
+        for model_name in selected_models:
+            parameters = MODEL_PARAMETER_DEFAULTS.get(model_name)
+            if parameters is None:
+                continue
             selected = bounds.get(model_name, {})
             config_entry = {"min": {}, "max": {}, "initial": {}}
             for parameter, (default_min, default_max) in parameters.items():
@@ -298,6 +302,7 @@ class ClientController:
         max_iterations: float,
         save_best: bool,
         dataset: DatasetPayload | None,
+        selected_models: list[str],
         *values: Any,
     ) -> str:
         if dataset is None:
@@ -305,6 +310,9 @@ class ClientController:
 
         if not metadata:
             return "[ERROR] No parameter configuration available."
+
+        if not selected_models:
+            return "[ERROR] Please select at least one model before starting the fitting process."
 
         bounds = self.build_parameter_bounds(metadata, values)
 
@@ -324,7 +332,7 @@ class ClientController:
 
         iterations = max(1, int(round(max_iterations)))
 
-        configuration = self.build_solver_configuration(bounds)
+        configuration = self.build_solver_configuration(bounds, selected_models)
 
         dataset_payload = {
             "columns": list(dataset.get("columns", [])),
