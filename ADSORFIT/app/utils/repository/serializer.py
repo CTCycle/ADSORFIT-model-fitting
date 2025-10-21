@@ -40,11 +40,15 @@ class DataSerializer:
 
     # -------------------------------------------------------------------------
     def save_best_fit(self, dataset: pd.DataFrame) -> None:
-        database.save_into_database(dataset, "ADSORPTION_BEST_FIT")
+        encoded = self.convert_lists_to_strings(dataset)
+        database.save_into_database(encoded, "ADSORPTION_BEST_FIT")
 
     # -------------------------------------------------------------------------
     def load_best_fit(self) -> pd.DataFrame:
-        return database.load_from_database("ADSORPTION_BEST_FIT")
+        encoded = database.load_from_database("ADSORPTION_BEST_FIT")
+        if encoded.empty:
+            return encoded
+        return self.convert_strings_to_lists(encoded)
 
     # -------------------------------------------------------------------------
     def convert_list_to_string(self, value: Any) -> Any:
