@@ -1,99 +1,146 @@
 from __future__ import annotations
 
-import gradio as gr
+import asyncio
+from typing import Any
+
+from nicegui import ui
+from nicegui.elements.checkbox import Checkbox
+from nicegui.elements.number import Number
+from nicegui.elements.textarea import Textarea
+from nicegui.events import EventArguments, UploadEventArguments
 
 from ADSORFIT.app.client.controllers import (
+    DatasetPayload,
+    ParameterKey,
     get_parameter_defaults,
     load_dataset,
     start_fitting,
 )
 
 
-#-------------------------------------------------------------------------------
-def create_interface() -> gr.Blocks:
-    parameter_defaults = get_parameter_defaults()
-    with gr.Blocks(
-        title="ADSORFIT Model Fitting",
-        analytics_enabled=False,
-        theme="soft",
-    ) as demo:
-        dataset_state = gr.State(value=None)
-        gr.Markdown("## ADSORFIT Model Fitting")
+###############################################################################
+class InterfaceSession:
+    def __init__(self) -> None:
+        self.parameter_defaults = get_parameter_defaults()
+        self.dataset: DatasetPayload | None = None
+        self.parameter_metadata: list[ParameterKey] = []
+        self.parameter_inputs: list[Number] = []
+        self.max_iterations_input: Number | None = None
+        self.save_best_checkbox: Checkbox | None = None
+        self.dataset_stats_area: Textarea | None = None
+        self.fitting_status_area: Textarea | None = None
 
-        with gr.Row(equal_height=True):
-            with gr.Column(scale=1):
-                max_iterations = gr.Number(
-                    label="Max iteration",
-                    minimum=1,
-                    maximum=1_000_000,
-                    value=1000,
-                    precision=0,
-                )
-                save_best_checkbox = gr.Checkbox(
-                    label="Save best fitting data",
-                    value=True,
-                )
-                load_button = gr.UploadButton(
-                    "Load dataset",
-                    file_types=[".csv", ".xlsx"],
-                    file_count="single",
-                )
-                dataset_stats = gr.Textbox(
-                    label="Dataset statistics",
-                    lines=12,
-                    interactive=False,
-                    value="No dataset loaded.",
-                )
-                start_button = gr.Button(
-                    "Start fitting",
-                    variant="primary",
-                )
-                fitting_status = gr.Textbox(
-                    label="Fitting status",
-                    lines=8,
-                    interactive=False,
-                )
+    ###########################################################################
+    def build(self) -> None:
+        self.parameter_metadata = []
+        self.parameter_inputs = []
 
-            with gr.Column(scale=1):
-                parameter_metadata: list[tuple[str, str, str]] = []
-                parameter_inputs: list[gr.Number] = []
-                for model_name, parameters in parameter_defaults.items():
-                    with gr.Accordion(model_name, open=False):
-                        for parameter_name, (min_default, max_default) in parameters.items():
-                            with gr.Row():
-                                min_input = gr.Number(
-                                    label=f"{parameter_name} min",
-                                    value=min_default,
-                                    precision=4,
-                                )
-                                max_input = gr.Number(
-                                    label=f"{parameter_name} max",
-                                    value=max_default,
-                                    precision=4,
-                                )
-                            parameter_metadata.append((model_name, parameter_name, "min"))
-                            parameter_inputs.append(min_input)
-                            parameter_metadata.append((model_name, parameter_name, "max"))
-                            parameter_inputs.append(max_input)
+        container = ui.column().classes("w-full max-w-6xl mx-auto gap-6 p-4")
+        with container:
+            ui.label("ADSORFIT Model Fitting").classes("text-2xl font-semibold")
 
-        parameter_metadata_state = gr.State(parameter_metadata)
+            with ui.row().classes("w-full items-start gap-6 flex-wrap"):
+                with ui.column().classes("flex-1 min-w-[320px] gap-4"):
+                    self.max_iterations_input = ui.number(
+                        "Max iteration",
+                        value=1000,
+                        min=1,
+                        max=1_000_000,
+                        precision=0,
+                        step=1,
+                    ).classes("w-full")
+                    self.save_best_checkbox = ui.checkbox(
+                        "Save best fitting data",
+                        value=True,
+                    )
+                    ui.upload(
+                        label="Load dataset",
+                        on_upload=self.handle_dataset_upload,
+                        auto_upload=True,
+                    ).props("accept=.csv,.xlsx").classes("w-full")
+                    self.dataset_stats_area = ui.textarea(
+                        "Dataset statistics",
+                        value="No dataset loaded.",
+                    ).props("readonly rows=8").classes("w-full")
+                    ui.button(
+                        "Start fitting",
+                        on_click=self.handle_start_fitting,
+                    ).props("color=primary")
+                    self.fitting_status_area = ui.textarea(
+                        "Fitting status",
+                        value="",
+                    ).props("readonly rows=8").classes("w-full")
 
-        load_button.upload(
-            fn=load_dataset,
-            inputs=load_button,
-            outputs=[dataset_state, dataset_stats],
+                with ui.column().classes("flex-1 min-w-[320px] gap-4"):
+                    for model_name, parameters in self.parameter_defaults.items():
+                        with ui.expansion(model_name, value=False).classes("w-full"):
+                            with ui.column().classes("w-full gap-3"):
+                                for parameter_name, (min_default, max_default) in parameters.items():
+                                    with ui.row().classes("w-full gap-3"):
+                                        min_input = ui.number(
+                                            f"{parameter_name} min",
+                                            value=float(min_default),
+                                            precision=4,
+                                            step=0.0001,
+                                        ).classes("w-full")
+                                        max_input = ui.number(
+                                            f"{parameter_name} max",
+                                            value=float(max_default),
+                                            precision=4,
+                                            step=0.0001,
+                                        ).classes("w-full")
+                                    self.parameter_metadata.append((model_name, parameter_name, "min"))
+                                    self.parameter_inputs.append(min_input)
+                                    self.parameter_metadata.append((model_name, parameter_name, "max"))
+                                    self.parameter_inputs.append(max_input)
+
+    ###########################################################################
+    async def handle_dataset_upload(self, event: UploadEventArguments) -> None:
+        if self.dataset_stats_area is not None:
+            self.dataset_stats_area.value = "[INFO] Uploading dataset..."
+        dataset, message = await asyncio.to_thread(load_dataset, event)
+        self.dataset = dataset
+        if self.dataset_stats_area is not None:
+            self.dataset_stats_area.value = message
+
+    ###########################################################################
+    async def handle_start_fitting(self, event: EventArguments) -> None:
+        del event
+        if self.fitting_status_area is not None:
+            self.fitting_status_area.value = "[INFO] Starting fitting process..."
+
+        max_iterations = 1.0
+        if self.max_iterations_input is not None and self.max_iterations_input.value is not None:
+            max_iterations = float(self.max_iterations_input.value)
+
+        save_best = False
+        if self.save_best_checkbox is not None:
+            save_best = bool(self.save_best_checkbox.value)
+
+        values: list[Any] = []
+        for element in self.parameter_inputs:
+            values.append(element.value)
+
+        message = await asyncio.to_thread(
+            start_fitting,
+            list(self.parameter_metadata),
+            max_iterations,
+            save_best,
+            self.dataset,
+            *values,
         )
 
-        start_button.click(
-            fn=start_fitting,
-            inputs=[
-                parameter_metadata_state,
-                max_iterations,
-                save_best_checkbox,
-                dataset_state,
-                *parameter_inputs,
-            ],
-            outputs=fitting_status,
-        )
+        if self.fitting_status_area is not None:
+            self.fitting_status_area.value = message
 
-    return demo
+
+###########################################################################
+def render_page() -> None:
+    session = InterfaceSession()
+    session.build()
+
+
+###########################################################################
+def create_interface() -> None:
+    ui.page("/")(render_page)
+    ui.page("/ui")(render_page)

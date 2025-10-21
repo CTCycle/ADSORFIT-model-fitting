@@ -6,6 +6,7 @@ import os
 from typing import Any
 
 import httpx
+from nicegui.events import UploadEventArguments
 
 
 MODEL_PARAMETER_DEFAULTS: dict[str, dict[str, tuple[float, float]]] = {
@@ -45,6 +46,9 @@ def resolve_file_path(file: Any) -> str | None:
     if file is None:
         return None
 
+    if isinstance(file, UploadEventArguments):
+        return None
+
     if isinstance(file, str) and os.path.exists(file):
         return file
 
@@ -69,6 +73,24 @@ def resolve_file_path(file: Any) -> str | None:
 
 #-------------------------------------------------------------------------------
 def extract_file_payload(file: Any) -> tuple[bytes, str | None]:
+    if isinstance(file, UploadEventArguments):
+        content = file.content
+        if hasattr(content, "seek"):
+            try:
+                content.seek(0)
+            except (OSError, ValueError):
+                pass
+        if hasattr(content, "read"):
+            data = content.read()
+        else:
+            data = content
+        if not isinstance(data, (bytes, bytearray)):
+            data = bytes(data)
+        name = file.name if isinstance(file.name, str) else None
+        if isinstance(name, str):
+            name = os.path.basename(name)
+        return bytes(data), name
+
     path = resolve_file_path(file)
     if path:
         with open(path, "rb") as handle:
