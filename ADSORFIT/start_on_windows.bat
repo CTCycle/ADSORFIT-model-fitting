@@ -136,7 +136,7 @@ REM ============================================================================
 :load_env
 set "FASTAPI_HOST=127.0.0.1"
 set "FASTAPI_PORT=8000"
-set "RELOAD=true"
+set "RELOAD=false"
 
 if exist "%DOTENV%" (
   for /f "usebackq tokens=* delims=" %%L in ("%DOTENV%") do (
