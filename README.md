@@ -1,52 +1,56 @@
 # ADSORFIT: Automated Adsorption Model Fitting
 
 ## 1. Project Overview
-ADSORFIT is a powerful yet simple tool designed to facilitate adsorption modeling for researchers. It automates experimental data fitting using theoretical adsorption models, enabling accurate extraction of adsorption constants and saturation uptakes from your adsorption isotherms. The core functionality revolves around minimizing the Least Squares Sum (LSS) discrepancy between observed data and model-predicted uptakes. This ensures that the derived model parameters reliably represent the true adsorption behavior under the given experimental conditions. The application now exposes its computation layer through a FastAPI backend and serves an intuitive user interface powered by Gradio, making it accessible to users of all experience levels.
+ADSORFIT accelerates adsorption-model research by combining automated curve fitting, visual analytics, and experiment management in a single workflow. A shared FastAPI service and NiceGUI interface coordinate dataset ingestion, parameter exploration, and solver execution so interactive users and scripted integrations access the same capabilities. The fitting engine minimizes the least-squares distance between measured uptake profiles and the predictions of classical adsorption models, enabling quick comparison of hypotheses, sensitivity studies, and archiving of the best-performing solutions for future review.
 
-## 2. Installation 
-The installation process on Windows has been designed to be fully automated. To begin, simply run *start_on_windows.bat.* On its first execution, the installation procedure will execute with minimal user input required. The script will check if either Anaconda or Miniconda is installed and can be accessed from your system path. If neither is found, it will automatically download and install the latest Miniconda release from https://docs.anaconda.com/miniconda/. Following this step, the script will proceed with the installation of all necessary Python dependencies. Should you prefer to handle the installation process separately, you can run the standalone installer by running *setup/install_on_windows.bat*.  
+## 2. Installation
+### 2.1 Prerequisites
+- Python 3.12
+- A recent version of `pip`
+- Recommended: a virtual environment manager such as `venv`, Conda, or Hatch
 
-**Important:** After installation, if the project folder is moved or its path is changed, the application will no longer function correctly. To fix this, you can either:
+### 2.2 Standard setup
+1. Create and activate a Python 3.12 environment.
+2. Upgrade `pip` and install project dependencies from the repository root with `pip install --upgrade pip` followed by `pip install -e . --use-pep517`.
+3. (Optional) If you plan to run the test suite, install the extra tooling with `pip install -e .[dev]`.
 
-- Open the main menu, select *Setup and maintentance* and choose *Install project in editable mode*
-- Manually run the following commands in the terminal, ensuring the project folder is set as the current working directory (CWD):
+### 2.3 Windows launcher
+Windows users can still rely on the bundled automation scripts. Launch `start_on_windows.bat` to install dependencies, configure the virtual environment, and open the application menu. The first run can take a few minutes while Miniconda and project requirements are prepared.
 
-    `conda activate ADSORFIT`
-
-    `pip install -e . --use-pep517` 
+If the project directory moves after installation, rerun the menu option **Install project in editable mode** or repeat step 2 from the standard setup while the environment is active.
 
 ## 3. How to use
-On Windows, run *start_on_windows.bat* to launch the main navigation menu and browse through the various options. Please note that some antivirus software, such as Avast, may flag or quarantine python.exe when called by the .bat file. If you encounter unusual behavior, consider adding an exception in your antivirus settings.
+### 3.0 Launching the application
+- Local development: start the backend with `uvicorn ADSORFIT.app.app:app --reload` to enable live reloading. The UI is available at `http://127.0.0.1:8000/ui` and FastAPI's interactive docs remain accessible at `/docs`.
+- Production-like sessions: run `uvicorn ADSORFIT.app.app:app --host 0.0.0.0 --port 8000` and visit the `/ui` endpoint in a browser of your choice. The API documentation is mirrored at `/docs` for automated workflows.
+- Windows launcher: from the navigation menu, choose **Run ADSORFIT UI**. Antivirus tools may prompt for confirmation while the bundled interpreter starts; whitelist the launcher if necessary.
 
 ### 3.1 Navigation menu
 
-**1) Run ADSORFIT UI:** Launch ADSORFIT to access the FastAPI backend and the Gradio-powered interface. When running locally (for example with `uvicorn ADSORFIT.app.app:app --reload` or via the Windows launcher), the backend listens on `http://127.0.0.1:8000` and the UI is exposed at `http://127.0.0.1:8000/ui`. The interface lets you upload an adsorption dataset, review automatic statistics, configure parameter bounds per model, and start the fitting procedure. Each model accordion now includes an **Enable model** toggle so you can decide which theoretical isotherms participate in the fitting run. At least one model must remain enabled before the solver can start. Results are streamed back to the status panel as soon as the backend completes the computation.
+**1) Run ADSORFIT UI:** Starts the API and the NiceGUI interface. Upload CSV or Excel adsorption datasets, inspect automatic profiling statistics, tune model bounds and iteration limits, and follow solver progress in real time. Model cards include enable toggles to restrict the run to relevant isotherms; at least one model must remain active before fitting can begin.
 
-**2) Setup and Maintenance:** execute optional commands such as *Install project into environment* to reinstall the project within your environment, *update project* to pull the last updates from github, and *remove logs* to remove all logs saved in *resources/logs*. 
+**2) Setup and Maintenance:** Provides shortcuts to reinstall ADSORFIT into the active environment, update dependencies from version control, or rotate stored logs without leaving the launcher.
 
-**3) Exit:** close the program immediately 
+**3) Exit:** Closes the launcher.
 
 ### 3.2 Resources
-This folder organizes data and results of the curve fitting operations, and by default all data is stored within an SQLite database. To visualize and interact with SQLite database files, we recommend downloading and installing the DB Browser for SQLite, available at: https://sqlitebrowser.org/dl/.
+The `resources` directory aggregates inputs, outputs, and utilities used during fitting runs:
 
-
-- **database:** adsorption isotherm data should be provided as a CSV file named *adsorption_data.csv*. If automatic column name detection is disabled, the file must include the following columns with these exact names and units: *experiment*, *temperature [K]*, *pressure [Pa]*, and *uptake [mol/g]*. On the other hand, if the option to automatically detect columns is selected, ADSORFIT will identify target columns based on keywords and string pattern matching. A template of the expected CSV format is available at *resources/templates/adsorption_data.csv*. Fitting results will be centrally stored within the main database *ADSORFIT_database.db*. 
-
-- **logs:** log files are saved here
-
-- **templates:** reference template files can be found here
+- **database:** Centralized SQLite storage for uploaded experiments and fitting results. Import CSV or Excel files that follow the template columns (experiment label, temperature in Kelvin, pressure in Pascal, and uptake in mol/g). A sample adsorption dataset is available at `ADSORFIT/resources/templates/adsorption_data.csv`, and external tools such as DB Browser for SQLite can be used for inspection.
+- **logs:** Rolling backend and interface logs, useful for diagnosing solver behavior or API requests. The launcher offers a maintenance shortcut for clearing these files.
+- **templates:** Assets such as the dataset template and environment variable scaffold referenced throughout this README.
 
 ### 4. Configuration
-Each adsorption model can be configured in the **Model Configuration** tab where you can set an initial guess value for the adsorption model parameters,as well as boundaries for the minimun and maximum expected values. Parameter bounds are now restricted to positive numbers to prevent invalid negative configurations during fitting.
+Each adsorption model can be configured in the **Model Configuration** area by adjusting parameter bounds, iteration ceilings, and persistence preferences. Bounds are validated to remain positive before fitting begins to avoid infeasible solver states.
 
-**Environmental variables** are stored in the *app* folder (within the project folder). For security reasons, this file is typically not uploaded to GitHub. Instead, you must create this file manually by copying the template from *resources/templates/.env* and placing it in the *app* directory.
+Runtime options (host, port, reload mode, and API endpoint) are defined through environment variables. Copy the provided `.env` template from the templates collection, fill in the desired values, and place the finalized file at `ADSORFIT/app/.env` before launching the server.
 
 | Variable              | Description                                              |
 |-----------------------|----------------------------------------------------------|
 | FASTAPI_HOST          | Host address for the FastAPI server (default is 127.0.0.1) |
 | FASTAPI_PORT          | Port to run the FastAPI server (default is 8000)          |
 | RELOAD                | Enable auto-reload for development (true/false)           |
-| ADSORFIT_API_URL      | Base URL used by the Gradio client to reach the backend   |
+| ADSORFIT_API_URL      | Base URL used by the NiceGUI interface to reach the backend |
 
 ## 5. License
 This project is licensed under the terms of the MIT license. See the LICENSE file for details.
