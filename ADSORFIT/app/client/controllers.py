@@ -41,11 +41,11 @@ class ClientController:
         )
         self.api_base_url = base_url.rstrip("/")
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def get_parameter_defaults(self) -> dict[str, dict[str, tuple[float, float]]]:
         return copy.deepcopy(MODEL_PARAMETER_DEFAULTS)
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def read_upload_source(self, upload: Any) -> bytes:
         reader = getattr(upload, "read", None)
         if callable(reader):
@@ -79,7 +79,7 @@ class ClientController:
 
         raise ValueError("Unable to access the uploaded dataset contents.")
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def extract_file_payload(self, file: Any) -> tuple[bytes, str | None]:
         upload = getattr(file, "file", None)
         if upload is not None:
@@ -127,7 +127,9 @@ class ClientController:
 
         data_holder = getattr(file, "data", None)
         if isinstance(data_holder, (bytes, bytearray)):
-            name = getattr(file, "orig_name", None) if hasattr(file, "orig_name") else None
+            name = (
+                getattr(file, "orig_name", None) if hasattr(file, "orig_name") else None
+            )
             if name is None and hasattr(file, "name"):
                 name = getattr(file, "name")
             if isinstance(name, str):
@@ -144,7 +146,7 @@ class ClientController:
 
         raise ValueError("Unable to access the uploaded dataset.")
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def extract_error_message(self, response: httpx.Response) -> str:
         try:
             payload = response.json()
@@ -162,8 +164,10 @@ class ClientController:
 
         return f"HTTP error {response.status_code}"
 
-    #-------------------------------------------------------------------------------
-    def post_json(self, route: str, payload: dict[str, Any]) -> tuple[bool, dict[str, Any] | None, str]:
+    # -------------------------------------------------------------------------------
+    def post_json(
+        self, route: str, payload: dict[str, Any]
+    ) -> tuple[bool, dict[str, Any] | None, str]:
         url = f"{self.api_base_url}/{route.lstrip('/')}"
         try:
             response = httpx.post(url, json=payload, timeout=120.0)
@@ -181,7 +185,7 @@ class ClientController:
 
         return True, data, ""
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def post_file(
         self,
         route: str,
@@ -208,7 +212,7 @@ class ClientController:
 
         return True, data, ""
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def load_dataset(self, file: Any) -> tuple[DatasetPayload | None, str]:
         if file is None:
             return None, "No dataset loaded."
@@ -240,14 +244,16 @@ class ClientController:
 
         return dataset, summary
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def build_parameter_bounds(
         self,
         metadata: list[ParameterKey],
         values: tuple[Any, ...],
     ) -> dict[str, dict[str, dict[str, float | None]]]:
         bounds: dict[str, dict[str, dict[str, float | None]]] = {}
-        for (model, parameter, bound_type), raw_value in zip(metadata, values, strict=False):
+        for (model, parameter, bound_type), raw_value in zip(
+            metadata, values, strict=False
+        ):
             if model not in bounds:
                 bounds[model] = {}
             if parameter not in bounds[model]:
@@ -265,7 +271,7 @@ class ClientController:
 
         return bounds
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def build_solver_configuration(
         self,
         bounds: dict[str, dict[str, dict[str, float | None]]],
@@ -295,7 +301,7 @@ class ClientController:
             configuration[model_name] = config_entry
         return configuration
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def start_fitting(
         self,
         metadata: list[ParameterKey],
@@ -352,7 +358,9 @@ class ClientController:
 
         status = response.get("status")
         if status != "success":
-            detail = response.get("detail") or response.get("message") or "Unknown error"
+            detail = (
+                response.get("detail") or response.get("message") or "Unknown error"
+            )
             return f"[ERROR] {detail}"
 
         summary = response.get("summary")

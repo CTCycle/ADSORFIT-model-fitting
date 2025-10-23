@@ -12,8 +12,10 @@ class DatasetService:
     def __init__(self) -> None:
         self.allowed_extensions = {".csv", ".xls", ".xlsx"}
 
-    #-------------------------------------------------------------------------------
-    def load_from_bytes(self, payload: bytes, filename: str | None) -> tuple[dict[str, Any], str]:
+    # -------------------------------------------------------------------------------
+    def load_from_bytes(
+        self, payload: bytes, filename: str | None
+    ) -> tuple[dict[str, Any], str]:
         if not payload:
             raise ValueError("Uploaded dataset is empty.")
 
@@ -27,7 +29,7 @@ class DatasetService:
         summary = self.format_dataset_summary(dataframe)
         return dataset_payload, summary
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def read_dataframe(self, payload: bytes, filename: str | None) -> pd.DataFrame:
         extension = ""
         if isinstance(filename, str):
@@ -52,12 +54,8 @@ class DatasetService:
                     first_value = dataframe.iloc[0, 0]
 
                 for delimiter in (";", "\t", "|"):
-                    if (
-                        isinstance(column_name, str)
-                        and delimiter in column_name
-                    ) or (
-                        isinstance(first_value, str)
-                        and delimiter in first_value
+                    if (isinstance(column_name, str) and delimiter in column_name) or (
+                        isinstance(first_value, str) and delimiter in first_value
                     ):
                         buffer.seek(0)
                         dataframe = pd.read_csv(buffer, sep=delimiter)
@@ -68,7 +66,7 @@ class DatasetService:
 
         return dataframe
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def format_dataset_summary(self, dataframe: pd.DataFrame) -> str:
         rows, columns = dataframe.shape
         total_nans = int(dataframe.isna().sum().sum())
@@ -76,9 +74,7 @@ class DatasetService:
         for column in dataframe.columns:
             dtype = dataframe[column].dtype
             missing = int(dataframe[column].isna().sum())
-            column_summaries.append(
-                f"- {column}: dtype={dtype}, missing={missing}"
-            )
+            column_summaries.append(f"- {column}: dtype={dtype}, missing={missing}")
 
         summary_lines = [
             f"Rows: {rows}",

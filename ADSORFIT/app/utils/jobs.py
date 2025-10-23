@@ -24,7 +24,7 @@ class FittingWorker:
         self.solver = ModelSolver()
         self.adapter = DatasetAdapter()
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     async def run_job(
         self,
         dataset_payload: dict[str, Any],
@@ -42,7 +42,7 @@ class FittingWorker:
             progress_callback,
         )
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def execute(
         self,
         dataset_payload: dict[str, Any],
@@ -68,7 +68,9 @@ class FittingWorker:
         logger.debug("Detected dataset statistics:\n%s", stats)
 
         if processed.empty:
-            raise ValueError("No valid experiments found after preprocessing the dataset.")
+            raise ValueError(
+                "No valid experiments found after preprocessing the dataset."
+            )
 
         model_configuration = self.normalize_configuration(configuration)
         logger.debug("Running solver with configuration: %s", model_configuration)
@@ -111,7 +113,7 @@ class FittingWorker:
 
         return response
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def build_dataframe(self, payload: dict[str, Any]) -> pd.DataFrame:
         records = payload.get("records")
         columns = payload.get("columns")
@@ -121,7 +123,7 @@ class FittingWorker:
             dataframe = pd.DataFrame()
         return dataframe
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def normalize_configuration(
         self, configuration: dict[str, dict[str, dict[str, float]]]
     ) -> dict[str, dict[str, dict[str, float]]]:
@@ -144,24 +146,34 @@ class FittingWorker:
             normalized[model_name] = normalized_entry
         return normalized
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def stringify_sequences(self, dataset: pd.DataFrame) -> pd.DataFrame:
         converted = dataset.copy()
         for column in converted.columns:
-            if converted[column].apply(lambda value: isinstance(value, (list, tuple))).any():
+            if (
+                converted[column]
+                .apply(lambda value: isinstance(value, (list, tuple)))
+                .any()
+            ):
                 converted[column] = converted[column].apply(
-                    lambda value: json.dumps(value) if isinstance(value, (list, tuple)) else value
+                    lambda value: json.dumps(value)
+                    if isinstance(value, (list, tuple))
+                    else value
                 )
         return converted
 
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def build_preview(self, dataset: pd.DataFrame) -> list[dict[str, Any]]:
-        preview_columns = [column for column in dataset.columns if column.endswith("LSS")]
-        preview_columns.extend([
-            column
-            for column in dataset.columns
-            if column in {"experiment", "best model", "worst model"}
-        ])
+        preview_columns = [
+            column for column in dataset.columns if column.endswith("LSS")
+        ]
+        preview_columns.extend(
+            [
+                column
+                for column in dataset.columns
+                if column in {"experiment", "best model", "worst model"}
+            ]
+        )
         trimmed = dataset.loc[:, dict.fromkeys(preview_columns).keys()]
         limited = trimmed.head(5)
         limited = limited.replace({np.nan: None})

@@ -17,7 +17,9 @@ class AdsorptionModels:
 
     # -------------------------------------------------------------------------
     @staticmethod
-    def sips(pressure: np.ndarray, k: float, qsat: float, exponent: float) -> np.ndarray:
+    def sips(
+        pressure: np.ndarray, k: float, qsat: float, exponent: float
+    ) -> np.ndarray:
         k_p = k * (pressure**exponent)
         return qsat * (k_p / (1 + k_p))
 

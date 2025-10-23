@@ -5,7 +5,7 @@ import os
 from nicegui import app
 
 from ADSORFIT.app.api import api_router
-from ADSORFIT.app.client.main import create_interface
+from ADSORFIT.app.client.interface import create_interface
 
 
 ###############################################################################

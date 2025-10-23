@@ -6,9 +6,9 @@ import pandas as pd
 
 from ADSORFIT.app.utils.repository.database import database
 
+
 ###############################################################################
 class DataSerializer:
-
     # -------------------------------------------------------------------------
     def save_raw_dataset(self, dataset: pd.DataFrame) -> None:
         database.save_into_database(dataset, "ADSORPTION_DATA")
@@ -95,5 +95,3 @@ class DataSerializer:
             if converted[column].dtype == object:
                 converted[column] = converted[column].apply(self.convert_string_to_list)
         return converted
-
-    

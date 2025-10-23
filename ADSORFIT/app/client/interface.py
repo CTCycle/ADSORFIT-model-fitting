@@ -10,6 +10,7 @@ from nicegui.elements.number import Number
 from nicegui.elements.switch import Switch
 from nicegui.elements.textarea import Textarea
 from nicegui.events import EventArguments, UploadEventArguments
+from nicegui.events import ValueChangeEventArguments
 
 from ADSORFIT.app.client.controllers import (
     DatasetPayload,
@@ -63,18 +64,26 @@ class InterfaceSession:
                         on_upload=self.handle_dataset_upload,
                         auto_upload=True,
                     ).props("accept=.csv,.xlsx").classes("w-full")
-                    self.dataset_stats_area = ui.textarea(
-                        "Dataset statistics",
-                        value="No dataset loaded.",
-                    ).props("readonly rows=8").classes("w-full")
+                    self.dataset_stats_area = (
+                        ui.textarea(
+                            "Dataset statistics",
+                            value="No dataset loaded.",
+                        )
+                        .props("readonly rows=8")
+                        .classes("w-full")
+                    )
                     ui.button(
                         "Start fitting",
                         on_click=self.handle_start_fitting,
                     ).props("color=primary")
-                    self.fitting_status_area = ui.textarea(
-                        "Fitting status",
-                        value="",
-                    ).props("readonly rows=8").classes("w-full")
+                    self.fitting_status_area = (
+                        ui.textarea(
+                            "Fitting status",
+                            value="",
+                        )
+                        .props("readonly rows=8")
+                        .classes("w-full")
+                    )
 
                 with ui.column().classes("flex-1 min-w-[320px] gap-4"):
                     for model_name, parameters in self.parameter_defaults.items():
@@ -85,9 +94,8 @@ class InterfaceSession:
                                 ui.label(model_name).classes("text-lg font-semibold")
                                 toggle = ui.switch(
                                     value=True,
-                                    on_change=lambda e, name=model_name: self.handle_model_toggle(
-                                        name, e
-                                    ),
+                                    on_change=lambda e,
+                                    name=model_name: self.handle_model_toggle(name, e),
                                 ).props("color=primary")
                                 self.model_toggles[model_name] = toggle
                             expansion = ui.expansion(
@@ -96,7 +104,10 @@ class InterfaceSession:
                             self.model_expansions[model_name] = expansion
                             with expansion:
                                 with ui.column().classes("w-full gap-3"):
-                                    for parameter_name, (min_default, max_default) in parameters.items():
+                                    for parameter_name, (
+                                        min_default,
+                                        max_default,
+                                    ) in parameters.items():
                                         with ui.row().classes("w-full gap-3"):
                                             min_input = ui.number(
                                                 f"{parameter_name} min",
@@ -112,14 +123,18 @@ class InterfaceSession:
                                                 precision=4,
                                                 step=0.0001,
                                             ).classes("w-full")
-                                    self.parameter_metadata.append((model_name, parameter_name, "min"))
-                                    self.parameter_inputs.append(min_input)
-                                    self.parameter_metadata.append((model_name, parameter_name, "max"))
-                                    self.parameter_inputs.append(max_input)
+                                        self.parameter_metadata.append(
+                                            (model_name, parameter_name, "min")
+                                        )
+                                        self.parameter_inputs.append(min_input)
+                                        self.parameter_metadata.append(
+                                            (model_name, parameter_name, "max")
+                                        )
+                                        self.parameter_inputs.append(max_input)
 
     ###########################################################################
-    def handle_model_toggle(self, model_name: str, event: EventArguments) -> None:
-        toggle_value = bool(event.value)
+    def handle_model_toggle(self, model_name: str, event: ValueChangeEventArguments) -> None:
+        toggle_value = bool(event.value)  
         expansion = self.model_expansions.get(model_name)
         if expansion is None:
             return
@@ -145,7 +160,10 @@ class InterfaceSession:
             self.fitting_status_area.value = "[INFO] Starting fitting process..."
 
         max_iterations = 1.0
-        if self.max_iterations_input is not None and self.max_iterations_input.value is not None:
+        if (
+            self.max_iterations_input is not None
+            and self.max_iterations_input.value is not None
+        ):
             max_iterations = float(self.max_iterations_input.value)
 
         save_best = False
@@ -161,9 +179,7 @@ class InterfaceSession:
         ]
         if not selected_models:
             if self.fitting_status_area is not None:
-                self.fitting_status_area.value = (
-                    "[ERROR] Please select at least one model before starting the fitting process."
-                )
+                self.fitting_status_area.value = "[ERROR] Please select at least one model before starting the fitting process."
             return
 
         message = await asyncio.to_thread(

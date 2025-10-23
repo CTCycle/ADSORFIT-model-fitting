@@ -105,9 +105,7 @@ class AdsorptionDataProcessor:
         return grouped
 
     # -------------------------------------------------------------------------
-    def build_statistics(
-        self, cleaned: pd.DataFrame, grouped: pd.DataFrame
-    ) -> str:
+    def build_statistics(self, cleaned: pd.DataFrame, grouped: pd.DataFrame) -> str:
         total_measurements = cleaned.shape[0]
         total_experiments = grouped.shape[0]
         removed_nan = self.dataset.shape[0] - total_measurements
@@ -131,7 +129,6 @@ class AdsorptionDataProcessor:
 
 ###############################################################################
 class DatasetAdapter:
-    
     @staticmethod
     def combine_results(
         fitting_results: dict[str, list[dict[str, Any]]],
@@ -147,7 +144,9 @@ class DatasetAdapter:
                 logger.info("Model %s produced no entries", model_name)
                 continue
             params = entries[0].get("arguments", [])
-            result_df[f"{model_name} LSS"] = [entry.get("LSS", np.nan) for entry in entries]
+            result_df[f"{model_name} LSS"] = [
+                entry.get("LSS", np.nan) for entry in entries
+            ]
             for index, param in enumerate(params):
                 result_df[f"{model_name} {param}"] = [
                     entry.get("optimal_params", [np.nan] * len(params))[index]
@@ -169,5 +168,7 @@ class DatasetAdapter:
 
         best = dataset.copy()
         best["best model"] = dataset[lss_columns].idxmin(axis=1).str.replace(" LSS", "")
-        best["worst model"] = dataset[lss_columns].idxmax(axis=1).str.replace(" LSS", "")
+        best["worst model"] = (
+            dataset[lss_columns].idxmax(axis=1).str.replace(" LSS", "")
+        )
         return best

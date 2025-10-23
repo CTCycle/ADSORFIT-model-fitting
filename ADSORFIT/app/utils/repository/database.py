@@ -41,15 +41,16 @@ class PredictedGames(Base):
     predicted_action = Column(String)
     __table_args__ = (UniqueConstraint("id"),)
 
+
 ###############################################################################
 @singleton
 class ADSORFITDatabase:
-    def __init__(self) -> None:        
+    def __init__(self) -> None:
         self.db_path = os.path.join(DATA_PATH, "database.db")
         self.engine: Engine = sqlalchemy.create_engine(
             f"sqlite:///{self.db_path}", echo=False, future=True
         )
-       
+
         self.Session = sessionmaker(bind=self.engine, future=True)
         self.insert_batch_size = 1000
 
@@ -64,7 +65,6 @@ class ADSORFITDatabase:
             if hasattr(cls, "__tablename__") and cls.__tablename__ == table_name:
                 return cls
         raise ValueError(f"No table class found for name {table_name}")
-
 
     # -------------------------------------------------------------------------
     def upsert_dataframe(self, df: pd.DataFrame, table_cls) -> None:
@@ -149,7 +149,10 @@ class ADSORFITDatabase:
                         first = False
                     if first:
                         pd.DataFrame().to_csv(
-                            csv_path, index=False, encoding="utf-8", sep=","  # empty table
+                            csv_path,
+                            index=False,
+                            encoding="utf-8",
+                            sep=",",  # empty table
                         )
                 else:
                     df = pd.read_sql(query, conn)

@@ -12,5 +12,3 @@ DATA_PATH = join(RESOURCES_PATH, "database")
 CONFIG_PATH = join(RESOURCES_PATH, "configurations")
 LOGS_PATH = join(RESOURCES_PATH, "logs")
 TEMPLATES_PATH = join(RESOURCES_PATH, "templates")
-
-

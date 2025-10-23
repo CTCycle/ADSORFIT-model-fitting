@@ -8,7 +8,7 @@ from ADSORFIT.app.constants import CONFIG_PATH
 ###############################################################################
 class Configuration:
     def __init__(self) -> None:
-        self.configuration = {            
+        self.configuration = {
             "detect_cols": True,
             "max_iterations": 50000,
             "select_langmuir": False,

@@ -11,8 +11,10 @@ router = APIRouter(tags=["datasets"])
 dataset_service = DatasetService()
 
 
-#-------------------------------------------------------------------------------
-@router.post("/load", response_model=DatasetLoadResponse, status_code=status.HTTP_200_OK)
+# -------------------------------------------------------------------------------
+@router.post(
+    "/load", response_model=DatasetLoadResponse, status_code=status.HTTP_200_OK
+)
 async def load_dataset(file: UploadFile = File(...)) -> DatasetLoadResponse:
     try:
         payload = await file.read()
@@ -24,10 +26,14 @@ async def load_dataset(file: UploadFile = File(...)) -> DatasetLoadResponse:
         ) from exc
 
     try:
-        dataset_payload, summary = dataset_service.load_from_bytes(payload, file.filename)
+        dataset_payload, summary = dataset_service.load_from_bytes(
+            payload, file.filename
+        )
     except ValueError as exc:
         logger.warning("Invalid dataset upload: %s", exc)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Dataset processing failed")
         raise HTTPException(

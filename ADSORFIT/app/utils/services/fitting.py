@@ -31,9 +31,15 @@ class ModelSolver:
             model = self.collection.get_model(model_name)
             signature = inspect.signature(model)
             param_names = list(signature.parameters.keys())[1:]
-            initial = [model_config.get("initial", {}).get(param, 1.0) for param in param_names]
-            lower = [model_config.get("min", {}).get(param, 0.0) for param in param_names]
-            upper = [model_config.get("max", {}).get(param, 100.0) for param in param_names]
+            initial = [
+                model_config.get("initial", {}).get(param, 1.0) for param in param_names
+            ]
+            lower = [
+                model_config.get("min", {}).get(param, 0.0) for param in param_names
+            ]
+            upper = [
+                model_config.get("max", {}).get(param, 100.0) for param in param_names
+            ]
 
             try:
                 optimal_params, covariance = curve_fit(
@@ -50,18 +56,26 @@ class ModelSolver:
                 predicted = model(pressure, *optimal_params)
                 lss = float(np.sum((uptake - predicted) ** 2, dtype=np.float64))
                 errors = (
-                    np.sqrt(np.diag(covariance)).tolist() if covariance is not None else None
+                    np.sqrt(np.diag(covariance)).tolist()
+                    if covariance is not None
+                    else None
                 )
                 results[model_name] = {
                     "optimal_params": optimal_list,
-                    "covariance": covariance.tolist() if covariance is not None else None,
-                    "errors": errors if errors is not None else [np.nan] * len(param_names),
+                    "covariance": covariance.tolist()
+                    if covariance is not None
+                    else None,
+                    "errors": errors
+                    if errors is not None
+                    else [np.nan] * len(param_names),
                     "LSS": lss,
                     "arguments": param_names,
                 }
             except Exception as exc:  # noqa: BLE001
                 logger.exception(
-                    "Failed to fit experiment %s with model %s", experiment_name, model_name
+                    "Failed to fit experiment %s with model %s",
+                    experiment_name,
+                    model_name,
                 )
                 results[model_name] = {
                     "optimal_params": [np.nan] * len(param_names),
@@ -103,5 +117,5 @@ class ModelSolver:
 
             if progress_callback is not None:
                 progress_callback(index + 1, total_experiments)
-                
+
         return results

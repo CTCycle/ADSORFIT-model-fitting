@@ -62,7 +62,15 @@ def test_load_dataset_success(monkeypatch: pytest.MonkeyPatch) -> None:
         assert route == "datasets/load"
         assert file_bytes == b"values"
         assert filename == "dataset.csv"
-        return True, {"status": "success", "dataset": {"columns": ["a"], "records": [[1]]}, "summary": "loaded"}, ""
+        return (
+            True,
+            {
+                "status": "success",
+                "dataset": {"columns": ["a"], "records": [[1]]},
+                "summary": "loaded",
+            },
+            "",
+        )
 
     monkeypatch.setattr(controllers.ClientController, "post_file", fake_post_file)
 
