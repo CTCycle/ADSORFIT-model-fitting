@@ -5,7 +5,9 @@ from typing import Any
 
 from nicegui import ui
 from nicegui.elements.checkbox import Checkbox
+from nicegui.elements.expansion import Expansion
 from nicegui.elements.number import Number
+from nicegui.elements.switch import Switch
 from nicegui.elements.textarea import Textarea
 from nicegui.events import EventArguments, UploadEventArguments
 
@@ -26,7 +28,8 @@ class InterfaceSession:
         self.parameter_inputs: list[Number] = []
         self.max_iterations_input: Number | None = None
         self.save_best_checkbox: Checkbox | None = None
-        self.model_checkboxes: dict[str, Checkbox] = {}
+        self.model_toggles: dict[str, Switch] = {}
+        self.model_expansions: dict[str, Expansion] = {}
         self.dataset_stats_area: Textarea | None = None
         self.fitting_status_area: Textarea | None = None
 
@@ -34,7 +37,8 @@ class InterfaceSession:
     def build(self) -> None:
         self.parameter_metadata = []
         self.parameter_inputs = []
-        self.model_checkboxes = {}
+        self.model_toggles = {}
+        self.model_expansions = {}
 
         container = ui.column().classes("w-full max-w-6xl mx-auto gap-6 p-4")
         with container:
@@ -74,32 +78,56 @@ class InterfaceSession:
 
                 with ui.column().classes("flex-1 min-w-[320px] gap-4"):
                     for model_name, parameters in self.parameter_defaults.items():
-                        with ui.expansion(model_name, value=False).classes("w-full"):
-                            with ui.column().classes("w-full gap-3"):
-                                checkbox = ui.checkbox(
-                                    "Enable model", value=True
-                                ).props("dense")
-                                self.model_checkboxes[model_name] = checkbox
-                                for parameter_name, (min_default, max_default) in parameters.items():
-                                    with ui.row().classes("w-full gap-3"):
-                                        min_input = ui.number(
-                                            f"{parameter_name} min",
-                                            value=float(min_default),
-                                            min=0.0,
-                                            precision=4,
-                                            step=0.0001,
-                                        ).classes("w-full")
-                                        max_input = ui.number(
-                                            f"{parameter_name} max",
-                                            value=float(max_default),
-                                            min=0.0,
-                                            precision=4,
-                                            step=0.0001,
-                                        ).classes("w-full")
+                        with ui.column().classes("w-full border rounded-lg p-4 gap-3"):
+                            with ui.row().classes(
+                                "w-full items-center justify-between gap-3"
+                            ):
+                                ui.label(model_name).classes("text-lg font-semibold")
+                                toggle = ui.switch(
+                                    value=True,
+                                    on_change=lambda e, name=model_name: self.handle_model_toggle(
+                                        name, e
+                                    ),
+                                ).props("color=primary")
+                                self.model_toggles[model_name] = toggle
+                            expansion = ui.expansion(
+                                "Configure parameters", value=False
+                            ).classes("w-full")
+                            self.model_expansions[model_name] = expansion
+                            with expansion:
+                                with ui.column().classes("w-full gap-3"):
+                                    for parameter_name, (min_default, max_default) in parameters.items():
+                                        with ui.row().classes("w-full gap-3"):
+                                            min_input = ui.number(
+                                                f"{parameter_name} min",
+                                                value=float(min_default),
+                                                min=0.0,
+                                                precision=4,
+                                                step=0.0001,
+                                            ).classes("w-full")
+                                            max_input = ui.number(
+                                                f"{parameter_name} max",
+                                                value=float(max_default),
+                                                min=0.0,
+                                                precision=4,
+                                                step=0.0001,
+                                            ).classes("w-full")
                                     self.parameter_metadata.append((model_name, parameter_name, "min"))
                                     self.parameter_inputs.append(min_input)
                                     self.parameter_metadata.append((model_name, parameter_name, "max"))
                                     self.parameter_inputs.append(max_input)
+
+    ###########################################################################
+    def handle_model_toggle(self, model_name: str, event: EventArguments) -> None:
+        toggle_value = bool(event.value)
+        expansion = self.model_expansions.get(model_name)
+        if expansion is None:
+            return
+        if not toggle_value:
+            expansion.value = False
+            expansion.disable()
+        else:
+            expansion.enable()
 
     ###########################################################################
     async def handle_dataset_upload(self, event: UploadEventArguments) -> None:
@@ -129,9 +157,7 @@ class InterfaceSession:
             values.append(element.value)
 
         selected_models = [
-            name
-            for name, checkbox in self.model_checkboxes.items()
-            if checkbox.value
+            name for name, toggle in self.model_toggles.items() if toggle.value
         ]
         if not selected_models:
             if self.fitting_status_area is not None:
