@@ -34,7 +34,7 @@ class InterfaceSession:
         self.dataset_stats_area: Textarea | None = None
         self.fitting_status_area: Textarea | None = None
 
-    ###########################################################################
+    # -------------------------------------------------------------------------
     def build(self) -> None:
         self.parameter_metadata = []
         self.parameter_inputs = []
@@ -132,7 +132,7 @@ class InterfaceSession:
                                         )
                                         self.parameter_inputs.append(max_input)
 
-    ###########################################################################
+    # -------------------------------------------------------------------------
     def handle_model_toggle(self, model_name: str, event: ValueChangeEventArguments) -> None:
         toggle_value = bool(event.value)  
         expansion = self.model_expansions.get(model_name)
@@ -144,7 +144,7 @@ class InterfaceSession:
         else:
             expansion.enable()
 
-    ###########################################################################
+    # -------------------------------------------------------------------------
     async def handle_dataset_upload(self, event: UploadEventArguments) -> None:
         if self.dataset_stats_area is not None:
             self.dataset_stats_area.value = "[INFO] Uploading dataset..."
@@ -153,7 +153,7 @@ class InterfaceSession:
         if self.dataset_stats_area is not None:
             self.dataset_stats_area.value = message
 
-    ###########################################################################
+    # -------------------------------------------------------------------------
     async def handle_start_fitting(self, event: EventArguments) -> None:
         del event
         if self.fitting_status_area is not None:
@@ -196,13 +196,12 @@ class InterfaceSession:
             self.fitting_status_area.value = message
 
 
-###########################################################################
+# -----------------------------------------------------------------------------
 def render_page() -> None:
     session = InterfaceSession()
     session.build()
 
-
-###########################################################################
+# -----------------------------------------------------------------------------
 def create_interface() -> None:
     ui.page("/")(render_page)
     ui.page("/ui")(render_page)
