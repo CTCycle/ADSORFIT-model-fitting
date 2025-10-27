@@ -13,9 +13,8 @@ app.title = "ADSORFIT Backend"
 app.version = "0.1.0"
 app.description = "FastAPI application for ADSORFIT model fitting workflows."
 
-reload_flag = os.getenv("RELOAD", "false").lower() == "true"
 app.config.add_run_config(
-    reload=reload_flag,
+    reload=False,
     title="ADSORFIT Model Fitting",
     viewport="width=device-width, initial-scale=1",
     favicon=None,
