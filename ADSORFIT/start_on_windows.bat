@@ -135,7 +135,7 @@ REM == Load env overrides
 REM ============================================================================
 :load_env
 set "FASTAPI_HOST=127.0.0.1"
-set "FASTAPI_PORT=8000"
+set "FASTAPI_PORT=8001"
 set "RELOAD=false"
 
 if exist "%DOTENV%" (

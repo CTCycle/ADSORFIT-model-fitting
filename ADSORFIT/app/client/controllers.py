@@ -37,7 +37,7 @@ type ParameterKey = tuple[str, str, str]
 class ClientController:
     def __init__(self, api_base_url: str | None = None) -> None:
         base_url = api_base_url or os.environ.get(
-            "ADSORFIT_API_URL", "http://127.0.0.1:8000/api"
+            "ADSORFIT_API_URL", "http://127.0.0.1:8001/api"
         )
         self.api_base_url = base_url.rstrip("/")
 
