@@ -44,7 +44,7 @@ set "TMPVER=%TEMP%\app_pyver.ps1"
 REM Prefer copy instead of hardlinks to avoid warnings/perf surprises on Windows
 set "UV_LINK_MODE=copy"
 
-title ADSORFIT bootstrap (Python + uv)
+title App bootstrap (Python + uv)
 echo.
 
 REM ============================================================================
