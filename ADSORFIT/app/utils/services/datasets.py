@@ -16,6 +16,16 @@ class DatasetService:
     def load_from_bytes(
         self, payload: bytes, filename: str | None
     ) -> tuple[dict[str, Any], str]:
+        """Load an uploaded dataset payload and provide a serialized representation.
+
+        Keyword arguments:
+        payload -- Raw file bytes obtained from the upload endpoint.
+        filename -- Original filename that hints at the file extension, if available.
+
+        Return value:
+        Tuple containing a JSON-serializable dataset description and a human-readable
+        summary.
+        """
         if not payload:
             raise ValueError("Uploaded dataset is empty.")
 
@@ -31,6 +41,15 @@ class DatasetService:
 
     # -------------------------------------------------------------------------------
     def read_dataframe(self, payload: bytes, filename: str | None) -> pd.DataFrame:
+        """Decode the uploaded file into a Pandas DataFrame, handling CSV and Excel inputs.
+
+        Keyword arguments:
+        payload -- Raw bytes representing the uploaded file contents.
+        filename -- Provided filename used to infer the file format.
+
+        Return value:
+        DataFrame containing the parsed dataset ready for further processing.
+        """
         extension = ""
         if isinstance(filename, str):
             extension = os.path.splitext(filename)[1].lower()
@@ -53,6 +72,8 @@ class DatasetService:
                 if not dataframe.empty:
                     first_value = dataframe.iloc[0, 0]
 
+                # When the parser reports a single column we attempt alternative
+                # delimiters to handle semi-colon, tab, or pipe separated files.
                 for delimiter in (";", "\t", "|"):
                     if (isinstance(column_name, str) and delimiter in column_name) or (
                         isinstance(first_value, str) and delimiter in first_value
@@ -68,6 +89,15 @@ class DatasetService:
 
     # -------------------------------------------------------------------------------
     def format_dataset_summary(self, dataframe: pd.DataFrame) -> str:
+        """Produce a textual overview of the dataset dimensions and missing values.
+
+        Keyword arguments:
+        dataframe -- Parsed dataset whose characteristics should be summarized.
+
+        Return value:
+        Multi-line string describing dataset size and per-column missing value
+        statistics.
+        """
         rows, columns = dataframe.shape
         total_nans = int(dataframe.isna().sum().sum())
         column_summaries: list[str] = []

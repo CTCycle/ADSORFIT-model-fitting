@@ -25,12 +25,28 @@ class ModelSolver:
         configuration: dict[str, Any],
         max_iterations: int,
     ) -> dict[str, dict[str, Any]]:
+        """Fit every configured model against a single experiment dataset.
+
+        Keyword arguments:
+        pressure -- Pressure observations expressed as a NumPy array.
+        uptake -- Measured uptakes corresponding to the pressure values.
+        experiment_name -- Identifier of the current experiment, used for logging.
+        configuration -- Per-model fitting configuration, including bounds and initial
+        guesses.
+        max_iterations -- Maximum number of solver evaluations allowed by ``curve_fit``.
+
+        Return value:
+        Dictionary keyed by model names containing optimal parameters, errors, and
+        diagnostics.
+        """
         results: dict[str, dict[str, Any]] = {}
         evaluations = max(1, int(max_iterations))
         for model_name, model_config in configuration.items():
             model = self.collection.get_model(model_name)
             signature = inspect.signature(model)
             param_names = list(signature.parameters.keys())[1:]
+            # ``curve_fit`` expects ordered arrays for initial guess and bounds, so we
+            # align configuration dictionaries with the model signature parameters.
             initial = [
                 model_config.get("initial", {}).get(param, 1.0) for param in param_names
             ]
@@ -54,6 +70,7 @@ class ModelSolver:
                 )
                 optimal_list = optimal_params.tolist()
                 predicted = model(pressure, *optimal_params)
+                # Least squares score is kept for ranking models within the pipeline.
                 lss = float(np.sum((uptake - predicted) ** 2, dtype=np.float64))
                 errors = (
                     np.sqrt(np.diag(covariance)).tolist()
@@ -97,6 +114,23 @@ class ModelSolver:
         max_iterations: int,
         progress_callback: Any | None = None,
     ) -> dict[str, list[dict[str, Any]]]:
+        """Iterate over the dataset and fit every experiment with the configured models.
+
+        Keyword arguments:
+        dataset -- Tabular collection of experiments with embedded pressure and uptake
+        arrays.
+        configuration -- Collection of model-specific fitting parameters and bounds.
+        pressure_col -- Column storing the pressure measurements per experiment row.
+        uptake_col -- Column storing the uptake measurements per experiment row.
+        max_iterations -- Maximum number of solver evaluations passed to the single
+        experiment fitter.
+        progress_callback -- Optional callable receiving the processed experiment count
+        and total experiments.
+
+        Return value:
+        Dictionary mapping model names to the list of fitting results produced for each
+        experiment.
+        """
         results: dict[str, list[dict[str, Any]]] = {
             model: [] for model in configuration.keys()
         }
@@ -105,6 +139,7 @@ class ModelSolver:
             pressure = np.asarray(row[pressure_col], dtype=np.float64)
             uptake = np.asarray(row[uptake_col], dtype=np.float64)
             experiment_name = row.get("experiment", f"experiment_{index}")
+            # Reuse the single experiment solver to guarantee consistent fitting logic.
             experiment_results = self.single_experiment_fit(
                 pressure,
                 uptake,
@@ -116,6 +151,8 @@ class ModelSolver:
                 results[model_name].append(data)
 
             if progress_callback is not None:
+                # Notify the caller after each experiment to enable progress bars or
+                # streamed updates in the UI layer.
                 progress_callback(index + 1, total_experiments)
 
         return results
