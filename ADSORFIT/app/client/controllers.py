@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+from dataclasses import dataclass
 import inspect
 import math
 import os
@@ -9,25 +10,20 @@ from typing import Any
 
 import httpx
 
-MODEL_PARAMETER_DEFAULTS: dict[str, dict[str, tuple[float, float]]] = {
-    "Langmuir": {
-        "k": (1e-06, 10.0),
-        "qsat": (0.0, 100.0),
-    },
-    "Sips": {
-        "k": (1e-06, 10.0),
-        "qsat": (0.0, 100.0),
-        "exponent": (0.1, 10.0),
-    },
-    "Freundlich": {
-        "k": (1e-06, 10.0),
-        "exponent": (0.1, 10.0),
-    },
-    "Temkin": {
-        "k": (1e-06, 10.0),
-        "beta": (0.1, 10.0),
-    },
-}
+###############################################################################
+MISSING = object()
+
+
+###############################################################################
+@dataclass
+class ComponentUpdate:
+    value: Any = MISSING
+    enabled: bool | None = None
+    minimum: int | float | None = None
+    maximum: int | float | None = None
+    visible: bool | None = None
+
+
 
 type DatasetPayload = dict[str, Any]
 type ParameterKey = tuple[str, str, str]
@@ -37,7 +33,7 @@ type ParameterKey = tuple[str, str, str]
 class ClientController:
     def __init__(self, api_base_url: str | None = None) -> None:
         base_url = api_base_url or os.environ.get(
-            "ADSORFIT_API_URL", "http://127.0.0.1:8001/api"
+            "ADSORFIT_API_URL", "http://127.0.0.1:800/api"
         )
         self.api_base_url = base_url.rstrip("/")
 

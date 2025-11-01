@@ -1,8 +1,6 @@
 ADSORFIT/resources/database/*
-
-!ADSORFIT/commons/assets/*
 ADSORFIT/setup/python/*
-ADSORFIT/setup/git/*
+ADSORFIT/setup/*
 
 __pycache__
 *.lock
@@ -17,4 +15,5 @@ __pycache__
 *.json
 *.egg-info
 !.gitkeep
+!ADSORFIT/setup/configurations.json
 
