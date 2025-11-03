@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from os.path import abspath, join
 
 # [PATHS]
@@ -12,6 +13,10 @@ DATA_PATH = join(RESOURCES_PATH, "database")
 CONFIG_PATH = join(RESOURCES_PATH, "configurations")
 LOGS_PATH = join(RESOURCES_PATH, "logs")
 TEMPLATES_PATH = join(RESOURCES_PATH, "templates")
+
+
+###############################################################################
+API_BASE_URL = os.environ.get("ADSORFIT_API_URL", "http://127.0.0.1:800/api")
 
 
 ###############################################################################
