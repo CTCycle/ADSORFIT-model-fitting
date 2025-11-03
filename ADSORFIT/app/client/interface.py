@@ -25,11 +25,9 @@ from ADSORFIT.app.client.controllers import (
     start_fitting,
 )
 
-
-def read_widget_value(widget: Any) -> Any:
-    return widget.value
-
-
+###############################################################################
+# HELPERS
+###############################################################################
 def collect_parameter_payload(
     collectors: list[tuple[ParameterKey, Callable[[], Any]]],
 ) -> tuple[list[ParameterKey], list[Any]]:
@@ -40,10 +38,8 @@ def collect_parameter_payload(
         values.append(reader())
     return metadata, values
 
-
-def extract_upload_payload(
-    event: UploadEventArguments | None,
-) -> tuple[bytes | None, str | None]:
+# -----------------------------------------------------------------------------
+def extract_upload_payload(event: Any | None) -> tuple[bytes | None, str | None]:
     if event is None:
         return None, None
     content = getattr(event, "content", None)
@@ -68,8 +64,8 @@ def extract_upload_payload(
     name = event.name if isinstance(event.name, str) else None
     return data, name
 
-
-def handle_model_toggle(expansion: Expansion, event: ValueChangeEventArguments) -> None:
+# -----------------------------------------------------------------------------
+def handle_model_toggle(expansion: Expansion, event: Any) -> None:
     toggle_active = bool(event.value)
     if not toggle_active:
         expansion.value = False
@@ -77,11 +73,11 @@ def handle_model_toggle(expansion: Expansion, event: ValueChangeEventArguments) 
     else:
         expansion.enable()
 
-
+# -----------------------------------------------------------------------------
 async def handle_dataset_upload(
     dataset_state: dict[str, DatasetPayload | None],
     dataset_stats: Textarea,
-    event: UploadEventArguments,
+    event: Any,
 ) -> None:
     dataset_stats.value = "[INFO] Uploading dataset..."
     file_bytes, filename = extract_upload_payload(event)
@@ -89,8 +85,8 @@ async def handle_dataset_upload(
     dataset_state["dataset"] = result.get("dataset")
     dataset_stats.value = result.get("message", "")
 
-
-async def handle_start_fitting(
+# -----------------------------------------------------------------------------
+async def on_start_fitting_click(
     dataset_state: dict[str, DatasetPayload | None],
     parameter_collectors: list[tuple[ParameterKey, Callable[[], Any]]],
     model_toggles: dict[str, Switch],
@@ -99,9 +95,7 @@ async def handle_start_fitting(
     status_area: Textarea,
 ) -> None:
     status_area.value = "[INFO] Starting fitting process..."
-
     metadata, values = collect_parameter_payload(parameter_collectors)
-
     max_iterations_value = max_iterations_input.value
     if max_iterations_value is None:
         max_iterations = 1.0
@@ -129,6 +123,9 @@ async def handle_start_fitting(
     status_area.value = result.get("message", "")
 
 
+###############################################################################
+# MAIN UI PAGE
+###############################################################################
 def build_model_cards(
     parameter_defaults: dict[str, dict[str, tuple[float, float]]],
     parameter_collectors: list[tuple[ParameterKey, Callable[[], Any]]],
@@ -171,17 +168,17 @@ def build_model_cards(
                             parameter_collectors.append(
                                 (
                                     (model_name, parameter_name, "min"),
-                                    partial(read_widget_value, min_input),
+                                    lambda mi=min_input: mi.value,
                                 )
                             )
                             parameter_collectors.append(
                                 (
                                     (model_name, parameter_name, "max"),
-                                    partial(read_widget_value, max_input),
+                                    lambda ma=max_input: ma.value,
                                 )
                             )
 
-
+# -----------------------------------------------------------------------------
 def main_page() -> None:
     dataset_state: dict[str, DatasetPayload | None] = {"dataset": None}
     parameter_collectors: list[tuple[ParameterKey, Callable[[], Any]]] = []
@@ -190,12 +187,13 @@ def main_page() -> None:
 
     ui.page_title("ADSORFIT Model Fitting")
     ui.add_head_html(f"<style>{INTERFACE_THEME_CSS}</style>")
-
+   
     with ui.column().classes(PAGE_CONTAINER_CLASSES):
         ui.markdown("## ADSORFIT Model Fitting").classes(
             "adsorfit-heading text-3xl font-semibold"
         )
-        with ui.row().classes("w-full gap-6 items-start flex-wrap md:flex-nowrap"):
+
+        with ui.row().classes("w-full gap-6 items-start flex-wrap md:flex-nowrap"):            
             with ui.card().classes(f"{CARD_BASE_CLASSES} flex-1 min-w-[320px]"):
                 with ui.column().classes("gap-4"):
                     max_iterations_input = ui.number(
@@ -206,10 +204,12 @@ def main_page() -> None:
                         precision=0,
                         step=1,
                     ).classes("w-full")
+
                     save_best_checkbox = ui.checkbox(
                         "Save best fitting data",
                         value=True,
                     )
+
                     dataset_stats = (
                         ui.textarea(
                             "Dataset statistics",
@@ -218,6 +218,7 @@ def main_page() -> None:
                         .props("readonly rows=8")
                         .classes("w-full adsorfit-status")
                     )
+
                     status_area = (
                         ui.textarea(
                             "Fitting status",
@@ -226,32 +227,60 @@ def main_page() -> None:
                         .props("readonly rows=8")
                         .classes("w-full adsorfit-status")
                     )
-                    ui.upload(
-                        label="Load dataset",
-                        on_upload=partial(handle_dataset_upload, dataset_state, dataset_stats),
-                        auto_upload=True,
-                    ).props("accept=.csv,.xlsx").classes("w-full")
-                    ui.button(
+
+                    dataset_upload = (
+                        ui.upload(
+                            label="Load dataset",
+                            auto_upload=True,
+                        )
+                        .props("accept=.csv,.xlsx")
+                        .classes("w-full")
+                    )
+
+                    fit_button = ui.button(
                         "Start fitting",
-                        on_click=partial(
-                            handle_start_fitting,
-                            dataset_state,
-                            parameter_collectors,
-                            model_toggles,
-                            max_iterations_input,
-                            save_best_checkbox,
-                            status_area,
-                        ),
                     ).props("color=primary")
 
             with ui.column().classes("flex-1 min-w-[320px] gap-4"):
                 build_model_cards(parameter_defaults, parameter_collectors, model_toggles)
 
+    dataset_upload.on_upload(
+        partial(
+            handle_dataset_upload, 
+            dataset_state, 
+            dataset_stats
+        )
+    )
 
-def render_page() -> None:
-    main_page()
+    fit_button.on_click(
+        partial(
+            on_start_fitting_click,
+            dataset_state,
+            parameter_collectors,
+            model_toggles,
+            max_iterations_input,
+            save_best_checkbox,
+            status_area,
+        )
+    )
 
 
+###############################################################################
+# MOUNT AND LAUNCH
+###############################################################################
 def create_interface() -> None:
-    ui.page("/")(render_page)
-    ui.page("/ui")(render_page)
+    ui.page("/")(main_page)
+
+# -----------------------------------------------------------------------------
+def launch_interface() -> None:
+    create_interface()
+    ui.run(
+        host="0.0.0.0",
+        port=7861,
+        title="ADSORFIT Model Fitting Geographics",
+        show_welcome_message=False,
+    )
+
+# -----------------------------------------------------------------------------
+if __name__ in {"__main__", "__mp_main__"}:
+    launch_interface()
