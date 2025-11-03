@@ -40,29 +40,29 @@ def collect_parameter_payload(
 
 # -----------------------------------------------------------------------------
 def extract_upload_payload(event: Any | None) -> tuple[bytes | None, str | None]:
-    if event is None:
+    if not event or not isinstance(getattr(event, "args", None), dict):
         return None, None
-    content = getattr(event, "content", None)
-    data: Any = None
-    if content is not None:
-        if hasattr(content, "seek"):
-            try:
-                content.seek(0)
-            except (OSError, ValueError):
-                pass
-        if hasattr(content, "read"):
-            data = content.read()
-        else:
-            data = content
-    if data is None and hasattr(event, "args"):
-        if isinstance(event.args, dict):
-            data = event.args.get("content")
-    if isinstance(data, bytearray):
-        data = bytes(data)
-    if data is not None and not isinstance(data, bytes):
-        data = None
-    name = event.name if isinstance(event.name, str) else None
-    return data, name
+
+    args = event.args
+    content = args.get("content")
+    name = args.get("name") or args.get("filename") or getattr(event, "name", None)
+
+    if isinstance(content, bytearray):
+        content = bytes(content)
+    if isinstance(content, (bytes, bytearray)):
+        return bytes(content), (name if isinstance(name, str) and name else None)
+
+    # nested { "file": { "content": ..., "name": ... } }
+    file_entry = args.get("file")
+    if isinstance(file_entry, dict):
+        c = file_entry.get("content")
+        n = file_entry.get("name") or file_entry.get("filename") or name
+        if isinstance(c, bytearray):
+            c = bytes(c)
+        if isinstance(c, (bytes, bytearray)):
+            return bytes(c), (n if isinstance(n, str) and n else None)
+
+    return None, (name if isinstance(name, str) and name else None)
 
 # -----------------------------------------------------------------------------
 def handle_model_toggle(expansion: Expansion, event: Any) -> None:
@@ -74,13 +74,14 @@ def handle_model_toggle(expansion: Expansion, event: Any) -> None:
         expansion.enable()
 
 # -----------------------------------------------------------------------------
-async def handle_dataset_upload(
-    dataset_state: dict[str, DatasetPayload | None],
-    dataset_stats: Textarea,
-    event: Any,
+async def handle_dataset_upload(dataset_state, dataset_stats: Textarea, event: Any
 ) -> None:
-    dataset_stats.value = "[INFO] Uploading dataset..."
+    dataset_stats.value = "[INFO] Uploading dataset."
     file_bytes, filename = extract_upload_payload(event)
+    if not file_bytes:
+        dataset_stats.value = "[ERROR] Could not read uploaded file."
+        return
+
     result = await asyncio.to_thread(load_dataset, file_bytes, filename)
     dataset_state["dataset"] = result.get("dataset")
     dataset_stats.value = result.get("message", "")
@@ -105,7 +106,7 @@ async def on_start_fitting_click(
         except (TypeError, ValueError):
             max_iterations = 1.0
 
-    save_best = bool(save_best_checkbox.value)
+    save_best = save_best_checkbox.value
     selected_models = [
         name for name, toggle in model_toggles.items() if bool(toggle.value)
     ]
@@ -137,16 +138,16 @@ def build_model_cards(
     for model_name, parameters in parameter_defaults.items():
         with ui.card().classes(f"{CARD_BASE_CLASSES} flex-1 min-w-[320px]"):
             with ui.column().classes("gap-3"):
+                # Header row: model name and toggle side-by-side
                 with ui.row().classes("w-full items-center justify-between gap-3"):
-                    ui.markdown(f"**{model_name}**")
-                    expansion = ui.expansion("Configure parameters", value=False).classes(
-                        "w-full"
-                    )
-                    toggle = ui.switch(
-                        value=True,
-                        on_change=partial(handle_model_toggle, expansion),
-                    ).props("color=primary")
-                    model_toggles[model_name] = toggle
+                    with ui.row().classes("items-center gap-2"):
+                        ui.markdown(f"**{model_name}**")
+                        toggle = ui.switch(value=True).props("color=primary")
+                        model_toggles[model_name] = toggle
+                
+                expansion = ui.expansion("Configure parameters", value=False).classes("w-full")                
+                toggle.on_value_change(partial(handle_model_toggle, expansion))
+
                 with expansion:
                     with ui.column().classes("gap-3 w-full"):
                         for parameter_name, (min_default, max_default) in parameters.items():
@@ -233,7 +234,7 @@ def main_page() -> None:
                             label="Load dataset",
                             auto_upload=True,
                         )
-                        .props("accept=.csv,.xlsx")
+                        .props("accept=.csv,.xlsx,.xls")
                         .classes("w-full")
                     )
 
