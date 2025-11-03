@@ -1,18 +1,16 @@
 from __future__ import annotations
 
-import asyncio
 import copy
-from dataclasses import dataclass
-import inspect
 import math
-import os
 from collections.abc import Sequence
 from typing import Any
 
 import httpx
 
-DEFAULT_API_URL = "http://127.0.0.1:800/api"
+from ADSORFIT.app.constants import API_BASE_URL
+
 HTTP_TIMEOUT_SECONDS = 120.0
+API_REQUEST_BASE_URL = API_BASE_URL.rstrip("/")
 
 MODEL_PARAMETER_DEFAULTS: dict[str, dict[str, tuple[float, float]]] = {
     "Langmuir": {
@@ -38,135 +36,9 @@ type DatasetPayload = dict[str, Any]
 type ParameterKey = tuple[str, str, str]
 
 
-###############################################################################
-@dataclass
-class ApiConfig:
-    base_url: str
-    timeout: float = HTTP_TIMEOUT_SECONDS
-
-
-###############################################################################
-@dataclass
-class DatasetLoadResult:
-    dataset: DatasetPayload | None
-    message: str
-
-
-###############################################################################
-def get_client_config(api_base_url: str | None = None) -> ApiConfig:
-    base_url = api_base_url or os.environ.get("ADSORFIT_API_URL", DEFAULT_API_URL)
-    return ApiConfig(base_url=base_url.rstrip("/"))
-
-
 # -----------------------------------------------------------------------------
 def get_parameter_defaults() -> dict[str, dict[str, tuple[float, float]]]:
     return copy.deepcopy(MODEL_PARAMETER_DEFAULTS)
-
-
-# -----------------------------------------------------------------------------
-def build_request_url(config: ApiConfig, route: str) -> str:
-    return f"{config.base_url}/{route.lstrip('/')}"
-
-
-# -----------------------------------------------------------------------------
-def read_upload_source(upload: Any) -> bytes:
-    reader = getattr(upload, "read", None)
-    if callable(reader):
-        result = reader()
-        if inspect.isawaitable(result):
-            try:
-                asyncio.get_running_loop()
-            except RuntimeError:
-                return asyncio.run(result)
-            loop = asyncio.new_event_loop()
-            try:
-                return loop.run_until_complete(result)
-            finally:
-                loop.close()
-        if isinstance(result, (bytes, bytearray)):
-            return bytes(result)
-
-    data = getattr(upload, "_data", None)
-    if isinstance(data, (bytes, bytearray)):
-        return bytes(data)
-
-    path = getattr(upload, "_path", None)
-    if isinstance(path, str) and os.path.exists(path):
-        with open(path, "rb") as handle:
-            return handle.read()
-    if hasattr(path, "__fspath__"):
-        file_path = os.fspath(path)
-        if isinstance(file_path, str) and os.path.exists(file_path):
-            with open(file_path, "rb") as handle:
-                return handle.read()
-
-    raise ValueError("Unable to access the uploaded dataset contents.")
-
-
-# -----------------------------------------------------------------------------
-def extract_file_payload(file: Any) -> tuple[bytes, str | None]:
-    upload = getattr(file, "file", None)
-    if upload is not None:
-        data = read_upload_source(upload)
-        name = getattr(upload, "name", None)
-        if isinstance(name, str):
-            name = os.path.basename(name)
-        return data, name
-
-    content = getattr(file, "content", None)
-    if content is not None:
-        if hasattr(content, "seek"):
-            try:
-                content.seek(0)
-            except (OSError, ValueError):
-                pass
-        if hasattr(content, "read"):
-            data = content.read()
-        else:
-            data = content
-        if not isinstance(data, (bytes, bytearray)):
-            data = bytes(data)
-        name = getattr(file, "name", None)
-        if isinstance(name, str):
-            name = os.path.basename(name)
-        return data, name
-
-    if isinstance(file, (bytes, bytearray)):
-        return bytes(file), None
-
-    possible_paths: list[str] = []
-    for attribute in ("name", "path"):
-        candidate = getattr(file, attribute, None)
-        if isinstance(candidate, str):
-            possible_paths.append(candidate)
-    if isinstance(file, dict):
-        for key in ("name", "path"):
-            candidate = file.get(key)
-            if isinstance(candidate, str):
-                possible_paths.append(candidate)
-    for path in possible_paths:
-        if os.path.exists(path):
-            with open(path, "rb") as handle:
-                return handle.read(), os.path.basename(path)
-
-    data_holder = getattr(file, "data", None)
-    if isinstance(data_holder, (bytes, bytearray)):
-        name = getattr(file, "orig_name", None) if hasattr(file, "orig_name") else None
-        if name is None and hasattr(file, "name"):
-            name = getattr(file, "name")
-        if isinstance(name, str):
-            name = os.path.basename(name)
-        return bytes(data_holder), name
-
-    if isinstance(file, dict):
-        data_holder = file.get("data")
-        if isinstance(data_holder, (bytes, bytearray)):
-            name = file.get("orig_name") or file.get("name") or file.get("path")
-            if isinstance(name, str):
-                name = os.path.basename(name)
-            return bytes(data_holder), name
-
-    raise ValueError("Unable to access the uploaded dataset.")
 
 
 # -----------------------------------------------------------------------------
@@ -192,13 +64,10 @@ def extract_error_message(response: httpx.Response) -> str:
 def post_json(
     route: str,
     payload: dict[str, Any],
-    *,
-    config: ApiConfig | None = None,
 ) -> tuple[bool, dict[str, Any] | None, str]:
-    active_config = config or get_client_config()
-    url = build_request_url(active_config, route)
+    url = f"{API_REQUEST_BASE_URL}/{route.lstrip('/')}"
     try:
-        response = httpx.post(url, json=payload, timeout=active_config.timeout)
+        response = httpx.post(url, json=payload, timeout=HTTP_TIMEOUT_SECONDS)
         response.raise_for_status()
     except httpx.HTTPStatusError as exc:
         message = extract_error_message(exc.response)
@@ -219,16 +88,13 @@ def post_file(
     route: str,
     file_bytes: bytes,
     filename: str | None,
-    *,
-    config: ApiConfig | None = None,
 ) -> tuple[bool, dict[str, Any] | None, str]:
-    active_config = config or get_client_config()
-    url = build_request_url(active_config, route)
+    url = f"{API_REQUEST_BASE_URL}/{route.lstrip('/')}"
     safe_name = filename or "dataset"
     files = {"file": (safe_name, file_bytes, "application/octet-stream")}
 
     try:
-        response = httpx.post(url, files=files, timeout=active_config.timeout)
+        response = httpx.post(url, files=files, timeout=HTTP_TIMEOUT_SECONDS)
         response.raise_for_status()
     except httpx.HTTPStatusError as exc:
         message = extract_error_message(exc.response)
@@ -245,38 +111,34 @@ def post_file(
 
 
 # -----------------------------------------------------------------------------
-def load_dataset(file: Any, *, config: ApiConfig | None = None) -> DatasetLoadResult:
-    if file is None:
-        return DatasetLoadResult(dataset=None, message="No dataset loaded.")
+def load_dataset(file_bytes: bytes | None, filename: str | None) -> dict[str, Any]:
+    if file_bytes is None:
+        return {"dataset": None, "message": "No dataset loaded."}
 
-    try:
-        file_bytes, filename = extract_file_payload(file)
-    except ValueError as exc:
-        return DatasetLoadResult(dataset=None, message=f"[ERROR] {exc}")
-
-    ok, response, message = post_file("datasets/load", file_bytes, filename, config=config)
+    ok, response, message = post_file("datasets/load", file_bytes, filename)
     if not ok or response is None:
-        return DatasetLoadResult(dataset=None, message=f"[ERROR] {message}")
+        return {"dataset": None, "message": f"[ERROR] {message}"}
 
     status = response.get("status") if isinstance(response, dict) else None
     if status != "success":
         detail = response.get("detail") if isinstance(response, dict) else None
         if not detail:
             detail = "Failed to load dataset."
-        return DatasetLoadResult(dataset=None, message=f"[ERROR] {detail}")
+        return {"dataset": None, "message": f"[ERROR] {detail}"}
 
     dataset = response.get("dataset") if isinstance(response, dict) else None
     summary = response.get("summary") if isinstance(response, dict) else None
 
     if not isinstance(dataset, dict):
-        return DatasetLoadResult(
-            dataset=None, message="[ERROR] Backend returned an invalid dataset payload."
-        )
+        return {
+            "dataset": None,
+            "message": "[ERROR] Backend returned an invalid dataset payload.",
+        }
 
     if not isinstance(summary, str):
         summary = "[INFO] Dataset loaded successfully."
 
-    return DatasetLoadResult(dataset=dataset, message=summary)
+    return {"dataset": dataset, "message": summary}
 
 
 # -----------------------------------------------------------------------------
@@ -285,7 +147,11 @@ def build_parameter_bounds(
     values: Sequence[Any],
 ) -> dict[str, dict[str, dict[str, float | None]]]:
     bounds: dict[str, dict[str, dict[str, float | None]]] = {}
-    for (model, parameter, bound_type), raw_value in zip(metadata, values, strict=False):
+    for (
+        model,
+        parameter,
+        bound_type,
+    ), raw_value in zip(metadata, values, strict=False):
         if model not in bounds:
             bounds[model] = {}
         if parameter not in bounds[model]:
@@ -342,16 +208,28 @@ def start_fitting(
     dataset: DatasetPayload | None,
     selected_models: list[str],
     *values: Any,
-    config: ApiConfig | None = None,
-) -> str:
+) -> dict[str, Any]:
     if dataset is None:
-        return "[ERROR] Please load a dataset before starting the fitting process."
+        return {
+            "message": (
+                "[ERROR] Please load a dataset before starting the fitting process."
+            ),
+            "json": None,
+        }
 
     if not metadata:
-        return "[ERROR] No parameter configuration available."
+        return {
+            "message": "[ERROR] No parameter configuration available.",
+            "json": None,
+        }
 
     if not selected_models:
-        return "[ERROR] Please select at least one model before starting the fitting process."
+        return {
+            "message": (
+                "[ERROR] Please select at least one model before starting the fitting process."
+            ),
+            "json": None,
+        }
 
     bounds = build_parameter_bounds(metadata, values)
 
@@ -367,7 +245,10 @@ def start_fitting(
 
     if invalid_ranges:
         formatted = ", ".join(invalid_ranges)
-        return f"[ERROR] Invalid parameter ranges: {formatted}."
+        return {
+            "message": f"[ERROR] Invalid parameter ranges: {formatted}.",
+            "json": None,
+        }
 
     iterations = max(1, int(round(max_iterations)))
 
@@ -385,18 +266,18 @@ def start_fitting(
         "dataset": dataset_payload,
     }
 
-    ok, response, message = post_json("fitting/run", payload, config=config)
+    ok, response, message = post_json("fitting/run", payload)
     if not ok or response is None:
-        return f"[ERROR] {message}"
+        return {"message": f"[ERROR] {message}", "json": response}
 
     status = response.get("status")
     if status != "success":
         detail = response.get("detail") or response.get("message") or "Unknown error"
-        return f"[ERROR] {detail}"
+        return {"message": f"[ERROR] {detail}", "json": response}
 
     summary = response.get("summary")
     if isinstance(summary, str):
-        return summary
+        return {"message": summary, "json": response}
 
     formatted_lines: list[str] = ["[INFO] Fitting completed successfully."]
     processed_rows = response.get("processed_rows")
@@ -410,4 +291,5 @@ def start_fitting(
         formatted_lines.append("Configured models:")
         for model_name in models:
             formatted_lines.append(f"  - {model_name}")
-    return "\n".join(formatted_lines)
+
+    return {"message": "\n".join(formatted_lines), "json": response}
