@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-import asyncio
 from collections.abc import Callable
 from functools import partial
 from typing import Any
@@ -120,8 +118,7 @@ async def on_start_fitting_click(
         name for name, toggle in model_toggles.items() if bool(toggle.value)
     ]
 
-    result = await asyncio.to_thread(
-        start_fitting,
+    result = await start_fitting(
         metadata,
         max_iterations,
         save_best,
