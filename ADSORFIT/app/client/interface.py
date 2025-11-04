@@ -39,30 +39,39 @@ def collect_parameter_payload(
     return metadata, values
 
 # -----------------------------------------------------------------------------
-def extract_upload_payload(event: Any | None) -> tuple[bytes | None, str | None]:
-    if not event or not isinstance(getattr(event, "args", None), dict):
+def extract_upload_payload(event: Any | None) -> tuple[bytes | None, str | None]:    
+    if not event:
         return None, None
+    
+    file = getattr(event, "file", None)
+    if file is not None:
+        content = getattr(file, "_data", None) or getattr(file, "content", None)
+        if isinstance(content, bytearray):
+            content = bytes(content)
+        if isinstance(content, bytes):
+            return content, file.name or None
 
-    args = event.args
+    # Fallback for dict-like args (legacy style)
+    args = getattr(event, "args", {}) or {}
     content = args.get("content")
-    name = args.get("name") or args.get("filename") or getattr(event, "name", None)
+    name = args.get("name") or args.get("filename")
 
     if isinstance(content, bytearray):
         content = bytes(content)
-    if isinstance(content, (bytes, bytearray)):
-        return bytes(content), (name if isinstance(name, str) and name else None)
+    if isinstance(content, bytes):
+        return content, name
 
-    # nested { "file": { "content": ..., "name": ... } }
+    # Fallback: nested {"file": {"content": ..., "name": ...}}
     file_entry = args.get("file")
     if isinstance(file_entry, dict):
-        c = file_entry.get("content")
-        n = file_entry.get("name") or file_entry.get("filename") or name
-        if isinstance(c, bytearray):
-            c = bytes(c)
-        if isinstance(c, (bytes, bytearray)):
-            return bytes(c), (n if isinstance(n, str) and n else None)
+        content = file_entry.get("content")
+        name = file_entry.get("name") or file_entry.get("filename") or name
+        if isinstance(content, bytearray):
+            content = bytes(content)
+        if isinstance(content, bytes):
+            return content, name
 
-    return None, (name if isinstance(name, str) and name else None)
+    return None, name
 
 # -----------------------------------------------------------------------------
 def handle_model_toggle(expansion: Expansion, event: Any) -> None:
@@ -82,7 +91,7 @@ async def handle_dataset_upload(dataset_state, dataset_stats: Textarea, event: A
         dataset_stats.value = "[ERROR] Could not read uploaded file."
         return
 
-    result = await asyncio.to_thread(load_dataset, file_bytes, filename)
+    result = await load_dataset(file_bytes, filename)
     dataset_state["dataset"] = result.get("dataset")
     dataset_stats.value = result.get("message", "")
 

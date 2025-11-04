@@ -111,7 +111,7 @@ def post_file(
 
 
 # -----------------------------------------------------------------------------
-def load_dataset(file_bytes: bytes | None, filename: str | None) -> dict[str, Any]:
+async def load_dataset(file_bytes: bytes | None, filename: str | None) -> dict[str, Any]:
     if file_bytes is None:
         return {"dataset": None, "message": "No dataset loaded."}
 
