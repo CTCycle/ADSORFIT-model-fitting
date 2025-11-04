@@ -59,75 +59,49 @@ def extract_error_message(response: httpx.Response) -> str:
 
     return f"HTTP error {response.status_code}"
 
-
-# -----------------------------------------------------------------------------
-def post_json(
-    route: str,
-    payload: dict[str, Any],
-) -> tuple[bool, dict[str, Any] | None, str]:
-    url = f"{API_REQUEST_BASE_URL}/{route.lstrip('/')}"
-    try:
-        response = httpx.post(url, json=payload, timeout=HTTP_TIMEOUT_SECONDS)
-        response.raise_for_status()
-    except httpx.HTTPStatusError as exc:
-        message = extract_error_message(exc.response)
-        return False, None, message
-    except httpx.RequestError as exc:
-        return False, None, f"Failed to reach ADSORFIT backend: {exc}"
-
-    try:
-        data = response.json()
-    except ValueError as exc:
-        return False, None, f"Invalid JSON response: {exc}"
-
-    return True, data, ""
-
-
-# -----------------------------------------------------------------------------
-def post_file(
-    route: str,
-    file_bytes: bytes,
-    filename: str | None,
-) -> tuple[bool, dict[str, Any] | None, str]:
-    url = f"{API_REQUEST_BASE_URL}/{route.lstrip('/')}"
-    safe_name = filename or "dataset"
-    files = {"file": (safe_name, file_bytes, "application/octet-stream")}
-
-    try:
-        response = httpx.post(url, files=files, timeout=HTTP_TIMEOUT_SECONDS)
-        response.raise_for_status()
-    except httpx.HTTPStatusError as exc:
-        message = extract_error_message(exc.response)
-        return False, None, message
-    except httpx.RequestError as exc:
-        return False, None, f"Failed to reach ADSORFIT backend: {exc}"
-
-    try:
-        data = response.json()
-    except ValueError as exc:
-        return False, None, f"Invalid JSON response: {exc}"
-
-    return True, data, ""
-
-
 # -----------------------------------------------------------------------------
 async def load_dataset(file_bytes: bytes | None, filename: str | None) -> dict[str, Any]:
     if file_bytes is None:
         return {"dataset": None, "message": "No dataset loaded."}
 
-    ok, response, message = post_file("datasets/load", file_bytes, filename)
-    if not ok or response is None:
-        return {"dataset": None, "message": f"[ERROR] {message}"}
+    url = f"{API_REQUEST_BASE_URL}/datasets/load"
+    safe_name = filename or "dataset"
+    files = {"file": (safe_name, file_bytes, "application/octet-stream")}
 
-    status = response.get("status") if isinstance(response, dict) else None
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT_SECONDS) as client:
+            response = await client.post(url, files=files)
+            response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        message = extract_error_message(exc.response)
+        return {"dataset": None, "message": f"[ERROR] {message}"}
+    except httpx.RequestError as exc:
+        return {
+            "dataset": None,
+            "message": f"[ERROR] Failed to reach ADSORFIT backend: {exc}",
+        }
+
+    try:
+        payload = response.json()
+    except ValueError:
+        detail = response.text.strip() or "Invalid response from ADSORFIT backend."
+        return {"dataset": None, "message": f"[ERROR] {detail}"}
+
+    if not isinstance(payload, dict):
+        return {
+            "dataset": None,
+            "message": "[ERROR] Backend returned an invalid dataset payload.",
+        }
+
+    status = payload.get("status") if isinstance(payload, dict) else None
     if status != "success":
-        detail = response.get("detail") if isinstance(response, dict) else None
+        detail = payload.get("detail") if isinstance(payload, dict) else None
         if not detail:
             detail = "Failed to load dataset."
         return {"dataset": None, "message": f"[ERROR] {detail}"}
 
-    dataset = response.get("dataset") if isinstance(response, dict) else None
-    summary = response.get("summary") if isinstance(response, dict) else None
+    dataset = payload.get("dataset") if isinstance(payload, dict) else None
+    summary = payload.get("summary") if isinstance(payload, dict) else None
 
     if not isinstance(dataset, dict):
         return {
@@ -201,7 +175,7 @@ def build_solver_configuration(
 
 
 # -----------------------------------------------------------------------------
-def start_fitting(
+async def start_fitting(
     metadata: list[ParameterKey],
     max_iterations: float,
     save_best: bool,
@@ -266,30 +240,57 @@ def start_fitting(
         "dataset": dataset_payload,
     }
 
-    ok, response, message = post_json("fitting/run", payload)
-    if not ok or response is None:
-        return {"message": f"[ERROR] {message}", "json": response}
+    url = f"{API_REQUEST_BASE_URL}/fitting/run"
 
-    status = response.get("status")
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT_SECONDS) as client:
+            response = await client.post(url, json=payload)
+            response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        message = extract_error_message(exc.response)
+        return {"message": f"[ERROR] {message}", "json": None}
+    except httpx.RequestError as exc:
+        return {
+            "message": f"[ERROR] Failed to reach ADSORFIT backend: {exc}",
+            "json": None,
+        }
+
+    try:
+        response_payload = response.json()
+    except ValueError:
+        detail = response.text.strip() or "Invalid response from ADSORFIT backend."
+        return {"message": f"[ERROR] {detail}", "json": None}
+
+    if not isinstance(response_payload, dict):
+        return {
+            "message": "[ERROR] Backend returned an invalid response payload.",
+            "json": response_payload,
+        }
+
+    status = response_payload.get("status")
     if status != "success":
-        detail = response.get("detail") or response.get("message") or "Unknown error"
-        return {"message": f"[ERROR] {detail}", "json": response}
+        detail = (
+            response_payload.get("detail")
+            or response_payload.get("message")
+            or "Unknown error"
+        )
+        return {"message": f"[ERROR] {detail}", "json": response_payload}
 
-    summary = response.get("summary")
+    summary = response_payload.get("summary")
     if isinstance(summary, str):
-        return {"message": summary, "json": response}
+        return {"message": summary, "json": response_payload}
 
     formatted_lines: list[str] = ["[INFO] Fitting completed successfully."]
-    processed_rows = response.get("processed_rows")
+    processed_rows = response_payload.get("processed_rows")
     if isinstance(processed_rows, int):
         formatted_lines.append(f"Processed experiments: {processed_rows}")
-    saved_best = response.get("best_model_saved")
+    saved_best = response_payload.get("best_model_saved")
     if isinstance(saved_best, bool):
         formatted_lines.append(f"Best model saved: {'Yes' if saved_best else 'No'}")
-    models = response.get("models")
+    models = response_payload.get("models")
     if isinstance(models, list) and models:
         formatted_lines.append("Configured models:")
         for model_name in models:
             formatted_lines.append(f"  - {model_name}")
 
-    return {"message": "\n".join(formatted_lines), "json": response}
+    return {"message": "\n".join(formatted_lines), "json": response_payload}
