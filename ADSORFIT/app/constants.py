@@ -16,8 +16,8 @@ TEMPLATES_PATH = join(RESOURCES_PATH, "templates")
 
 
 ###############################################################################
-API_BASE_URL = os.environ.get("ADSORFIT_API_URL", "http://127.0.0.1:800/api")
-
+API_BASE_URL = "http://127.0.0.1:8000"
+HTTP_TIMEOUT_SECONDS = 120.0
 
 ###############################################################################
 MODELS_LIST = [
@@ -35,4 +35,22 @@ MODELS_LIST = [
     "Koble-Corrigan"
 ]
     
-
+MODEL_PARAMETER_DEFAULTS: dict[str, dict[str, tuple[float, float]]] = {
+    "Langmuir": {
+        "k": (1e-06, 10.0),
+        "qsat": (0.0, 100.0),
+    },
+    "Sips": {
+        "k": (1e-06, 10.0),
+        "qsat": (0.0, 100.0),
+        "exponent": (0.1, 10.0),
+    },
+    "Freundlich": {
+        "k": (1e-06, 10.0),
+        "exponent": (0.1, 10.0),
+    },
+    "Temkin": {
+        "k": (1e-06, 10.0),
+        "beta": (0.1, 10.0),
+    },
+}

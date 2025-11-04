@@ -6,31 +6,8 @@ from collections.abc import Sequence
 from typing import Any
 
 import httpx
+from ADSORFIT.app.constants import HTTP_TIMEOUT_SECONDS, MODEL_PARAMETER_DEFAULTS
 
-from ADSORFIT.app.constants import API_BASE_URL
-
-HTTP_TIMEOUT_SECONDS = 120.0
-API_REQUEST_BASE_URL = API_BASE_URL.rstrip("/")
-
-MODEL_PARAMETER_DEFAULTS: dict[str, dict[str, tuple[float, float]]] = {
-    "Langmuir": {
-        "k": (1e-06, 10.0),
-        "qsat": (0.0, 100.0),
-    },
-    "Sips": {
-        "k": (1e-06, 10.0),
-        "qsat": (0.0, 100.0),
-        "exponent": (0.1, 10.0),
-    },
-    "Freundlich": {
-        "k": (1e-06, 10.0),
-        "exponent": (0.1, 10.0),
-    },
-    "Temkin": {
-        "k": (1e-06, 10.0),
-        "beta": (0.1, 10.0),
-    },
-}
 
 type DatasetPayload = dict[str, Any]
 type ParameterKey = tuple[str, str, str]
@@ -60,11 +37,10 @@ def extract_error_message(response: httpx.Response) -> str:
     return f"HTTP error {response.status_code}"
 
 # -----------------------------------------------------------------------------
-async def load_dataset(file_bytes: bytes | None, filename: str | None) -> dict[str, Any]:
+async def load_dataset(url: str, file_bytes: bytes | None, filename: str | None) -> dict[str, Any]:
     if file_bytes is None:
         return {"dataset": None, "message": "No dataset loaded."}
-
-    url = f"{API_REQUEST_BASE_URL}/datasets/load"
+    
     safe_name = filename or "dataset"
     files = {"file": (safe_name, file_bytes, "application/octet-stream")}
 
@@ -176,6 +152,7 @@ def build_solver_configuration(
 
 # -----------------------------------------------------------------------------
 async def start_fitting(
+    url: str,
     metadata: list[ParameterKey],
     max_iterations: float,
     save_best: bool,
@@ -239,8 +216,6 @@ async def start_fitting(
         "parameter_bounds": configuration,
         "dataset": dataset_payload,
     }
-
-    url = f"{API_REQUEST_BASE_URL}/fitting/run"
 
     try:
         async with httpx.AsyncClient(timeout=HTTP_TIMEOUT_SECONDS) as client:

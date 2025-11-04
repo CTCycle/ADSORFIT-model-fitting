@@ -7,7 +7,7 @@ from ADSORFIT.app.logger import logger
 from ADSORFIT.app.utils.services.datasets import DatasetService
 
 
-router = APIRouter(tags=["datasets"])
+router = APIRouter(prefix="/datasets", tags=["load"])
 dataset_service = DatasetService()
 
 

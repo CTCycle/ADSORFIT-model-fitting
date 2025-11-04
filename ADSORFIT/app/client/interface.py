@@ -8,8 +8,8 @@ from nicegui.elements.expansion import Expansion
 from nicegui.elements.number import Number
 from nicegui.elements.switch import Switch
 from nicegui.elements.textarea import Textarea
-from nicegui.events import UploadEventArguments, ValueChangeEventArguments
 
+from ADSORFIT.app.constants import API_BASE_URL
 from ADSORFIT.app.client.layouts import (
     CARD_BASE_CLASSES,
     INTERFACE_THEME_CSS,
@@ -88,8 +88,8 @@ async def handle_dataset_upload(dataset_state, dataset_stats: Textarea, event: A
     if not file_bytes:
         dataset_stats.value = "[ERROR] Could not read uploaded file."
         return
-
-    result = await load_dataset(file_bytes, filename)
+    url = f"{API_BASE_URL}/datasets/load"
+    result = await load_dataset(url, file_bytes, filename)
     dataset_state["dataset"] = result.get("dataset")
     dataset_stats.value = result.get("message", "")
 
@@ -117,8 +117,10 @@ async def on_start_fitting_click(
     selected_models = [
         name for name, toggle in model_toggles.items() if bool(toggle.value)
     ]
-
+    
+    url = f"{API_BASE_URL}/fitting/run"
     result = await start_fitting(
+        url,
         metadata,
         max_iterations,
         save_best,
