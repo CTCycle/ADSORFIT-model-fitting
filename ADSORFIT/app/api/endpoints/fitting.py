@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
-from ADSORFIT.app.logger import logger
-from ADSORFIT.app.utils.jobs import FittingWorker
 from ADSORFIT.app.api.schemas.fitting import FittingRequest, FittingResponse
+from ADSORFIT.app.logger import logger
+from ADSORFIT.app.utils.services.fitting import FittingPipeline
 
 router = APIRouter(prefix="/fitting", tags=["fitting"])
-worker = FittingWorker()
+pipeline = FittingPipeline()
 
 # -------------------------------------------------------------------------------
 @router.post("/run", response_model=FittingResponse, status_code=status.HTTP_200_OK)
@@ -21,7 +22,8 @@ async def run_fitting_job(payload: FittingRequest) -> Any:
     )
 
     try:
-        response = await worker.run_job(
+        response = await asyncio.to_thread(
+            pipeline.run,
             payload.dataset.model_dump(),
             {
                 name: config.model_dump()
