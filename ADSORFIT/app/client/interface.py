@@ -41,9 +41,9 @@ def collect_parameter_payload(
 def build_stats_markdown(summary: str) -> str:
     lines = [line.strip() for line in summary.splitlines() if line.strip()]
     if not lines:
-        return "### Dataset statistics\n\n_No dataset information available._"
+        return "#### Dataset statistics\n\n_No dataset information available._"
 
-    formatted: list[str] = ["### Dataset statistics"]
+    formatted: list[str] = ["#### Dataset statistics"]
     for line in lines:
         lowered = line.lower()
         if lowered.startswith("column details"):
@@ -232,7 +232,7 @@ def main_page() -> None:
 
         with ui.row().classes("w-full gap-6 items-start flex-wrap md:flex-nowrap"):            
             with ui.card().classes(f"{CARD_BASE_CLASSES} flex-1 min-w-[320px]"):
-                with ui.column().classes("gap-4"):
+                with ui.column().classes("gap-4 w-full items-stretch"):
                     max_iterations_input = ui.number(
                         "Max iteration",
                         value=1000,

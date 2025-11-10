@@ -32,6 +32,10 @@ INTERFACE_THEME_CSS: Final = """
             background-color: rgba(15, 23, 42, 0.04);
             border-radius: 12px;
             padding: 1rem;
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
+            align-self: stretch;
         }
 
         .q-textarea__native {

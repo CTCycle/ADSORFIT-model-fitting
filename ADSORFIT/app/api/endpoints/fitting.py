@@ -8,7 +8,7 @@ from ADSORFIT.app.logger import logger
 from ADSORFIT.app.utils.jobs import FittingWorker
 from ADSORFIT.app.api.schemas.fitting import FittingRequest, FittingResponse
 
-router = APIRouter(tags=["fitting"])
+router = APIRouter(prefix="/fitting", tags=["fitting"])
 worker = FittingWorker()
 
 # -------------------------------------------------------------------------------
