@@ -20,18 +20,25 @@ Windows users can still rely on the bundled automation scripts. Launch `start_on
 If the project directory moves after installation, rerun the menu option **Install project in editable mode** or repeat step 2 from the standard setup while the environment is active.
 
 ## 3. How to use
-### 3.0 Launching the application
-- Local development: start the backend with `uvicorn ADSORFIT.app.app:app --reload` to enable live reloading. The UI is available at `http://127.0.0.1:8000/ui` and FastAPI's interactive docs remain accessible at `/docs`.
-- Production-like sessions: run `uvicorn ADSORFIT.app.app:app --host 0.0.0.0 --port 8000` and visit the `/ui` endpoint in a browser of your choice. The API documentation is mirrored at `/docs` for automated workflows.
-- Windows launcher: from the navigation menu, choose **Run ADSORFIT UI**. Antivirus tools may prompt for confirmation while the bundled interpreter starts; whitelist the launcher if necessary.
 
-### 3.1 Navigation menu
+- **Windows**: run `ADSORFIT/start_on_windows.bat` to launch both the FastAPI backend and the UI in a single step.
+- **macOS/Linux**: activate your virtual environment, then start the web stack:
 
-**1) Run ADSORFIT UI:** Starts the API and the NiceGUI interface. Upload CSV or Excel adsorption datasets, inspect automatic profiling statistics, tune model bounds and iteration limits, and follow solver progress in real time. Model cards include enable toggles to restrict the run to relevant isotherms; at least one model must remain active before fitting can begin.
+    ```bash
+    uvicorn ADSORFIT.app.app:app --host 0.0.0.0 --port 8000
+    ```
 
-**2) Setup and Maintenance:** Provides shortcuts to reinstall ADSORFIT into the active environment, update dependencies from version control, or rotate stored logs without leaving the launcher.
+The interactive UI will be available at `http://127.0.0.1:7861`, while the API documentation can be viewed at `http://localhost:8000/docs`.
 
-**3) Exit:** Closes the launcher.
+Once the UI is open:
+
+Upload CSV or Excel adsorption datasets, inspect automatic profiling statistics, tune model bounds and iteration limits, and follow solver progress in real time. Model cards include enable toggles to restrict the run to relevant isotherms; at least one model must remain active before fitting can begin.
+
+## 3.1 Setup and Maintenance
+Execute `ADSORFIT/setup_and_maintenance.bat` to open the maintenance console. Available actions include:
+
+- **Update project** – pull the latest revision from GitHub using the bundled Git client.
+- **Remove logs** – clear accumulated log files stored in `ADSORFIT/resources/logs`
 
 ### 3.2 Resources
 The `resources` directory aggregates inputs, outputs, and utilities used during fitting runs:
