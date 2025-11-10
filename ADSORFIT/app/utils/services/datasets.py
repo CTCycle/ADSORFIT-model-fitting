@@ -6,11 +6,13 @@ from typing import Any
 
 import pandas as pd
 
+from ADSORFIT.app.configurations import configurations
+
 
 ###############################################################################
 class DatasetService:
     def __init__(self) -> None:
-        self.allowed_extensions = {".csv", ".xls", ".xlsx"}
+        self.allowed_extensions = set(configurations.datasets.allowed_extensions)
 
     # -------------------------------------------------------------------------------
     def load_from_bytes(

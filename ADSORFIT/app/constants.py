@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from os.path import abspath, join
 
 # [PATHS]
@@ -13,11 +12,8 @@ DATA_PATH = join(RESOURCES_PATH, "database")
 CONFIG_PATH = join(RESOURCES_PATH, "configurations")
 LOGS_PATH = join(RESOURCES_PATH, "logs")
 TEMPLATES_PATH = join(RESOURCES_PATH, "templates")
+CONFIGURATION_FILE = join(SETUP_PATH, "configurations.json")
 
-
-###############################################################################
-API_BASE_URL = "http://127.0.0.1:8000"
-HTTP_TIMEOUT_SECONDS = 120.0
 
 ###############################################################################
 MODELS_LIST = [

@@ -10,7 +10,7 @@ from nicegui.elements.number import Number
 from nicegui.elements.switch import Switch
 from nicegui.elements.textarea import Textarea
 
-from ADSORFIT.app.constants import API_BASE_URL
+from ADSORFIT.app.configurations import configurations
 from ADSORFIT.app.client.layouts import (
     CARD_BASE_CLASSES,
     INTERFACE_THEME_CSS,
@@ -23,6 +23,11 @@ from ADSORFIT.app.client.controllers import (
     load_dataset,
     start_fitting,
 )
+
+ui_settings = configurations.ui
+api_settings = configurations.api
+dataset_settings = configurations.datasets
+fitting_settings = configurations.fitting
 
 ###############################################################################
 # HELPERS
@@ -116,7 +121,7 @@ async def handle_dataset_upload(
             build_stats_markdown("[ERROR] Could not read uploaded file.")
         )
         return
-    url = f"{API_BASE_URL}/datasets/load"
+    url = f"{api_settings.base_url}/datasets/load"
     result = await load_dataset(url, file_bytes, filename)
     dataset_state["dataset"] = result.get("dataset")
     dataset_stats.set_content(build_stats_markdown(result.get("message", "")))
@@ -146,7 +151,7 @@ async def on_start_fitting_click(
         name for name, toggle in model_toggles.items() if bool(toggle.value)
     ]
     
-    url = f"{API_BASE_URL}/fitting/run"
+    url = f"{api_settings.base_url}/fitting/run"
     result = await start_fitting(
         url,
         metadata,
@@ -222,11 +227,11 @@ def main_page() -> None:
     model_toggles: dict[str, Switch] = {}
     parameter_defaults = get_parameter_defaults()
 
-    ui.page_title("ADSORFIT Model Fitting")
+    ui.page_title(ui_settings.title)
     ui.add_head_html(f"<style>{INTERFACE_THEME_CSS}</style>")
    
     with ui.column().classes(PAGE_CONTAINER_CLASSES):
-        ui.markdown("## ADSORFIT Model Fitting").classes(
+        ui.markdown(f"## {ui_settings.title}").classes(
             "adsorfit-heading text-3xl font-semibold"
         )
 
@@ -234,17 +239,17 @@ def main_page() -> None:
             with ui.card().classes(f"{CARD_BASE_CLASSES} flex-1 min-w-[320px]"):
                 with ui.column().classes("gap-4 w-full items-stretch"):
                     max_iterations_input = ui.number(
-                        "Max iteration",
-                        value=1000,
+                        "Max iterations",
+                        value=fitting_settings.default_max_iterations,
                         min=1,
-                        max=1_000_000,
+                        max=fitting_settings.max_iterations_upper_bound,
                         precision=0,
                         step=1,
                     ).classes("w-full")
 
                     save_best_checkbox = ui.checkbox(
                         "Save best fitting data",
-                        value=True,
+                        value=fitting_settings.save_best_default,
                     )
 
                     dataset_stats = ui.markdown(
@@ -265,7 +270,9 @@ def main_page() -> None:
                             label="Load dataset",
                             auto_upload=True,
                         )
-                        .props("accept=.csv,.xlsx,.xls")
+                        .props(
+                            f"accept={','.join(dataset_settings.allowed_extensions)}"
+                        )
                         .classes("w-full")
                     )
 
@@ -307,10 +314,11 @@ def create_interface() -> None:
 def launch_interface() -> None:
     create_interface()
     ui.run(
-        host="0.0.0.0",
-        port=7861,
-        title="ADSORFIT Model Fitting Geographics",
-        show_welcome_message=False,
+        host=ui_settings.host,
+        port=ui_settings.port,
+        title=ui_settings.title,
+        show_welcome_message=ui_settings.show_welcome_message,
+        reconnect_timeout=ui_settings.reconnect_timeout_seconds,
     )
 
 # -----------------------------------------------------------------------------

@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from typing import Any
 
 import pandas as pd
 import sqlalchemy
 from sqlalchemy import Column, Float, Integer, String, UniqueConstraint, create_engine
-from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy import inspect, text
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import declarative_base, sessionmaker
 
+from ADSORFIT.app.configurations import configurations
 from ADSORFIT.app.constants import DATA_PATH
 from ADSORFIT.app.logger import logger
 from ADSORFIT.app.utils.singleton import singleton
@@ -52,7 +51,7 @@ class ADSORFITDatabase:
         )
 
         self.Session = sessionmaker(bind=self.engine, future=True)
-        self.insert_batch_size = 1000
+        self.insert_batch_size = configurations.database.insert_batch_size
 
     # -------------------------------------------------------------------------
     def initialize_database(self) -> None:
@@ -128,13 +127,13 @@ class ADSORFITDatabase:
     def export_all_tables_as_csv(
         self, export_dir: str, chunksize: int | None = None
     ) -> None:
-        target = Path(export_dir)
-        target.mkdir(parents=True, exist_ok=True)
+        target = os.path.abspath(export_dir)
+        os.makedirs(target, exist_ok=True)
         inspector = inspect(self.engine)
         with self.engine.connect() as conn:
             for table_name in inspector.get_table_names():
                 query = sqlalchemy.text(f'SELECT * FROM "{table_name}"')
-                csv_path = target / f"{table_name}.csv"
+                csv_path = os.path.join(target, f"{table_name}.csv")
                 if chunksize:
                     first = True
                     for chunk in pd.read_sql(query, conn, chunksize=chunksize):
@@ -157,7 +156,7 @@ class ADSORFITDatabase:
                 else:
                     df = pd.read_sql(query, conn)
                     df.to_csv(csv_path, index=False, encoding="utf-8", sep=",")
-        logger.info("All tables exported to CSV at %s", target.resolve())
+        logger.info("All tables exported to CSV at %s", target)
 
     # -------------------------------------------------------------------------
     def delete_all_data(self) -> None:

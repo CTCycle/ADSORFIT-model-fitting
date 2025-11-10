@@ -1,5 +1,29 @@
-{  
-  "threshold_iterations": 1000
-    
+{
+  "ui": {
+    "host": "0.0.0.0",
+    "port": 7861,
+    "title": "ADSORFIT Model Fitting",
+    "mount_path": "/ui",
+    "redirect_path": "/ui",
+    "show_welcome_message": false,
+    "reconnect_timeout_seconds": 180
+  },
+  "api": {
+    "base_url": "http://127.0.0.1:8000"
+  },
+  "http": {
+    "timeout_seconds": 120.0
+  },
+  "database": {
+    "insert_batch_size": 1000
+  },
+  "datasets": {
+    "allowed_extensions": [".csv", ".xls", ".xlsx"]
+  },
+  "fitting": {
+    "default_max_iterations": 1000,
+    "max_iterations_upper_bound": 1000000,
+    "save_best_default": true
+  }
 }
 

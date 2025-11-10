@@ -6,11 +6,14 @@ from collections.abc import Sequence
 from typing import Any
 
 import httpx
-from ADSORFIT.app.constants import HTTP_TIMEOUT_SECONDS, MODEL_PARAMETER_DEFAULTS
+from ADSORFIT.app.configurations import configurations
+from ADSORFIT.app.constants import MODEL_PARAMETER_DEFAULTS
 
 
 type DatasetPayload = dict[str, Any]
 type ParameterKey = tuple[str, str, str]
+
+http_settings = configurations.http
 
 
 # -----------------------------------------------------------------------------
@@ -45,7 +48,7 @@ async def load_dataset(url: str, file_bytes: bytes | None, filename: str | None)
     files = {"file": (safe_name, file_bytes, "application/octet-stream")}
 
     try:
-        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT_SECONDS) as client:
+        async with httpx.AsyncClient(timeout=http_settings.timeout_seconds) as client:
             response = await client.post(url, files=files)
             response.raise_for_status()
     except httpx.HTTPStatusError as exc:
@@ -218,7 +221,7 @@ async def start_fitting(
     }
 
     try:
-        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT_SECONDS) as client:
+        async with httpx.AsyncClient(timeout=http_settings.timeout_seconds) as client:
             response = await client.post(url, json=payload)
             response.raise_for_status()
     except httpx.HTTPStatusError as exc:
