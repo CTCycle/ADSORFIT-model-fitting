@@ -111,6 +111,40 @@ class ModelSolver:
                 }
         return results
 
+    # -------------------------------------------------------------------------
+    def bulk_data_fitting(
+        self,
+        dataset: pd.DataFrame,
+        configuration: dict[str, Any],
+        pressure_col: str,
+        uptake_col: str,
+        max_iterations: int,
+        progress_callback: Callable[[int, int], None] | None = None,
+    ) -> dict[str, list[dict[str, Any]]]:
+        """Iterate over the dataset and fit every experiment with the configured models."""
+        results: dict[str, list[dict[str, Any]]] = {
+            model: [] for model in configuration.keys()
+        }
+        total_experiments = dataset.shape[0]
+        for index, row in dataset.iterrows():
+            pressure = np.asarray(row[pressure_col], dtype=np.float64)
+            uptake = np.asarray(row[uptake_col], dtype=np.float64)
+            experiment_name = row.get("experiment", f"experiment_{index}")
+            experiment_results = self.single_experiment_fit(
+                pressure,
+                uptake,
+                experiment_name,
+                configuration,
+                max_iterations,
+            )
+            for model_name, data in experiment_results.items():
+                results[model_name].append(data)
+
+            if progress_callback is not None:
+                progress_callback(index + 1, total_experiments)
+
+        return results
+
 
 ###############################################################################
 class FittingPipeline:
