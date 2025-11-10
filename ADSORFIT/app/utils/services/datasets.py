@@ -101,10 +101,10 @@ class DatasetService:
         rows, columns = dataframe.shape
         total_nans = int(dataframe.isna().sum().sum())
         column_summaries: list[str] = []
-        for column in dataframe.columns:
-            dtype = dataframe[column].dtype
-            missing = int(dataframe[column].isna().sum())
-            column_summaries.append(f"- {column}: dtype={dtype}, missing={missing}")
+        for name, series in dataframe.items():
+            dtype = series.dtype
+            missing = int(series.isna().sum())
+            column_summaries.append(f"- {name}: dtype={dtype}, missing={missing}")
 
         summary_lines = [
             f"Rows: {rows}",

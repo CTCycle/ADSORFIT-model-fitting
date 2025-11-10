@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from nicegui import ui
 
+from ADSORFIT.app.api.endpoints.datasets import router as dataset_router
 from ADSORFIT.app.api.endpoints.fitting import router as fit_router
 from ADSORFIT.app.client.interface import create_interface
 from ADSORFIT.app.logger import logger
@@ -25,6 +26,7 @@ app = FastAPI(
     description="FastAPI backend",
 )
 
+app.include_router(dataset_router)
 app.include_router(fit_router)
 
 ###############################################################################

@@ -5,6 +5,7 @@ from typing import Any
 from nicegui import ui
 from nicegui.elements.checkbox import Checkbox
 from nicegui.elements.expansion import Expansion
+from nicegui.elements.markdown import Markdown
 from nicegui.elements.number import Number
 from nicegui.elements.switch import Switch
 from nicegui.elements.textarea import Textarea
@@ -37,7 +38,31 @@ def collect_parameter_payload(
     return metadata, values
 
 # -----------------------------------------------------------------------------
-def extract_upload_payload(event: Any | None) -> tuple[bytes | None, str | None]:    
+def build_stats_markdown(summary: str) -> str:
+    lines = [line.strip() for line in summary.splitlines() if line.strip()]
+    if not lines:
+        return "### Dataset statistics\n\n_No dataset information available._"
+
+    formatted: list[str] = ["### Dataset statistics"]
+    for line in lines:
+        lowered = line.lower()
+        if lowered.startswith("column details"):
+            formatted.append("")
+            formatted.append("**Column details**")
+            continue
+        if line.startswith("- "):
+            formatted.append(line)
+            continue
+        if ":" in line:
+            key, value = line.split(":", 1)
+            formatted.append(f"- **{key.strip()}**: {value.strip()}")
+            continue
+        formatted.append(line)
+
+    return "\n".join(formatted)
+
+# -----------------------------------------------------------------------------
+def extract_upload_payload(event: Any | None) -> tuple[bytes | None, str | None]:
     if not event:
         return None, None
     
@@ -81,17 +106,20 @@ def handle_model_toggle(expansion: Expansion, event: Any) -> None:
         expansion.enable()
 
 # -----------------------------------------------------------------------------
-async def handle_dataset_upload(dataset_state, dataset_stats: Textarea, event: Any
+async def handle_dataset_upload(
+    dataset_state, dataset_stats: Markdown, event: Any
 ) -> None:
-    dataset_stats.value = "[INFO] Uploading dataset."
+    dataset_stats.set_content(build_stats_markdown("[INFO] Uploading dataset."))
     file_bytes, filename = extract_upload_payload(event)
     if not file_bytes:
-        dataset_stats.value = "[ERROR] Could not read uploaded file."
+        dataset_stats.set_content(
+            build_stats_markdown("[ERROR] Could not read uploaded file.")
+        )
         return
     url = f"{API_BASE_URL}/datasets/load"
     result = await load_dataset(url, file_bytes, filename)
     dataset_state["dataset"] = result.get("dataset")
-    dataset_stats.value = result.get("message", "")
+    dataset_stats.set_content(build_stats_markdown(result.get("message", "")))
 
 # -----------------------------------------------------------------------------
 async def on_start_fitting_click(
@@ -219,22 +247,17 @@ def main_page() -> None:
                         value=True,
                     )
 
-                    dataset_stats = (
-                        ui.textarea(
-                            "Dataset statistics",
-                            value="No dataset loaded.",
-                        )
-                        .props("readonly rows=8")
-                        .classes("w-full adsorfit-status")
-                    )
+                    dataset_stats = ui.markdown(
+                        build_stats_markdown("No dataset loaded.")
+                    ).classes("w-full adsorfit-status min-h-[260px]")
 
                     status_area = (
                         ui.textarea(
                             "Fitting status",
                             value="",
                         )
-                        .props("readonly rows=8")
-                        .classes("w-full adsorfit-status")
+                        .props("readonly rows=10 autogrow")
+                        .classes("w-full adsorfit-status min-h-[260px]")
                     )
 
                     dataset_upload = (
