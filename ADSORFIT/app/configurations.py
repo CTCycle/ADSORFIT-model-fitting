@@ -24,7 +24,7 @@ class UIRuntimeSettings:
     mount_path: str
     redirect_path: str
     show_welcome_message: bool
-    reconnect_timeout_seconds: int
+    reconnect_timeout: int
 
 
 ###############################################################################
@@ -36,7 +36,7 @@ class APISettings:
 ###############################################################################
 @dataclass(frozen=True)
 class HTTPSettings:
-    timeout_seconds: float
+    timeout: float
 
 
 ###############################################################################
@@ -93,8 +93,8 @@ def build_ui_settings(payload: dict[str, Any]) -> UIRuntimeSettings:
         mount_path=coerce_str(payload.get("mount_path"), "/ui"),
         redirect_path=coerce_str(payload.get("redirect_path"), "/ui"),
         show_welcome_message=coerce_bool(payload.get("show_welcome_message"), False),
-        reconnect_timeout_seconds=coerce_int(
-            payload.get("reconnect_timeout_seconds"), 180, minimum=1
+        reconnect_timeout=coerce_int(
+            payload.get("reconnect_timeout"), 180, minimum=1
         ),
     )
 
@@ -107,7 +107,7 @@ def build_api_settings(payload: dict[str, Any]) -> APISettings:
 # -----------------------------------------------------------------------------
 def build_http_settings(payload: dict[str, Any]) -> HTTPSettings:
     return HTTPSettings(
-        timeout_seconds=coerce_float(payload.get("timeout_seconds"), 120.0, minimum=1.0)
+        timeout=coerce_float(payload.get("timeout"), 120.0, minimum=1.0)
     )
 
 

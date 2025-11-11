@@ -6,15 +6,16 @@
     "mount_path": "/ui",
     "redirect_path": "/ui",
     "show_welcome_message": false,
-    "reconnect_timeout_seconds": 180
+    "reconnect_timeout": 3600.0
   },
   "api": {
     "base_url": "http://127.0.0.1:8000"
   },
   "http": {
-    "timeout_seconds": 120.0
+    "timeout": 120.0
   },
   "database": {
+    "selected_database": "sqlite",
     "insert_batch_size": 1000
   },
   "datasets": {

@@ -48,7 +48,7 @@ async def load_dataset(url: str, file_bytes: bytes | None, filename: str | None)
     files = {"file": (safe_name, file_bytes, "application/octet-stream")}
 
     try:
-        async with httpx.AsyncClient(timeout=http_settings.timeout_seconds) as client:
+        async with httpx.AsyncClient(timeout=http_settings.timeout) as client:
             response = await client.post(url, files=files)
             response.raise_for_status()
     except httpx.HTTPStatusError as exc:
@@ -221,7 +221,7 @@ async def start_fitting(
     }
 
     try:
-        async with httpx.AsyncClient(timeout=http_settings.timeout_seconds) as client:
+        async with httpx.AsyncClient(timeout=http_settings.timeout) as client:
             response = await client.post(url, json=payload)
             response.raise_for_status()
     except httpx.HTTPStatusError as exc:
