@@ -14,7 +14,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from ADSORFIT.src.packages.configurations import configurations
 from ADSORFIT.src.packages.constants import DATA_PATH
 from ADSORFIT.src.packages.logger import logger
-from ADSORFIT.src.packages.utils.singleton import singleton
+from ADSORFIT.src.packages.singleton import singleton
 
 
 Base = declarative_base()

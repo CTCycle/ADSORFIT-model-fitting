@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from ADSORFIT.src.packages.constants import CONFIGURATION_FILE
-from ADSORFIT.src.packages.utils.types import (
+from ADSORFIT.src.packages.types import (
     coerce_bool,
     coerce_float,
     coerce_int,
