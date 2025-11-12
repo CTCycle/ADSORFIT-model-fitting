@@ -65,6 +65,14 @@ def coerce_str(value: Any, default: str) -> str:
 
 
 # -----------------------------------------------------------------------------
+def coerce_str_or_none(value: Any) -> str | None:
+    if isinstance(value, str):
+        stripped = value.strip()
+        return stripped or None
+    return None
+
+
+# -----------------------------------------------------------------------------
 def coerce_str_sequence(value: Any, default: Iterable[str]) -> tuple[str, ...]:
     items: list[str] = []
     if isinstance(value, str):

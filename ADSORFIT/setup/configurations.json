@@ -16,6 +16,10 @@
   },
   "database": {
     "selected_database": "sqlite",
+    "database_address": null,
+    "database_name": null,
+    "username": null,
+    "password": null,
     "insert_batch_size": 1000
   },
   "datasets": {

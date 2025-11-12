@@ -16,7 +16,7 @@ from ADSORFIT.src.packages.utils.repository.database import database
 
 ###############################################################################
 # initialize the database if it has not been created
-if not os.path.exists(database.db_path):
+if database.db_path and not os.path.exists(database.db_path):
     logger.info("Database not found, creating instance and making all tables")
     database.initialize_database()
     logger.info("ADSORFIT database has been initialized successfully.")

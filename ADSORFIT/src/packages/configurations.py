@@ -11,6 +11,7 @@ from ADSORFIT.src.packages.types import (
     coerce_float,
     coerce_int,
     coerce_str,
+    coerce_str_or_none,
     coerce_str_sequence,
 )
 
@@ -42,6 +43,11 @@ class HTTPSettings:
 ###############################################################################
 @dataclass(frozen=True)
 class DatabaseSettings:
+    selected_database: str
+    database_address: str | None
+    database_name: str | None
+    username: str | None
+    password: str | None
     insert_batch_size: int
 
 
@@ -114,6 +120,11 @@ def build_http_settings(payload: dict[str, Any] | Any) -> HTTPSettings:
 # -----------------------------------------------------------------------------
 def build_database_settings(payload: dict[str, Any] | Any) -> DatabaseSettings:
     return DatabaseSettings(
+        selected_database=coerce_str(payload.get("selected_database"), "sqlite").lower(),
+        database_address=coerce_str_or_none(payload.get("database_address")),
+        database_name=coerce_str_or_none(payload.get("database_name")),
+        username=coerce_str_or_none(payload.get("username")),
+        password=coerce_str_or_none(payload.get("password")),
         insert_batch_size=coerce_int(payload.get("insert_batch_size"), 1000, minimum=1)
     )
 
