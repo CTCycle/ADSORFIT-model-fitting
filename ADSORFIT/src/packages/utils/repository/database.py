@@ -11,10 +11,10 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from ADSORFIT.app.configurations import configurations
-from ADSORFIT.app.constants import DATA_PATH
-from ADSORFIT.app.logger import logger
-from ADSORFIT.app.utils.singleton import singleton
+from ADSORFIT.src.packages.configurations import configurations
+from ADSORFIT.src.packages.constants import DATA_PATH
+from ADSORFIT.src.packages.logger import logger
+from ADSORFIT.src.packages.utils.singleton import singleton
 
 
 Base = declarative_base()

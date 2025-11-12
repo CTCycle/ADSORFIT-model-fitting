@@ -6,12 +6,12 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from nicegui import ui
 
-from ADSORFIT.app.configurations import configurations
-from ADSORFIT.app.api.endpoints.datasets import router as dataset_router
-from ADSORFIT.app.api.endpoints.fitting import router as fit_router
-from ADSORFIT.app.client.interface import create_interface
-from ADSORFIT.app.logger import logger
-from ADSORFIT.app.utils.repository.database import database
+from ADSORFIT.src.packages.configurations import configurations
+from ADSORFIT.src.app.backend.endpoints.datasets import router as dataset_router
+from ADSORFIT.src.app.backend.endpoints.fitting import router as fit_router
+from ADSORFIT.src.app.frontend.interface import create_interface
+from ADSORFIT.src.packages.logger import logger
+from ADSORFIT.src.packages.utils.repository.database import database
 
 
 ###############################################################################

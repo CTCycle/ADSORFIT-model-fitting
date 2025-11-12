@@ -5,8 +5,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from ADSORFIT.app.constants import PROJECT_DIR
-from ADSORFIT.app.logger import logger
+from ADSORFIT.src.packages.constants import PROJECT_DIR
+from ADSORFIT.src.packages.logger import logger
 
 
 ###############################################################################

@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from ADSORFIT.app.logger import logger
+from ADSORFIT.src.packages.logger import logger
 
 DEFAULT_COLUMN_MAPPING = {
     "experiment": "experiment",

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from ADSORFIT.app.api.endpoints import datasets, fitting
+from ADSORFIT.src.app.backend.endpoints import datasets, fitting
 
 
 api_router = APIRouter(prefix="/api")

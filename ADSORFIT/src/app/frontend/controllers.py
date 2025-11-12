@@ -6,8 +6,8 @@ from collections.abc import Sequence
 from typing import Any
 
 import httpx
-from ADSORFIT.app.configurations import configurations
-from ADSORFIT.app.constants import MODEL_PARAMETER_DEFAULTS
+from ADSORFIT.src.packages.configurations import configurations
+from ADSORFIT.src.packages.constants import MODEL_PARAMETER_DEFAULTS
 
 
 type DatasetPayload = dict[str, Any]

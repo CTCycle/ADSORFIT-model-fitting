@@ -6,7 +6,7 @@ from typing import Any
 
 import pandas as pd
 
-from ADSORFIT.app.configurations import configurations
+from ADSORFIT.src.packages.configurations import configurations
 
 
 ###############################################################################

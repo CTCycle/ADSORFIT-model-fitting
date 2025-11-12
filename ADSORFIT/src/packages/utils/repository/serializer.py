@@ -4,7 +4,7 @@ from typing import Any
 
 import pandas as pd
 
-from ADSORFIT.app.utils.repository.database import database
+from ADSORFIT.src.packages.utils.repository.database import database
 
 
 ###############################################################################

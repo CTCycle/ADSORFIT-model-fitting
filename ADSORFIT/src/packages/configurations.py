@@ -5,8 +5,8 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
-from ADSORFIT.app.constants import CONFIGURATION_FILE
-from ADSORFIT.app.utils.types import (
+from ADSORFIT.src.packages.constants import CONFIGURATION_FILE
+from ADSORFIT.src.packages.utils.types import (
     coerce_bool,
     coerce_float,
     coerce_int,
@@ -85,7 +85,7 @@ def load_configuration_data(path: str) -> dict[str, Any]:
 
 
 # -----------------------------------------------------------------------------
-def build_ui_settings(payload: dict[str, Any]) -> UIRuntimeSettings:
+def build_ui_settings(payload: dict[str, Any] | Any | Any) -> UIRuntimeSettings:
     return UIRuntimeSettings(
         host=coerce_str(payload.get("host"), "0.0.0.0"),
         port=coerce_int(payload.get("port"), 7861, minimum=1, maximum=65535),
@@ -100,26 +100,26 @@ def build_ui_settings(payload: dict[str, Any]) -> UIRuntimeSettings:
 
 
 # -----------------------------------------------------------------------------
-def build_api_settings(payload: dict[str, Any]) -> APISettings:
+def build_api_settings(payload: dict[str, Any] | Any) -> APISettings:
     return APISettings(base_url=coerce_str(payload.get("base_url"), "http://127.0.0.1:8000"))
 
 
 # -----------------------------------------------------------------------------
-def build_http_settings(payload: dict[str, Any]) -> HTTPSettings:
+def build_http_settings(payload: dict[str, Any] | Any) -> HTTPSettings:
     return HTTPSettings(
         timeout=coerce_float(payload.get("timeout"), 120.0, minimum=1.0)
     )
 
 
 # -----------------------------------------------------------------------------
-def build_database_settings(payload: dict[str, Any]) -> DatabaseSettings:
+def build_database_settings(payload: dict[str, Any] | Any) -> DatabaseSettings:
     return DatabaseSettings(
         insert_batch_size=coerce_int(payload.get("insert_batch_size"), 1000, minimum=1)
     )
 
 
 # -----------------------------------------------------------------------------
-def build_dataset_settings(payload: dict[str, Any]) -> DatasetSettings:
+def build_dataset_settings(payload: dict[str, Any] | Any) -> DatasetSettings:
     return DatasetSettings(
         allowed_extensions=coerce_str_sequence(
             payload.get("allowed_extensions"), [".csv", ".xls", ".xlsx"]
@@ -128,7 +128,7 @@ def build_dataset_settings(payload: dict[str, Any]) -> DatasetSettings:
 
 
 # -----------------------------------------------------------------------------
-def build_fitting_settings(payload: dict[str, Any]) -> FittingSettings:
+def build_fitting_settings(payload: dict[str, Any] | Any) -> FittingSettings:
     default_iterations = coerce_int(payload.get("default_max_iterations"), 1000, minimum=1)
     upper_bound = coerce_int(
         payload.get("max_iterations_upper_bound"), 1_000_000, minimum=default_iterations

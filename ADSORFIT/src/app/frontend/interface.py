@@ -10,13 +10,13 @@ from nicegui.elements.number import Number
 from nicegui.elements.switch import Switch
 from nicegui.elements.textarea import Textarea
 
-from ADSORFIT.app.configurations import configurations
-from ADSORFIT.app.client.layouts import (
+from ADSORFIT.src.packages.configurations import configurations
+from ADSORFIT.src.app.frontend.layouts import (
     CARD_BASE_CLASSES,
     INTERFACE_THEME_CSS,
     PAGE_CONTAINER_CLASSES,
 )
-from ADSORFIT.app.client.controllers import (
+from ADSORFIT.src.app.frontend.controllers import (
     DatasetPayload,
     ParameterKey,
     get_parameter_defaults,
