@@ -9,7 +9,7 @@ from ADSORFIT.src.packages.configurations import DatabaseSettings, configuration
 from ADSORFIT.src.packages.logger import logger
 from ADSORFIT.src.packages.singleton import singleton
 
-
+###############################################################################
 class DatabaseBackend(Protocol):
     db_path: str | None
 
@@ -46,7 +46,6 @@ BackendFactory = Callable[[DatabaseSettings], DatabaseBackend]
 # -----------------------------------------------------------------------------
 def build_sqlite_backend(settings: DatabaseSettings) -> DatabaseBackend:
     from ADSORFIT.src.packages.utils.repository.sqlite import SQLiteRepository
-
     return SQLiteRepository(settings)
 
 
