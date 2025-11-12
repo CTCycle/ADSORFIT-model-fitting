@@ -50,7 +50,7 @@ The `resources` directory aggregates inputs, outputs, and utilities used during 
 ### 4. Configuration
 Each adsorption model can be configured in the **Model Configuration** area by adjusting parameter bounds, iteration ceilings, and persistence preferences. Bounds are validated to remain positive before fitting begins to avoid infeasible solver states.
 
-Runtime options (host, port, reload mode, and API endpoint) are defined through environment variables. Copy the provided `.env` template from the templates collection, fill in the desired values, and place the finalized file at `ADSORFIT/app/.env` before launching the server.
+Runtime options (host, port, reload mode, and API endpoint) are defined through environment variables. Copy the provided `.env` template from the templates collection, fill in the desired values, and place the finalized file at `ADSORFIT/setup/.env` before launching the server.
 
 | Variable              | Description                                              |
 |-----------------------|----------------------------------------------------------|
