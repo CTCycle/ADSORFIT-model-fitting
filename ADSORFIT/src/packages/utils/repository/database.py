@@ -85,16 +85,7 @@ class ADSORFITDatabase:
     def upsert_into_database(self, df: pd.DataFrame, table_name: str) -> None:
         self.backend.upsert_into_database(df, table_name)
 
-    # -------------------------------------------------------------------------
-    def export_all_tables_as_csv(
-        self, export_dir: str, chunksize: int | None = None
-    ) -> None:
-        self.backend.export_all_tables_as_csv(export_dir, chunksize)
-
-    # -------------------------------------------------------------------------
-    def delete_all_data(self) -> None:
-        self.backend.delete_all_data()
-
+    
 
 ###############################################################################
 database = ADSORFITDatabase()
