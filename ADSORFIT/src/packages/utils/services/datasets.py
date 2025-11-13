@@ -7,6 +7,7 @@ from typing import Any
 import pandas as pd
 
 from ADSORFIT.src.packages.configurations import configurations
+from ADSORFIT.src.packages.constants import DATASET_FALLBACK_DELIMITERS
 
 
 ###############################################################################
@@ -76,7 +77,7 @@ class DatasetService:
 
                 # When the parser reports a single column we attempt alternative
                 # delimiters to handle semi-colon, tab, or pipe separated files.
-                for delimiter in (";", "\t", "|"):
+                for delimiter in DATASET_FALLBACK_DELIMITERS:
                     if (isinstance(column_name, str) and delimiter in column_name) or (
                         isinstance(first_value, str) and delimiter in first_value
                     ):

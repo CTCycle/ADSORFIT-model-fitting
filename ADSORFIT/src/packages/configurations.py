@@ -55,6 +55,7 @@ class DatabaseSettings:
 @dataclass(frozen=True)
 class DatasetSettings:
     allowed_extensions: tuple[str, ...]
+    column_detection_cutoff: float
 
 
 ###############################################################################
@@ -63,6 +64,10 @@ class FittingSettings:
     default_max_iterations: int
     max_iterations_upper_bound: int
     save_best_default: bool
+    parameter_initial_default: float
+    parameter_min_default: float
+    parameter_max_default: float
+    preview_row_limit: int
 
 
 ###############################################################################
@@ -134,7 +139,10 @@ def build_dataset_settings(payload: dict[str, Any] | Any) -> DatasetSettings:
     return DatasetSettings(
         allowed_extensions=coerce_str_sequence(
             payload.get("allowed_extensions"), [".csv", ".xls", ".xlsx"]
-        )
+        ),
+        column_detection_cutoff=coerce_float(
+            payload.get("column_detection_cutoff"), 0.6, minimum=0.0, maximum=1.0
+        ),
     )
 
 
@@ -144,10 +152,23 @@ def build_fitting_settings(payload: dict[str, Any] | Any) -> FittingSettings:
     upper_bound = coerce_int(
         payload.get("max_iterations_upper_bound"), 1_000_000, minimum=default_iterations
     )
+    parameter_initial_default = coerce_float(
+        payload.get("default_parameter_initial"), 1.0, minimum=0.0
+    )
+    parameter_min_default = coerce_float(
+        payload.get("default_parameter_min"), 0.0, minimum=0.0
+    )
+    parameter_max_default = coerce_float(
+        payload.get("default_parameter_max"), 100.0, minimum=parameter_min_default
+    )
     return FittingSettings(
         default_max_iterations=default_iterations,
         max_iterations_upper_bound=upper_bound,
         save_best_default=coerce_bool(payload.get("save_best_default"), True),
+        parameter_initial_default=parameter_initial_default,
+        parameter_min_default=parameter_min_default,
+        parameter_max_default=parameter_max_default,
+        preview_row_limit=coerce_int(payload.get("preview_row_limit"), 5, minimum=1),
     )
 
 

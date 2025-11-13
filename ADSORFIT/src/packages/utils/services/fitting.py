@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
 
+from ADSORFIT.src.packages.configurations import configurations
 from ADSORFIT.src.packages.logger import logger
 from ADSORFIT.src.packages.utils.repository.serializer import DataSerializer
 from ADSORFIT.src.packages.utils.services.models import AdsorptionModels
@@ -48,6 +49,7 @@ class ModelSolver:
         """
         results: dict[str, dict[str, Any]] = {}
         evaluations = max(1, int(max_iterations))
+        fitting_settings = configurations.fitting
         for model_name, model_config in configuration.items():
             model = self.collection.get_model(model_name)
             signature = inspect.signature(model)
@@ -55,13 +57,22 @@ class ModelSolver:
             # ``curve_fit`` expects ordered arrays for initial guess and bounds, so we
             # align configuration dictionaries with the model signature parameters.
             initial = [
-                model_config.get("initial", {}).get(param, 1.0) for param in param_names
+                model_config.get("initial", {}).get(
+                    param, fitting_settings.parameter_initial_default
+                )
+                for param in param_names
             ]
             lower = [
-                model_config.get("min", {}).get(param, 0.0) for param in param_names
+                model_config.get("min", {}).get(
+                    param, fitting_settings.parameter_min_default
+                )
+                for param in param_names
             ]
             upper = [
-                model_config.get("max", {}).get(param, 100.0) for param in param_names
+                model_config.get("max", {}).get(
+                    param, fitting_settings.parameter_max_default
+                )
+                for param in param_names
             ]
 
             try:
@@ -286,7 +297,7 @@ class FittingPipeline:
             ]
         )
         trimmed = dataset.loc[:, dict.fromkeys(preview_columns).keys()]
-        limited = trimmed.head(5)
+        limited = trimmed.head(configurations.fitting.preview_row_limit)
         limited = limited.replace({np.nan: None})
         return limited.to_dict(orient="records")
 

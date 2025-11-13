@@ -8,23 +8,18 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from ADSORFIT.src.packages.configurations import configurations
+from ADSORFIT.src.packages.constants import DEFAULT_DATASET_COLUMN_MAPPING
 from ADSORFIT.src.packages.logger import logger
-
-DEFAULT_COLUMN_MAPPING = {
-    "experiment": "experiment",
-    "temperature": "temperature [K]",
-    "pressure": "pressure [Pa]",
-    "uptake": "uptake [mol/g]",
-}
 
 
 ###############################################################################
 @dataclass
 class DatasetColumns:
-    experiment: str = DEFAULT_COLUMN_MAPPING["experiment"]
-    temperature: str = DEFAULT_COLUMN_MAPPING["temperature"]
-    pressure: str = DEFAULT_COLUMN_MAPPING["pressure"]
-    uptake: str = DEFAULT_COLUMN_MAPPING["uptake"]
+    experiment: str = DEFAULT_DATASET_COLUMN_MAPPING["experiment"]
+    temperature: str = DEFAULT_DATASET_COLUMN_MAPPING["temperature"]
+    pressure: str = DEFAULT_DATASET_COLUMN_MAPPING["pressure"]
+    uptake: str = DEFAULT_DATASET_COLUMN_MAPPING["uptake"]
 
     # -------------------------------------------------------------------------
     def as_dict(self) -> dict[str, str]:
@@ -79,7 +74,8 @@ class AdsorptionDataProcessor:
         Return value:
         None.
         """
-        for attr, pattern in DEFAULT_COLUMN_MAPPING.items():
+        cutoff = configurations.datasets.column_detection_cutoff
+        for attr, pattern in DEFAULT_DATASET_COLUMN_MAPPING.items():
             matched_cols = [
                 column
                 for column in self.dataset.columns
@@ -90,7 +86,9 @@ class AdsorptionDataProcessor:
                 setattr(self.columns, attr, matched_cols[0])
                 continue
             close_matches = get_close_matches(
-                pattern, list(self.dataset.columns), cutoff=0.6
+                pattern,
+                list(self.dataset.columns),
+                cutoff=cutoff,
             )
             if close_matches:
                 # Fallback to fuzzy matching when naming deviates but is still similar.

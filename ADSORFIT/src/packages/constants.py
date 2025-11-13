@@ -13,6 +13,7 @@ CONFIG_PATH = join(RESOURCES_PATH, "configurations")
 LOGS_PATH = join(RESOURCES_PATH, "logs")
 TEMPLATES_PATH = join(RESOURCES_PATH, "templates")
 CONFIGURATION_FILE = join(SETUP_PATH, "configurations.json")
+DEFAULT_DATABASE_FILENAME = "database.db"
 
 
 ###############################################################################
@@ -50,3 +51,14 @@ MODEL_PARAMETER_DEFAULTS: dict[str, dict[str, tuple[float, float]]] = {
         "beta": (0.1, 10.0),
     },
 }
+
+DEFAULT_DATASET_COLUMN_MAPPING = {
+    "experiment": "experiment",
+    "temperature": "temperature [K]",
+    "pressure": "pressure [Pa]",
+    "uptake": "uptake [mol/g]",
+}
+
+DATASET_FALLBACK_DELIMITERS = (";", "\t", "|")
+
+FITTING_MODEL_NAMES = ("LANGMUIR", "SIPS", "FREUNDLICH", "TEMKIN")

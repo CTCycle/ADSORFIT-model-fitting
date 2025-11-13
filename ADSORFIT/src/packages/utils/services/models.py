@@ -3,11 +3,13 @@ from typing import Any
 
 import numpy as np
 
+from ADSORFIT.src.packages.constants import FITTING_MODEL_NAMES
+
 
 ###############################################################################
 class AdsorptionModels:
     def __init__(self) -> None:
-        self.model_names = ["LANGMUIR", "SIPS", "FREUNDLICH", "TEMKIN"]
+        self.model_names = list(FITTING_MODEL_NAMES)
 
     # -------------------------------------------------------------------------
     @staticmethod
