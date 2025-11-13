@@ -30,13 +30,7 @@ class DatabaseBackend(Protocol):
         ...
 
     # -------------------------------------------------------------------------
-    def export_all_tables_as_csv(
-        self, export_dir: str, chunksize: int | None = None
-    ) -> None:
-        ...
-
-    # -------------------------------------------------------------------------
-    def delete_all_data(self) -> None:
+    def count_rows(self, table_name: str) -> int:
         ...
 
 
