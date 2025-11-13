@@ -151,8 +151,8 @@ def build_fitting_settings(payload: dict[str, Any] | Any) -> FittingSettings:
     )
 
 
-# -----------------------------------------------------------------------------
-def load_configurations(config_path: str | None = None) -> AppConfigurations:
+###############################################################################
+def get_configurations(config_path: str | None = None) -> AppConfigurations:
     path = config_path or CONFIGURATION_FILE
     data = load_configuration_data(path)
     ui_payload = data.get("ui") if isinstance(data.get("ui"), dict) else {}
@@ -174,11 +174,4 @@ def load_configurations(config_path: str | None = None) -> AppConfigurations:
         fitting=build_fitting_settings(fitting_payload),
     )
 
-
-###############################################################################
-configurations = load_configurations()
-
-
-# -----------------------------------------------------------------------------
-def get_configurations() -> AppConfigurations:
-    return configurations
+configurations = get_configurations()

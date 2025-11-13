@@ -85,6 +85,10 @@ class ADSORFITDatabase:
     def upsert_into_database(self, df: pd.DataFrame, table_name: str) -> None:
         self.backend.upsert_into_database(df, table_name)
 
+    # -------------------------------------------------------------------------
+    def count_rows(self, table_name: str) -> int:
+        return self.backend.count_rows(table_name)
+
     
 
 ###############################################################################
