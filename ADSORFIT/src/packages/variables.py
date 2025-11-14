@@ -5,11 +5,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from ADSORFIT.src.packages.singleton import singleton
 from ADSORFIT.src.packages.constants import PROJECT_DIR
 from ADSORFIT.src.packages.logger import logger
 
 
 ###############################################################################
+@singleton
 class EnvironmentVariables:
     def __init__(self) -> None:
         self.env_path = Path(PROJECT_DIR) / "app" / ".env"
@@ -24,3 +26,6 @@ class EnvironmentVariables:
     # -------------------------------------------------------------------------
     def get(self, key: str, default: str | None = None) -> str | None:
         return os.getenv(key, default)
+
+
+env_variables = EnvironmentVariables()

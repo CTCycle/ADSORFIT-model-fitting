@@ -12,6 +12,7 @@ from ADSORFIT.src.app.backend.endpoints.fitting import router as fit_router
 from ADSORFIT.src.app.frontend.interface import create_interface
 from ADSORFIT.src.packages.logger import logger
 from ADSORFIT.src.packages.utils.repository.database import database
+from ADSORFIT.src.packages.variables import env_variables
 
 
 ###############################################################################

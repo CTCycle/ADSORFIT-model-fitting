@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from types import CoroutineType
 from typing import Any
 
 from nicegui import ui
@@ -173,7 +174,7 @@ class InterfaceController:
         max_iterations_input: Number,
         save_best_checkbox: Checkbox,
         status_area: Textarea,
-    ):
+    ) -> Callable[[], CoroutineType[Any, Any, None]]:
         async def _handler() -> None:
             status_area.value = "[INFO] Starting fitting process..."
             metadata, values = self.collect_parameter_payload()
@@ -276,7 +277,7 @@ class InterfaceStructure:
                                 )
 
     # -------------------------------------------------------------------------
-    def build_controls_panel(self):
+    def build_controls_panel(self) -> dict[str, Any]:
         with ui.card().classes(f"{CARD_BASE_CLASSES} flex-1 min-w-[320px]"):
             with ui.column().classes("gap-4 w-full items-stretch"):
                 max_iterations_input = ui.number(
