@@ -13,7 +13,7 @@ CONFIG_PATH = join(RESOURCES_PATH, "configurations")
 LOGS_PATH = join(RESOURCES_PATH, "logs")
 TEMPLATES_PATH = join(RESOURCES_PATH, "templates")
 CONFIGURATION_FILE = join(SETUP_PATH, "configurations.json")
-DEFAULT_DATABASE_FILENAME = "database.db"
+DATABASE_FILENAME = "database.db"
 
 
 ###############################################################################
