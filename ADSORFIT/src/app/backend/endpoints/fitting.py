@@ -12,6 +12,7 @@ from ADSORFIT.src.packages.utils.services.fitting import FittingPipeline
 router = APIRouter(prefix="/fitting", tags=["fitting"])
 pipeline = FittingPipeline()
 
+
 # -------------------------------------------------------------------------------
 @router.post("/run", response_model=FittingResponse, status_code=status.HTTP_200_OK)
 async def run_fitting_job(payload: FittingRequest) -> Any:

@@ -104,15 +104,15 @@ def build_ui_settings(payload: dict[str, Any] | Any | Any) -> UIRuntimeSettings:
         mount_path=coerce_str(payload.get("mount_path"), "/ui"),
         redirect_path=coerce_str(payload.get("redirect_path"), "/ui"),
         show_welcome_message=coerce_bool(payload.get("show_welcome_message"), False),
-        reconnect_timeout=coerce_int(
-            payload.get("reconnect_timeout"), 180, minimum=1
-        ),
+        reconnect_timeout=coerce_int(payload.get("reconnect_timeout"), 180, minimum=1),
     )
 
 
 # -----------------------------------------------------------------------------
 def build_api_settings(payload: dict[str, Any] | Any) -> APISettings:
-    return APISettings(base_url=coerce_str(payload.get("base_url"), "http://127.0.0.1:8000"))
+    return APISettings(
+        base_url=coerce_str(payload.get("base_url"), "http://127.0.0.1:8000")
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -125,12 +125,14 @@ def build_http_settings(payload: dict[str, Any] | Any) -> HTTPSettings:
 # -----------------------------------------------------------------------------
 def build_database_settings(payload: dict[str, Any] | Any) -> DatabaseSettings:
     return DatabaseSettings(
-        selected_database=coerce_str(payload.get("selected_database"), "sqlite").lower(),
+        selected_database=coerce_str(
+            payload.get("selected_database"), "sqlite"
+        ).lower(),
         database_address=coerce_str_or_none(payload.get("database_address")),
         database_name=coerce_str_or_none(payload.get("database_name")),
         username=coerce_str_or_none(payload.get("username")),
         password=coerce_str_or_none(payload.get("password")),
-        insert_batch_size=coerce_int(payload.get("insert_batch_size"), 1000, minimum=1)
+        insert_batch_size=coerce_int(payload.get("insert_batch_size"), 1000, minimum=1),
     )
 
 
@@ -148,7 +150,9 @@ def build_dataset_settings(payload: dict[str, Any] | Any) -> DatasetSettings:
 
 # -----------------------------------------------------------------------------
 def build_fitting_settings(payload: dict[str, Any] | Any) -> FittingSettings:
-    default_iterations = coerce_int(payload.get("default_max_iterations"), 1000, minimum=1)
+    default_iterations = coerce_int(
+        payload.get("default_max_iterations"), 1000, minimum=1
+    )
     upper_bound = coerce_int(
         payload.get("max_iterations_upper_bound"), 1_000_000, minimum=default_iterations
     )
@@ -194,5 +198,6 @@ def get_configurations(config_path: str | None = None) -> AppConfigurations:
         datasets=build_dataset_settings(dataset_payload),
         fitting=build_fitting_settings(fitting_payload),
     )
+
 
 configurations = get_configurations()

@@ -41,7 +41,10 @@ def coerce_int(
 
 # -----------------------------------------------------------------------------
 def coerce_float(
-    value: Any, default: float, minimum: float | None = None, maximum: float | None = None
+    value: Any,
+    default: float,
+    minimum: float | None = None,
+    maximum: float | None = None,
 ) -> float:
     try:
         candidate = float(value)
@@ -77,9 +80,7 @@ def coerce_str_sequence(value: Any, default: Iterable[str]) -> tuple[str, ...]:
     items: list[str] = []
     if isinstance(value, str):
         candidates = [
-            segment.strip()
-            for segment in value.split(",")
-            if segment.strip()
+            segment.strip() for segment in value.split(",") if segment.strip()
         ]
     elif isinstance(value, Iterable):
         candidates = []

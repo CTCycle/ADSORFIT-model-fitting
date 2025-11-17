@@ -29,9 +29,9 @@ MODELS_LIST = [
     "Jovanovic",
     "BET",
     "Henry",
-    "Koble-Corrigan"
+    "Koble-Corrigan",
 ]
-    
+
 MODEL_PARAMETER_DEFAULTS: dict[str, dict[str, tuple[float, float]]] = {
     "Langmuir": {
         "k": (1e-06, 10.0),

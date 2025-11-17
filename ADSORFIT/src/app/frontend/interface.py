@@ -101,7 +101,9 @@ class InterfaceController:
         return "\n".join(formatted)
 
     # -------------------------------------------------------------------------
-    def extract_upload_payload(self, event: Any | None) -> tuple[bytes | None, str | None]:
+    def extract_upload_payload(
+        self, event: Any | None
+    ) -> tuple[bytes | None, str | None]:
         if not event:
             return None, None
 
@@ -154,9 +156,7 @@ class InterfaceController:
             file_bytes, filename = self.extract_upload_payload(event)
             if not file_bytes:
                 dataset_stats.set_content(
-                    self.build_stats_markdown(
-                        "[ERROR] Could not read uploaded file."
-                    )
+                    self.build_stats_markdown("[ERROR] Could not read uploaded file.")
                 )
                 return
             url = f"{api_settings.base_url}/datasets/load"
@@ -190,7 +190,9 @@ class InterfaceController:
 
             save_best = save_best_checkbox.value
             selected_models = [
-                name for name, toggle in self.model_toggles.items() if bool(toggle.value)
+                name
+                for name, toggle in self.model_toggles.items()
+                if bool(toggle.value)
             ]
 
             url = f"{api_settings.base_url}/fitting/run"
@@ -237,11 +239,9 @@ class InterfaceStructure:
                             toggle = ui.switch(value=True).props("color=primary")
                             self.controller.register_model_toggle(model_name, toggle)
 
-                    expansion = (
-                        ui.expansion("Configure parameters", value=False).classes(
-                            "w-full"
-                        )
-                    )
+                    expansion = ui.expansion(
+                        "Configure parameters", value=False
+                    ).classes("w-full")
                     toggle.on_value_change(
                         self.controller.build_model_toggle_handler(expansion)
                     )

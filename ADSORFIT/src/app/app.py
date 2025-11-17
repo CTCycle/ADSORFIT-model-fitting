@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
@@ -12,12 +11,10 @@ from ADSORFIT.src.app.backend.endpoints.fitting import router as fit_router
 from ADSORFIT.src.app.frontend.interface import create_interface
 from ADSORFIT.src.packages.logger import logger
 from ADSORFIT.src.packages.utils.repository.database import database
-from ADSORFIT.src.packages.variables import env_variables
 
 
 ###############################################################################
-# initialize the database if it has not been created
-if database.db_path and not os.path.exists(database.db_path):
+if database.requires_sqlite_initialization():
     logger.info("Database not found, creating instance and making all tables")
     database.initialize_database()
     logger.info("ADSORFIT database has been initialized successfully.")
@@ -41,6 +38,7 @@ ui.run_with(
     show_welcome_message=ui_settings.show_welcome_message,
     reconnect_timeout=ui_settings.reconnect_timeout,
 )
+
 
 @app.get("/")
 def redirect_to_ui() -> RedirectResponse:

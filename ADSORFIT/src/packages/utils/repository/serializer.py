@@ -9,7 +9,6 @@ from ADSORFIT.src.packages.utils.repository.database import database
 
 ###############################################################################
 class DataSerializer:
-    
     # -------------------------------------------------------------------------
     def save_raw_dataset(self, dataset: pd.DataFrame) -> None:
         database.save_into_database(dataset, "ADSORPTION_DATA")

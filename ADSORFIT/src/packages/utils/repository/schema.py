@@ -46,6 +46,7 @@ class AdsorptionBestFit(Base):
     worst_model = Column("worst model", String)
     __table_args__ = (UniqueConstraint("id"),)
 
+
 ###############################################################################
 class AdsorptionData(Base):
     __tablename__ = "ADSORPTION_DATA"
@@ -55,6 +56,7 @@ class AdsorptionData(Base):
     pressure_Pa = Column("pressure [Pa]", Float)
     uptake_mol_g = Column("uptake [mol/g]", Float)
     __table_args__ = (UniqueConstraint("id"),)
+
 
 ###############################################################################
 class AdsorptionFittingResults(Base):
@@ -92,7 +94,7 @@ class AdsorptionFittingResults(Base):
     temkin_beta = Column("Temkin beta", Float)
     temkin_beta_error = Column("Temkin beta error", Float)
     __table_args__ = (UniqueConstraint("id"),)
-    
+
 
 ###############################################################################
 class AdsorptionProcessedData(Base):
