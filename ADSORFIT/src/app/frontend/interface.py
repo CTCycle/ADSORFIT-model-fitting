@@ -12,12 +12,6 @@ from nicegui.elements.number import Number
 from nicegui.elements.switch import Switch
 from nicegui.elements.textarea import Textarea
 
-from ADSORFIT.src.packages.configurations import configurations
-from ADSORFIT.src.app.frontend.layouts import (
-    CARD_BASE_CLASSES,
-    INTERFACE_THEME_CSS,
-    PAGE_CONTAINER_CLASSES,
-)
 from ADSORFIT.src.app.frontend.controllers import (
     DatasetEndpointController,
     DatasetPayload,
@@ -25,6 +19,12 @@ from ADSORFIT.src.app.frontend.controllers import (
     ParameterKey,
     SettingsController,
 )
+from ADSORFIT.src.app.frontend.layouts import (
+    CARD_BASE_CLASSES,
+    INTERFACE_THEME_CSS,
+    PAGE_CONTAINER_CLASSES,
+)
+from ADSORFIT.src.packages.configurations import configurations
 
 ui_settings = configurations.ui
 api_settings = configurations.api

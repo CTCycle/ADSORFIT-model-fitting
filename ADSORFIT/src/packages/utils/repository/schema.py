@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, Float, Integer, BigInteger, String, UniqueConstraint
+from sqlalchemy import BigInteger, Column, Float, Integer, String, UniqueConstraint
 from sqlalchemy.orm import declarative_base
-
 
 Base = declarative_base()
 

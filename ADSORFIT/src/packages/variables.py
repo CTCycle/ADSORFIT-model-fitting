@@ -5,9 +5,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from ADSORFIT.src.packages.singleton import singleton
 from ADSORFIT.src.packages.constants import PROJECT_DIR
 from ADSORFIT.src.packages.logger import logger
+from ADSORFIT.src.packages.singleton import singleton
 
 
 ###############################################################################

@@ -6,10 +6,10 @@ from typing import Protocol
 
 import pandas as pd
 
-from ADSORFIT.src.packages.utils.repository.sqlite import SQLiteRepository
 from ADSORFIT.src.packages.configurations import DatabaseSettings, configurations
 from ADSORFIT.src.packages.logger import logger
 from ADSORFIT.src.packages.singleton import singleton
+from ADSORFIT.src.packages.utils.repository.sqlite import SQLiteRepository
 
 
 ###############################################################################

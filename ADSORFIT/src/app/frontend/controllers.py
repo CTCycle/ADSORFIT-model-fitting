@@ -6,9 +6,9 @@ from collections.abc import Sequence
 from typing import Any
 
 import httpx
+
 from ADSORFIT.src.packages.configurations import configurations
 from ADSORFIT.src.packages.constants import MODEL_PARAMETER_DEFAULTS
-
 
 type DatasetPayload = dict[str, Any]
 type ParameterKey = tuple[str, str, str]

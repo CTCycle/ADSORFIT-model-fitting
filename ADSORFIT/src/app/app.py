@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from nicegui import ui
 
-from ADSORFIT.src.packages.configurations import configurations
 from ADSORFIT.src.app.backend.endpoints.datasets import router as dataset_router
 from ADSORFIT.src.app.backend.endpoints.fitting import router as fit_router
 from ADSORFIT.src.app.frontend.interface import create_interface
+from ADSORFIT.src.packages.configurations import configurations
 from ADSORFIT.src.packages.logger import logger
 from ADSORFIT.src.packages.utils.repository.database import database
-
 
 ###############################################################################
 if database.requires_sqlite_initialization():

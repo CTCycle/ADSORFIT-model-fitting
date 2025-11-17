@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Final
 
-
 INTERFACE_THEME_CSS: Final = """
         .adsorfit-card {
             border-radius: 16px;
