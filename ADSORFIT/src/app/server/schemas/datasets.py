@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from ADSORFIT.src.app.backend.schemas.fitting import DatasetPayload
+from ADSORFIT.src.app.server.schemas.fitting import DatasetPayload
 
 
 ###############################################################################
