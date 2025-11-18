@@ -32,7 +32,8 @@ class SQLiteRepository:
 
     # -------------------------------------------------------------------------
     def initialize_database(self) -> None:
-        Base.metadata.create_all(self.engine)
+        if not os.path.exists(self.db_path):
+            Base.metadata.create_all(self.engine)
 
     # -------------------------------------------------------------------------
     def get_table_class(self, table_name: str) -> Any:

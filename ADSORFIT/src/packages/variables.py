@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 
 from dotenv import load_dotenv
 
-from ADSORFIT.src.packages.constants import PROJECT_DIR
+from ADSORFIT.src.packages.constants import ENV_FILE_PATH
 from ADSORFIT.src.packages.logger import logger
 from ADSORFIT.src.packages.singleton import singleton
 
@@ -14,8 +13,8 @@ from ADSORFIT.src.packages.singleton import singleton
 @singleton
 class EnvironmentVariables:
     def __init__(self) -> None:
-        self.env_path = Path(PROJECT_DIR) / "app" / ".env"
-        if self.env_path.exists():
+        self.env_path = ENV_FILE_PATH
+        if os.path.exists(self.env_path):
             load_dotenv(self.env_path)
         else:
             logger.info(

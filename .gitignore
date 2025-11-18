@@ -1,6 +1,6 @@
 ADSORFIT/resources/database/*
 ADSORFIT/setup/python/*
-ADSORFIT/setup/*
+ADSORFIT/setup/settings/.env
 
 __pycache__
 *.lock
@@ -16,5 +16,5 @@ __pycache__
 *.egg-info
 !.gitkeep
 
-!ADSORFIT/setup/configurations.json
+!ADSORFIT/setup/settings/configurations.json
 AGENTS.md
