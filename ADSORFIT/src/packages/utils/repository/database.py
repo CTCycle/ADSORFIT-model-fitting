@@ -70,7 +70,7 @@ class ADSORFITDatabase:
 
     # -------------------------------------------------------------------------
     def initialize_database(self) -> None:
-        self.server.initialize_database()
+        self.backend.initialize_database()
 
     # -------------------------------------------------------------------------
     def requires_sqlite_initialization(self) -> bool:
@@ -82,19 +82,19 @@ class ADSORFITDatabase:
 
     # -------------------------------------------------------------------------
     def load_from_database(self, table_name: str) -> pd.DataFrame:
-        return self.server.load_from_database(table_name)
+        return self.backend.load_from_database(table_name)
 
     # -------------------------------------------------------------------------
     def save_into_database(self, df: pd.DataFrame, table_name: str) -> None:
-        self.server.save_into_database(df, table_name)
+        self.backend.save_into_database(df, table_name)
 
     # -------------------------------------------------------------------------
     def upsert_into_database(self, df: pd.DataFrame, table_name: str) -> None:
-        self.server.upsert_into_database(df, table_name)
+        self.backend.upsert_into_database(df, table_name)
 
     # -------------------------------------------------------------------------
     def count_rows(self, table_name: str) -> int:
-        return self.server.count_rows(table_name)
+        return self.backend.count_rows(table_name)
 
 
 ###############################################################################
