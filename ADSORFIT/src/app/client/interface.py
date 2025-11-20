@@ -26,14 +26,12 @@ from ADSORFIT.src.app.client.layouts import (
 )
 from ADSORFIT.src.packages.configurations import configurations
 
-ui_settings = configurations.ui
-api_settings = configurations.api
-dataset_settings = configurations.datasets
-fitting_settings = configurations.fitting
+ui_settings = configurations.client.ui
+dataset_settings = configurations.server.datasets
+fitting_settings = configurations.server.fitting
 
 
-###############################################################################
-# INTERFACE CONTROLLER
+# [INTERFACE CONTROLLER]
 ###############################################################################
 class InterfaceController:
     def __init__(
@@ -136,7 +134,7 @@ class InterfaceController:
         return None, name
 
     # -------------------------------------------------------------------------
-    def build_model_toggle_handler(self, expansion: Expansion):
+    def build_model_toggle_handler(self, expansion: Expansion) -> Callable[..., None]:
         def _handler(event: Any) -> None:
             toggle_active = bool(event.value)
             if not toggle_active:
@@ -148,7 +146,7 @@ class InterfaceController:
         return _handler
 
     # -------------------------------------------------------------------------
-    def build_dataset_upload_handler(self, dataset_stats: Markdown):
+    def build_dataset_upload_handler(self, dataset_stats: Markdown) -> Callable[..., CoroutineType[Any, Any, None]]:
         async def _handler(event: Any) -> None:
             dataset_stats.set_content(
                 self.build_stats_markdown("[INFO] Uploading dataset.")
@@ -159,7 +157,7 @@ class InterfaceController:
                     self.build_stats_markdown("[ERROR] Could not read uploaded file.")
                 )
                 return
-            url = f"{api_settings.base_url}/datasets/load"
+            url = f"{ui_settings.api_base_url}/datasets/load"
             result = await self.dataset_endpoint.load_dataset(url, file_bytes, filename)
             self.dataset_state["dataset"] = result.get("dataset")
             dataset_stats.set_content(
@@ -195,7 +193,7 @@ class InterfaceController:
                 if bool(toggle.value)
             ]
 
-            url = f"{api_settings.base_url}/fitting/run"
+            url = f"{ui_settings.api_base_url}/fitting/run"
             result = await self.fitting_endpoint.start_fitting(
                 url,
                 metadata,
@@ -210,8 +208,7 @@ class InterfaceController:
         return _handler
 
 
-###############################################################################
-# INTERFACE STRUCTURE
+# [INTERFACE STRUCTURE]
 ###############################################################################
 class InterfaceStructure:
     def __init__(
@@ -355,18 +352,16 @@ class InterfaceStructure:
         ui.page("/")(self.compose_main_page)
 
 
-###############################################################################
-# FACTORY AND LAUNCH
+# [INTERFACE CREATION AND LAUNCHING]
 ###############################################################################
 def create_interface() -> InterfaceStructure:
     settings_controller = SettingsController()
-    dataset_endpoint = DatasetEndpointController(settings_controller.http_settings)
-    fitting_endpoint = FittingEndpointController(settings_controller.http_settings)
+    dataset_endpoint = DatasetEndpointController()
+    fitting_endpoint = FittingEndpointController()
     controller = InterfaceController(dataset_endpoint, fitting_endpoint)
     structure = InterfaceStructure(controller, settings_controller)
     structure.mount_routes()
     return structure
-
 
 # -----------------------------------------------------------------------------
 def launch_interface() -> None:
@@ -378,7 +373,6 @@ def launch_interface() -> None:
         show_welcome_message=ui_settings.show_welcome_message,
         reconnect_timeout=ui_settings.reconnect_timeout,
     )
-
 
 # -----------------------------------------------------------------------------
 if __name__ in {"__main__", "__mp_main__"}:

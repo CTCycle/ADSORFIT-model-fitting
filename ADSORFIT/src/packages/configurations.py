@@ -15,50 +15,36 @@ from ADSORFIT.src.packages.types import (
     coerce_str_sequence,
 )
 
-
+# [SERVER SETTINGS]
 ###############################################################################
 @dataclass(frozen=True)
-class UIRuntimeSettings:
-    host: str
-    port: int
+class FastAPISettings:
     title: str
-    mount_path: str
-    redirect_path: str
-    show_welcome_message: bool
-    reconnect_timeout: int
+    description: str
+    version: str
 
-
-###############################################################################
-@dataclass(frozen=True)
-class APISettings:
-    base_url: str
-
-
-###############################################################################
-@dataclass(frozen=True)
-class HTTPSettings:
-    timeout: float
-
-
-###############################################################################
+# -----------------------------------------------------------------------------
 @dataclass(frozen=True)
 class DatabaseSettings:
-    selected_database: str
-    database_address: str | None
+    embedded_database: bool
+    engine: str | None          
+    host: str | None            
+    port: int | None            
     database_name: str | None
     username: str | None
     password: str | None
+    ssl: bool                   
+    ssl_ca: str | None         
+    connect_timeout: int
     insert_batch_size: int
 
-
-###############################################################################
+# -----------------------------------------------------------------------------
 @dataclass(frozen=True)
 class DatasetSettings:
     allowed_extensions: tuple[str, ...]
     column_detection_cutoff: float
 
-
-###############################################################################
+# -----------------------------------------------------------------------------
 @dataclass(frozen=True)
 class FittingSettings:
     default_max_iterations: int
@@ -69,19 +55,51 @@ class FittingSettings:
     parameter_max_default: float
     preview_row_limit: int
 
-
-###############################################################################
+# -----------------------------------------------------------------------------
 @dataclass(frozen=True)
-class AppConfigurations:
-    ui: UIRuntimeSettings
-    api: APISettings
-    http: HTTPSettings
+class ServerSettings:
+    fastapi: FastAPISettings
     database: DatabaseSettings
     datasets: DatasetSettings
     fitting: FittingSettings
 
 
+# [CLIENT SETTINGS]
 ###############################################################################
+@dataclass(frozen=True)
+class UIRuntimeSettings:
+    host: str
+    port: int
+    title: str
+    mount_path: str
+    redirect_path: str
+    show_welcome_message: bool
+    reconnect_timeout: int
+    api_base_url: str
+    http_timeout: float
+
+# -----------------------------------------------------------------------------
+@dataclass(frozen=True)
+class ClientSettings:
+    ui: UIRuntimeSettings
+
+
+# [APPLICATION SETTINGS]
+###############################################################################
+@dataclass(frozen=True)
+class AppConfigurations:
+    server: ServerSettings
+    client: ClientSettings
+
+
+# [UTILITY FUNCTIONS]
+###############################################################################
+def ensure_mapping(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return value
+    return {}
+
+# -----------------------------------------------------------------------------
 def load_configuration_data(path: str) -> dict[str, Any]:
     if not os.path.exists(path):
         raise RuntimeError(f"Configuration file not found: {path}")
@@ -95,46 +113,50 @@ def load_configuration_data(path: str) -> dict[str, Any]:
     return data
 
 
-# -----------------------------------------------------------------------------
-def build_ui_settings(payload: dict[str, Any] | Any | Any) -> UIRuntimeSettings:
-    return UIRuntimeSettings(
-        host=coerce_str(payload.get("host"), "0.0.0.0"),
-        port=coerce_int(payload.get("port"), 7861, minimum=1, maximum=65535),
-        title=coerce_str(payload.get("title"), "ADSORFIT Model Fitting"),
-        mount_path=coerce_str(payload.get("mount_path"), "/ui"),
-        redirect_path=coerce_str(payload.get("redirect_path"), "/ui"),
-        show_welcome_message=coerce_bool(payload.get("show_welcome_message"), False),
-        reconnect_timeout=coerce_int(payload.get("reconnect_timeout"), 180, minimum=1),
+# [BUILDER FUNCTIONS]
+###############################################################################
+def build_fastapi_settings(payload: dict[str, Any] | Any) -> FastAPISettings:
+    return FastAPISettings(
+        title=coerce_str(payload.get("title"), "ADSORFIT Backend"),
+        description=coerce_str(payload.get("description"), "FastAPI backend"),
+        version=coerce_str(payload.get("version"), "0.1.0"),
     )
-
-
-# -----------------------------------------------------------------------------
-def build_api_settings(payload: dict[str, Any] | Any) -> APISettings:
-    return APISettings(
-        base_url=coerce_str(payload.get("base_url"), "http://127.0.0.1:8000")
-    )
-
-
-# -----------------------------------------------------------------------------
-def build_http_settings(payload: dict[str, Any] | Any) -> HTTPSettings:
-    return HTTPSettings(
-        timeout=coerce_float(payload.get("timeout"), 120.0, minimum=1.0)
-    )
-
 
 # -----------------------------------------------------------------------------
 def build_database_settings(payload: dict[str, Any] | Any) -> DatabaseSettings:
+    embedded = bool(payload.get("embedded_database", True))
+    if embedded:
+        # External fields are ignored entirely when embedded DB is active
+        return DatabaseSettings(
+            embedded_database=True,
+            engine=None,
+            host=None,
+            port=None,
+            database_name=None,
+            username=None,
+            password=None,
+            ssl=False,
+            ssl_ca=None,
+            connect_timeout=10,
+            insert_batch_size=coerce_int(payload.get("insert_batch_size"), 1000, minimum=1),
+        )
+
+    # External DB mode
+    engine_value = coerce_str_or_none(payload.get("engine")) or "postgres"
+    normalized_engine = engine_value.lower() if engine_value else None
     return DatabaseSettings(
-        selected_database=coerce_str(
-            payload.get("selected_database"), "sqlite"
-        ).lower(),
-        database_address=coerce_str_or_none(payload.get("database_address")),
+        embedded_database=False,
+        engine=normalized_engine,
+        host=coerce_str_or_none(payload.get("host")),
+        port=coerce_int(payload.get("port"), 5432, minimum=1, maximum=65535),
         database_name=coerce_str_or_none(payload.get("database_name")),
         username=coerce_str_or_none(payload.get("username")),
         password=coerce_str_or_none(payload.get("password")),
+        ssl=bool(payload.get("ssl", False)),
+        ssl_ca=coerce_str_or_none(payload.get("ssl_ca")),
+        connect_timeout=coerce_int(payload.get("connect_timeout"), 10, minimum=1),
         insert_batch_size=coerce_int(payload.get("insert_batch_size"), 1000, minimum=1),
     )
-
 
 # -----------------------------------------------------------------------------
 def build_dataset_settings(payload: dict[str, Any] | Any) -> DatasetSettings:
@@ -146,7 +168,6 @@ def build_dataset_settings(payload: dict[str, Any] | Any) -> DatasetSettings:
             payload.get("column_detection_cutoff"), 0.6, minimum=0.0, maximum=1.0
         ),
     )
-
 
 # -----------------------------------------------------------------------------
 def build_fitting_settings(payload: dict[str, Any] | Any) -> FittingSettings:
@@ -175,29 +196,53 @@ def build_fitting_settings(payload: dict[str, Any] | Any) -> FittingSettings:
         preview_row_limit=coerce_int(payload.get("preview_row_limit"), 5, minimum=1),
     )
 
+# -----------------------------------------------------------------------------
+def build_server_settings(data: dict[str, Any] | Any) -> ServerSettings:
+    payload = ensure_mapping(data)
+
+    fastapi_payload = ensure_mapping(payload.get("fastapi"))
+    database_payload = ensure_mapping(payload.get("database"))
+    dataset_payload = ensure_mapping(payload.get("datasets"))
+    fitting_payload = ensure_mapping(payload.get("fitting"))
+
+    return ServerSettings(
+        fastapi=build_fastapi_settings(fastapi_payload),
+        database=build_database_settings(database_payload),
+        datasets=build_dataset_settings(dataset_payload),
+        fitting=build_fitting_settings(fitting_payload),
+    )
+
+# -----------------------------------------------------------------------------
+def build_ui_settings(payload: dict[str, Any] | Any | Any) -> UIRuntimeSettings:
+    return UIRuntimeSettings(
+        host=coerce_str(payload.get("host"), "0.0.0.0"),
+        port=coerce_int(payload.get("port"), 7861, minimum=1, maximum=65535),
+        title=coerce_str(payload.get("title"), "ADSORFIT Model Fitting"),
+        mount_path=coerce_str(payload.get("mount_path"), "/ui"),
+        redirect_path=coerce_str(payload.get("redirect_path"), "/ui"),
+        show_welcome_message=coerce_bool(payload.get("show_welcome_message"), False),
+        reconnect_timeout=coerce_int(payload.get("reconnect_timeout"), 180, minimum=1),
+        api_base_url=coerce_str(payload.get("base_url"), "http://127.0.0.1:8000"),
+        http_timeout=coerce_float(payload.get("timeout"), 120.0, minimum=1.0)
+    )
+
+# -----------------------------------------------------------------------------
+def build_client_settings(payload: dict[str, Any] | Any) -> ClientSettings:
+    ui_payload = payload.get("ui") if isinstance(payload.get("ui"), dict) else {}
+    return ClientSettings(
+        ui=build_ui_settings(ui_payload)        
+    )
+
 
 ###############################################################################
 def get_configurations(config_path: str | None = None) -> AppConfigurations:
     path = config_path or CONFIGURATION_FILE
     data = load_configuration_data(path)
-    ui_payload = data.get("ui") if isinstance(data.get("ui"), dict) else {}
-    api_payload = data.get("api") if isinstance(data.get("api"), dict) else {}
-    http_payload = data.get("http") if isinstance(data.get("http"), dict) else {}
-    db_payload = data.get("database") if isinstance(data.get("database"), dict) else {}
-    dataset_payload = (
-        data.get("datasets") if isinstance(data.get("datasets"), dict) else {}
-    )
-    fitting_payload = (
-        data.get("fitting") if isinstance(data.get("fitting"), dict) else {}
-    )
+    server_payload = data.get("server") if isinstance(data.get("server"), dict) else {}
+    client_payload = data.get("client") if isinstance(data.get("client"), dict) else {}
     return AppConfigurations(
-        ui=build_ui_settings(ui_payload),
-        api=build_api_settings(api_payload),
-        http=build_http_settings(http_payload),
-        database=build_database_settings(db_payload),
-        datasets=build_dataset_settings(dataset_payload),
-        fitting=build_fitting_settings(fitting_payload),
+        server=build_server_settings(server_payload),
+        client=build_client_settings(client_payload),
     )
-
 
 configurations = get_configurations()

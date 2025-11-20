@@ -7,31 +7,33 @@ from typing import Any
 
 import httpx
 
-from ADSORFIT.src.packages.configurations import configurations
+from ADSORFIT.src.packages.configurations import (
+    configurations, 
+    AppConfigurations
+)
+
 from ADSORFIT.src.packages.constants import MODEL_PARAMETER_DEFAULTS
 
 type DatasetPayload = dict[str, Any]
 type ParameterKey = tuple[str, str, str]
 
 
-###############################################################################
-# SETTINGS
+# [SETTINGS]
 ###############################################################################
 class SettingsController:
-    def __init__(self) -> None:
-        self.http_settings = configurations.http
+    def __init__(self, config: AppConfigurations = configurations) -> None:
+        self.config = config
 
     # -------------------------------------------------------------------------
     def parameter_defaults(self) -> dict[str, dict[str, tuple[float, float]]]:
         return copy.deepcopy(MODEL_PARAMETER_DEFAULTS)
 
 
+# [DATASET ENDPOINT]
 ###############################################################################
-# ENDPOINT BASE
-###############################################################################
-class EndpointController:
-    def __init__(self, http_settings: Any) -> None:
-        self.http_settings = http_settings
+class DatasetEndpointController():
+    def __init__(self, config: AppConfigurations = configurations) -> None:
+        self.config = config
 
     # -------------------------------------------------------------------------
     @staticmethod
@@ -52,11 +54,6 @@ class EndpointController:
 
         return f"HTTP error {response.status_code}"
 
-
-###############################################################################
-# DATASET ENDPOINT
-###############################################################################
-class DatasetEndpointController(EndpointController):
     # -------------------------------------------------------------------------
     async def load_dataset(
         self, url: str, file_bytes: bytes | None, filename: str | None
@@ -68,7 +65,7 @@ class DatasetEndpointController(EndpointController):
         files = {"file": (safe_name, file_bytes, "application/octet-stream")}
 
         try:
-            async with httpx.AsyncClient(timeout=self.http_settings.timeout) as client:
+            async with httpx.AsyncClient(timeout=self.config.client.ui.http_timeout) as client:
                 response = await client.post(url, files=files)
                 response.raise_for_status()
         except httpx.HTTPStatusError as exc:
@@ -114,10 +111,31 @@ class DatasetEndpointController(EndpointController):
         return {"dataset": dataset, "message": summary}
 
 
+# [FITTING ENDPOINT]
 ###############################################################################
-# FITTING ENDPOINT
-###############################################################################
-class FittingEndpointController(EndpointController):
+class FittingEndpointController():
+    def __init__(self, config: AppConfigurations = configurations) -> None:
+        self.config = config
+
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def extract_error_message(response: httpx.Response) -> str:
+        try:
+            payload = response.json()
+        except ValueError:
+            text = response.text.strip()
+            return text or f"HTTP error {response.status_code}"
+
+        detail = payload.get("detail") if isinstance(payload, dict) else None
+        if isinstance(detail, str) and detail:
+            return detail
+
+        message = payload.get("message") if isinstance(payload, dict) else None
+        if isinstance(message, str) and message:
+            return message
+
+        return f"HTTP error {response.status_code}"
+
     # -------------------------------------------------------------------------
     def build_parameter_bounds(
         self,
@@ -248,7 +266,7 @@ class FittingEndpointController(EndpointController):
         }
 
         try:
-            async with httpx.AsyncClient(timeout=self.http_settings.timeout) as client:
+            async with httpx.AsyncClient(timeout=self.config.client.ui.http_timeout) as client:
                 response = await client.post(url, json=payload)
                 response.raise_for_status()
         except httpx.HTTPStatusError as exc:

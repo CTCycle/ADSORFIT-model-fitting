@@ -13,7 +13,9 @@ from ADSORFIT.src.packages.constants import DATASET_FALLBACK_DELIMITERS
 ###############################################################################
 class DatasetService:
     def __init__(self) -> None:
-        self.allowed_extensions = set(configurations.datasets.allowed_extensions)
+        self.allowed_extensions = set(
+            configurations.server.datasets.allowed_extensions
+        )
 
     # -------------------------------------------------------------------------------
     def load_from_bytes(

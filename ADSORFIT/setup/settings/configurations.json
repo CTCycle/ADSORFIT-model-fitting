@@ -1,39 +1,49 @@
 {
-  "ui": {
-    "host": "0.0.0.0",
-    "port": 7861,
-    "title": "ADSORFIT Model Fitting",
-    "mount_path": "/ui",
-    "redirect_path": "/ui",
-    "show_welcome_message": false,
-    "reconnect_timeout": 3600.0
+  "server": {
+    "fastapi": {
+      "title": "ADSORFIT Model Fitting Backend",
+      "description": "FastAPI backend",
+      "version": "0.1.0"
+    },
+    "database": {
+      "embedded_database": true,
+      "engine": "postgres",
+      "host": "localhost",
+      "port": 5432,
+      "database_name": "adsorfit",
+      "username": "replace-me",
+      "password": "replace-me",
+      "ssl": false,
+      "ssl_ca": null,
+      "connect_timeout": 30,
+      "insert_batch_size": 1000
+    },
+    "datasets": {
+      "allowed_extensions": [".csv", ".xls", ".xlsx"],
+      "column_detection_cutoff": 0.6
+    },
+    "fitting": {
+      "default_max_iterations": 1000,
+      "max_iterations_upper_bound": 1000000,
+      "save_best_default": true,
+      "default_parameter_initial": 1.0,
+      "default_parameter_min": 0.0,
+      "default_parameter_max": 100.0,
+      "preview_row_limit": 5
+    }
   },
-  "api": {
-    "base_url": "http://127.0.0.1:8000"
-  },
-  "http": {
-    "timeout": 120.0
-  },
-  "database": {
-    "selected_database": "sqlite",
-    "database_address": null,
-    "database_name": null,
-    "username": null,
-    "password": null,
-    "insert_batch_size": 1000
-  },
-  "datasets": {
-    "allowed_extensions": [".csv", ".xls", ".xlsx"],
-    "column_detection_cutoff": 0.6
-  },
-  "fitting": {
-    "default_max_iterations": 1000,
-    "max_iterations_upper_bound": 1000000,
-    "save_best_default": true,
-    "default_parameter_initial": 1.0,
-    "default_parameter_min": 0.0,
-    "default_parameter_max": 100.0,
-    "preview_row_limit": 5
+  "client": {
+    "ui": {
+      "host": "0.0.0.0",
+      "port": 7861,
+      "title": "ADSORFIT Model Fitting",
+      "mount_path": "/ui",
+      "redirect_path": "/ui",
+      "show_welcome_message": false,
+      "reconnect_timeout": 3600,
+      "api_base_url": "http://127.0.0.1:8000",
+      "http_timeout": 1800.0
+    }
   }
 }
 

@@ -74,7 +74,7 @@ class AdsorptionDataProcessor:
         Return value:
         None.
         """
-        cutoff = configurations.datasets.column_detection_cutoff
+        cutoff = configurations.server.datasets.column_detection_cutoff
         for attr, pattern in DEFAULT_DATASET_COLUMN_MAPPING.items():
             matched_cols = [
                 column

@@ -49,7 +49,7 @@ class ModelSolver:
         """
         results: dict[str, dict[str, Any]] = {}
         evaluations = max(1, int(max_iterations))
-        fitting_settings = configurations.fitting
+        fitting_settings = configurations.server.fitting
         for model_name, model_config in configuration.items():
             model = self.collection.get_model(model_name)
             signature = inspect.signature(model)
@@ -297,7 +297,7 @@ class FittingPipeline:
             ]
         )
         trimmed = dataset.loc[:, dict.fromkeys(preview_columns).keys()]
-        limited = trimmed.head(configurations.fitting.preview_row_limit)
+        limited = trimmed.head(configurations.server.fitting.preview_row_limit)
         limited = limited.replace({np.nan: None})
         return limited.to_dict(orient="records")
 
