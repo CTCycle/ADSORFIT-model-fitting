@@ -234,6 +234,7 @@ def build_client_settings(payload: dict[str, Any] | Any) -> ClientSettings:
     )
 
 
+# [APPLICATION CONFIGURATION LOADER]
 ###############################################################################
 def get_configurations(config_path: str | None = None) -> AppConfigurations:
     path = config_path or CONFIGURATION_FILE
