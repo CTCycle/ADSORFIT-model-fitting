@@ -5,7 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
-from ADSORFIT.src.app.server.schemas.fitting import FittingRequest, FittingResponse
+from ADSORFIT.src.server.schemas.fitting import FittingRequest, FittingResponse
 from ADSORFIT.src.packages.logger import logger
 from ADSORFIT.src.packages.utils.services.fitting import FittingPipeline
 

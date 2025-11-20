@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
-from ADSORFIT.src.app.server.schemas.datasets import DatasetLoadResponse
+from ADSORFIT.src.server.schemas.datasets import DatasetLoadResponse
 from ADSORFIT.src.packages.logger import logger
 from ADSORFIT.src.packages.utils.services.datasets import DatasetService
 

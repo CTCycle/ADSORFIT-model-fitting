@@ -29,7 +29,7 @@ set "UV_ZIP_ARM=https://github.com/astral-sh/uv/releases/%UV_CHANNEL%/download/u
 
 REM pyproject + app
 set "pyproject=%root_folder%pyproject.toml"
-set "UVICORN_MODULE=ADSORFIT.src.app.app:app"
+set "UVICORN_MODULE=ADSORFIT.src.app:app"
 
 REM .env overrides
 set "DOTENV=%setup_dir%\.env"

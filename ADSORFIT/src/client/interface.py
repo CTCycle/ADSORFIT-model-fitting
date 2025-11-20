@@ -12,14 +12,14 @@ from nicegui.elements.number import Number
 from nicegui.elements.switch import Switch
 from nicegui.elements.textarea import Textarea
 
-from ADSORFIT.src.app.client.controllers import (
+from ADSORFIT.src.client.controllers import (
     DatasetEndpointController,
     DatasetPayload,
     FittingEndpointController,
     ParameterKey,
     SettingsController,
 )
-from ADSORFIT.src.app.client.layouts import (
+from ADSORFIT.src.client.layouts import (
     CARD_BASE_CLASSES,
     INTERFACE_THEME_CSS,
     PAGE_CONTAINER_CLASSES,

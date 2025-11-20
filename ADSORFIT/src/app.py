@@ -4,9 +4,9 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from nicegui import ui
 
-from ADSORFIT.src.app.server.endpoints.datasets import router as dataset_router
-from ADSORFIT.src.app.server.endpoints.fitting import router as fit_router
-from ADSORFIT.src.app.client.interface import create_interface
+from ADSORFIT.src.server.endpoints.datasets import router as dataset_router
+from ADSORFIT.src.server.endpoints.fitting import router as fit_router
+from ADSORFIT.src.client.interface import create_interface
 from ADSORFIT.src.packages.configurations import configurations
 
 
