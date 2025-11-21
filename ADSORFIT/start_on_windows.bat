@@ -179,9 +179,7 @@ start "" /b "%uv_exe%" run --python "%python_exe%" python -m uvicorn %UVICORN_MO
 echo [RUN] Launching frontend (!FRONTEND_MODULE!)
 start "" /b "%uv_exe%" run --python "%python_exe%" python -m %FRONTEND_MODULE%
 
-timeout /t 2 /nobreak >nul
-start "" "!UI_URL!"
-echo [SUCCESS] Backend started in main console, frontend started hidden, browser opened.
+echo [SUCCESS] Backend and frontend correctly launched
 goto cleanup
 
 rem ============================================================================
