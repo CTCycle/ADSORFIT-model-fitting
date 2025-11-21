@@ -20,7 +20,7 @@ type ParameterKey = tuple[str, str, str]
 
 # [SETTINGS]
 ###############################################################################
-class SettingsController:
+class SettingsService:
     def __init__(self, config: AppConfigurations = configurations) -> None:
         self.config = config
 
@@ -31,7 +31,7 @@ class SettingsController:
 
 # [DATASET ENDPOINT]
 ###############################################################################
-class DatasetEndpointController():
+class DatasetEndpointService():
     def __init__(self, config: AppConfigurations = configurations) -> None:
         self.config = config
 
@@ -113,7 +113,7 @@ class DatasetEndpointController():
 
 # [FITTING ENDPOINT]
 ###############################################################################
-class FittingEndpointController():
+class FittingEndpointService():
     def __init__(self, config: AppConfigurations = configurations) -> None:
         self.config = config
 

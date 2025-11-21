@@ -12,12 +12,12 @@ from nicegui.elements.number import Number
 from nicegui.elements.switch import Switch
 from nicegui.elements.textarea import Textarea
 
-from ADSORFIT.src.client.controllers import (
-    DatasetEndpointController,
+from ADSORFIT.src.client.services import (
+    DatasetEndpointService,
     DatasetPayload,
-    FittingEndpointController,
+    FittingEndpointService,
     ParameterKey,
-    SettingsController,
+    SettingsService,
 )
 from ADSORFIT.src.client.layouts import (
     CARD_BASE_CLASSES,
@@ -33,11 +33,11 @@ fitting_settings = configurations.server.fitting
 
 # [INTERFACE CONTROLLER]
 ###############################################################################
-class InterfaceController:
+class InterfaceService:
     def __init__(
         self,
-        dataset_endpoint: DatasetEndpointController,
-        fitting_endpoint: FittingEndpointController,
+        dataset_endpoint: DatasetEndpointService,
+        fitting_endpoint: FittingEndpointService,
     ) -> None:
         self.dataset_endpoint = dataset_endpoint
         self.fitting_endpoint = fitting_endpoint
@@ -213,8 +213,8 @@ class InterfaceController:
 class InterfaceStructure:
     def __init__(
         self,
-        controller: InterfaceController,
-        settings_controller: SettingsController,
+        controller: InterfaceService,
+        settings_controller: SettingsService,
     ) -> None:
         self.controller = controller
         self.settings_controller = settings_controller
@@ -355,10 +355,10 @@ class InterfaceStructure:
 # [INTERFACE CREATION AND LAUNCHING]
 ###############################################################################
 def create_interface() -> InterfaceStructure:
-    settings_controller = SettingsController()
-    dataset_endpoint = DatasetEndpointController()
-    fitting_endpoint = FittingEndpointController()
-    controller = InterfaceController(dataset_endpoint, fitting_endpoint)
+    settings_controller = SettingsService()
+    dataset_endpoint = DatasetEndpointService()
+    fitting_endpoint = FittingEndpointService()
+    controller = InterfaceService(dataset_endpoint, fitting_endpoint)
     structure = InterfaceStructure(controller, settings_controller)
     structure.mount_routes()
     return structure
