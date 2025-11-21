@@ -22,6 +22,7 @@ class FastAPISettings:
     title: str
     description: str
     version: str
+    api_base_url: str
 
 # -----------------------------------------------------------------------------
 @dataclass(frozen=True)
@@ -71,11 +72,8 @@ class UIRuntimeSettings:
     host: str
     port: int
     title: str
-    mount_path: str
-    redirect_path: str
     show_welcome_message: bool
-    reconnect_timeout: int
-    api_base_url: str
+    reconnect_timeout: int    
     http_timeout: float
 
 # -----------------------------------------------------------------------------
@@ -120,6 +118,7 @@ def build_fastapi_settings(payload: dict[str, Any] | Any) -> FastAPISettings:
         title=coerce_str(payload.get("title"), "ADSORFIT Backend"),
         description=coerce_str(payload.get("description"), "FastAPI backend"),
         version=coerce_str(payload.get("version"), "0.1.0"),
+        api_base_url=coerce_str(payload.get("base_url"), "http://127.0.0.1:8000"),
     )
 
 # -----------------------------------------------------------------------------
@@ -217,12 +216,9 @@ def build_ui_settings(payload: dict[str, Any] | Any | Any) -> UIRuntimeSettings:
     return UIRuntimeSettings(
         host=coerce_str(payload.get("host"), "0.0.0.0"),
         port=coerce_int(payload.get("port"), 7861, minimum=1, maximum=65535),
-        title=coerce_str(payload.get("title"), "ADSORFIT Model Fitting"),
-        mount_path=coerce_str(payload.get("mount_path"), "/ui"),
-        redirect_path=coerce_str(payload.get("redirect_path"), "/ui"),
+        title=coerce_str(payload.get("title"), "ADSORFIT Model Fitting"),        
         show_welcome_message=coerce_bool(payload.get("show_welcome_message"), False),
-        reconnect_timeout=coerce_int(payload.get("reconnect_timeout"), 180, minimum=1),
-        api_base_url=coerce_str(payload.get("base_url"), "http://127.0.0.1:8000"),
+        reconnect_timeout=coerce_int(payload.get("reconnect_timeout"), 180, minimum=1),        
         http_timeout=coerce_float(payload.get("timeout"), 120.0, minimum=1.0)
     )
 

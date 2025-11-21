@@ -27,6 +27,7 @@ from ADSORFIT.src.client.layouts import (
 from ADSORFIT.src.packages.configurations import configurations
 
 ui_settings = configurations.client.ui
+api_settings = configurations.server.fastapi
 dataset_settings = configurations.server.datasets
 fitting_settings = configurations.server.fitting
 
@@ -157,7 +158,7 @@ class InterfaceService:
                     self.build_stats_markdown("[ERROR] Could not read uploaded file.")
                 )
                 return
-            url = f"{ui_settings.api_base_url}/datasets/load"
+            url = f"{api_settings.api_base_url}/datasets/load"
             result = await self.dataset_endpoint.load_dataset(url, file_bytes, filename)
             self.dataset_state["dataset"] = result.get("dataset")
             dataset_stats.set_content(
@@ -193,7 +194,7 @@ class InterfaceService:
                 if bool(toggle.value)
             ]
 
-            url = f"{ui_settings.api_base_url}/fitting/run"
+            url = f"{api_settings.api_base_url}/fitting/run"
             result = await self.fitting_endpoint.start_fitting(
                 url,
                 metadata,
@@ -311,6 +312,7 @@ class InterfaceStructure:
                 )
 
                 fit_button = ui.button("Start fitting").props("color=primary")
+                
         return {
             "max_iterations_input": max_iterations_input,
             "save_best_checkbox": save_best_checkbox,
@@ -374,6 +376,3 @@ def launch_interface() -> None:
         reconnect_timeout=ui_settings.reconnect_timeout,
     )
 
-# -----------------------------------------------------------------------------
-if __name__ in {"__main__", "__mp_main__"}:
-    launch_interface()

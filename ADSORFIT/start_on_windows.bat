@@ -29,10 +29,11 @@ set "UV_ZIP_ARM=https://github.com/astral-sh/uv/releases/%UV_CHANNEL%/download/u
 
 REM pyproject + app
 set "pyproject=%root_folder%pyproject.toml"
-set "UVICORN_MODULE=ADSORFIT.src.app:app"
+set "UVICORN_MODULE=ADSORFIT.src.server.app:app"
+set "FRONTEND_MODULE=ADSORFIT.src.client.main"
 
 REM .env overrides
-set "DOTENV=%setup_dir%\.env"
+set "DOTENV=%setup_dir%\settings\.env"
 
 REM Temp PS script locations (no spaces)
 set "TMPDL=%TEMP%\app_dl.ps1"
@@ -135,7 +136,9 @@ REM == Load env overrides
 REM ============================================================================
 :load_env
 set "FASTAPI_HOST=127.0.0.1"
-set "FASTAPI_PORT=800"
+set "FASTAPI_PORT=8000"
+set "UI_HOST=127.0.0.1"
+set "UI_PORT=7861"
 set "RELOAD=false"
 
 if exist "%DOTENV%" (
@@ -157,30 +160,33 @@ if exist "%DOTENV%" (
   echo [INFO] No .env overrides found at "%DOTENV%". Using defaults.
 )
 
-echo [INFO] FASTAPI_HOST=!FASTAPI_HOST! FASTAPI_PORT=!FASTAPI_PORT! RELOAD=!RELOAD!
-set "UI_URL=http://!FASTAPI_HOST!:!FASTAPI_PORT!/ui"
+echo [INFO] FASTAPI_HOST=!FASTAPI_HOST! FASTAPI_PORT=!FASTAPI_PORT! UI_HOST=!UI_HOST! UI_PORT=!UI_PORT! RELOAD=!RELOAD!
+set "UI_URL=http://!UI_HOST!:!UI_PORT!"
 set "RELOAD_FLAG="
 if /i "!RELOAD!"=="true" set "RELOAD_FLAG=--reload"
 
-start "" "!UI_URL!"
-
-echo [RUN] Launching application via uvicorn (!UVICORN_MODULE!)
-pushd "%root_folder%" >nul
-"%uv_exe%" run --python "%python_exe%" uvicorn !UVICORN_MODULE! --host "!FASTAPI_HOST!" --port !FASTAPI_PORT! !RELOAD_FLAG! --log-level info
-set "run_ec=%ERRORLEVEL%"
-popd >nul
-
-if "!run_ec!"=="0" (
-  echo [SUCCESS] Application launched successfully.
-  goto cleanup
-) else (
-  echo [FATAL] Application exited with code !run_ec!.
+REM ============================================================================
+REM Start backend and frontend
+REM ============================================================================
+if not exist "%python_exe%" (
+  echo [FATAL] python.exe not found at "%python_exe%"
   goto error
 )
 
-REM ============================================================================
-REM == Cleanup temp helpers
-REM ============================================================================
+echo [RUN] Launching backend via uvicorn (!UVICORN_MODULE!)
+start "" /b "%uv_exe%" run --python "%python_exe%" python -m uvicorn %UVICORN_MODULE% --host %FASTAPI_HOST% --port %FASTAPI_PORT% %RELOAD_FLAG% --log-level info
+
+echo [RUN] Launching frontend (!FRONTEND_MODULE!)
+start "" /b "%uv_exe%" run --python "%python_exe%" python -m %FRONTEND_MODULE%
+
+timeout /t 2 /nobreak >nul
+start "" "!UI_URL!"
+echo [SUCCESS] Backend started in main console, frontend started hidden, browser opened.
+goto cleanup
+
+rem ============================================================================
+rem Cleanup temp helpers
+rem ============================================================================
 :cleanup
 del /q "%TMPDL%" "%TMPEXP%" "%TMPTXT%" "%TMPFIND%" "%TMPVER%" >nul 2>&1
 endlocal & exit /b 0

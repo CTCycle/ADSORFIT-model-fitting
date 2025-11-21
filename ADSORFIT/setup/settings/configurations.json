@@ -3,7 +3,8 @@
     "fastapi": {
       "title": "ADSORFIT Model Fitting Backend",
       "description": "FastAPI backend",
-      "version": "0.1.0"
+      "version": "1.2.0",
+      "api_base_url": "http://127.0.0.1:8000"
     },
     "database": {
       "embedded_database": true,
@@ -36,12 +37,9 @@
     "ui": {
       "host": "0.0.0.0",
       "port": 7861,
-      "title": "ADSORFIT Model Fitting",
-      "mount_path": "/ui",
-      "redirect_path": "/ui",
+      "title": "ADSORFIT Model Fitting",     
       "show_welcome_message": false,
-      "reconnect_timeout": 3600,
-      "api_base_url": "http://127.0.0.1:8000",
+      "reconnect_timeout": 3600,      
       "http_timeout": 1800.0
     }
   }
